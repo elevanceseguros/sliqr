@@ -9,11 +9,19 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll()        { return request.cookies.getAll() },
-        setAll(toSet) {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(toSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           toSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
-          toSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+          toSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(
+              name,
+              value,
+              options as Parameters<typeof supabaseResponse.cookies.set>[2]
+            )
+          )
         },
       },
     }
@@ -21,7 +29,6 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Rotas protegidas — redireciona para login se não autenticado
   const rotasProtegidas = ['/criar', '/editor', '/historico']
   const pathname = request.nextUrl.pathname
   const eRota = rotasProtegidas.some(r => pathname.startsWith(r))
@@ -30,7 +37,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Redireciona usuário logado para /criar se tentar acessar login/cadastro
   if ((pathname === '/login' || pathname === '/cadastro') && user) {
     return NextResponse.redirect(new URL('/criar', request.url))
   }
