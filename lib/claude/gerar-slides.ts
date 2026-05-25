@@ -4,43 +4,29 @@ import { Slide, Tom } from '@/types'
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const TOM_INSTRUCOES: Record<Tom, string> = {
-  vender:   'Escreva com linguagem persuasiva, focada em benefícios e conversão. O objetivo é fazer o leitor querer comprar ou contratar.',
-  ensinar:  'Escreva de forma educativa e clara. Explique como se estivesse ensinando alguém que não conhece o assunto.',
-  urgencia: 'Crie senso de urgência real. Use dados, prazos e consequências de não agir. Seja direto e impactante.',
-  inspirar: 'Escreva de forma motivacional e humana. Conecte emocionalmente, use histórias curtas e deixe o leitor esperançoso.',
+  vender:   'Linguagem persuasiva, focada em benefícios e conversão. Objetivo: fazer o leitor querer comprar ou contratar.',
+  ensinar:  'Linguagem educativa e clara. Explique como se estivesse ensinando alguém que não conhece o assunto.',
+  urgencia: 'Senso de urgência real. Use dados, prazos e consequências de não agir. Direto e impactante.',
+  inspirar: 'Tom motivacional e humano. Conecte emocionalmente. Deixe o leitor esperançoso.',
 }
 
-export async function gerarSlides(
-  tema: string,
-  tom: Tom,
-  qtdSlides: number
-): Promise<Slide[]> {
+export async function gerarSlides(tema: string, tom: Tom, qtdSlides: number): Promise<Slide[]> {
+  const prompt = `Crie um carrossel de ${qtdSlides} slide(s) para Instagram sobre: "${tema}".
 
-  const prompt = `Você é um especialista em criação de conteúdo para Instagram.
-Crie um carrossel de ${qtdSlides} slide(s) sobre o tema: "${tema}".
+Estilo: ${TOM_INSTRUCOES[tom]}
 
-Estilo de comunicação: ${TOM_INSTRUCOES[tom]}
+Regras:
+- Slide 1: título curto e impactante (máximo 8 palavras) para parar o scroll
+- Cada slide tem uma ideia única
+- Corpo: máximo 3 linhas curtas
+- Último slide: convite à ação direto
+- Linguagem simples, do dia a dia
 
-REGRAS IMPORTANTES:
-- O slide 1 DEVE ter um título curto e impactante (máximo 8 palavras) que faça a pessoa parar de rolar o feed. Pense nisso como o gancho principal.
-- Cada slide deve ter uma ideia única e clara — não repita informações.
-- O corpo de cada slide deve ter no máximo 3 linhas curtas. Sem parágrafos longos.
-- O último slide deve ter um convite à ação claro e direto (ex: "Me chama no WhatsApp", "Salva esse post", "Clica no link da bio").
-- Use linguagem simples, do dia a dia. Nada muito técnico.
-- Adapte o vocabulário para o nicho do tema informado.
+RETORNE APENAS O JSON ABAIXO, SEM NENHUM TEXTO ANTES OU DEPOIS, SEM MARKDOWN:
 
-Responda APENAS com um JSON válido, sem explicações, sem markdown, sem blocos de código.
-Formato exato:
-[
-  {
-    "ordem": 1,
-    "titulo": "título curto e impactante",
-    "corpo": "texto do slide\\nsegunda linha se necessário\\nterceira linha se necessário",
-    "destaque": "frase curta em destaque visual (apenas no slide 1, máximo 5 palavras)"
-  }
-]
+[{"ordem":1,"titulo":"titulo aqui","corpo":"linha 1\nlinha 2","destaque":"frase curta"},{"ordem":2,"titulo":"titulo","corpo":"linha 1\nlinha 2"}]
 
-O campo "destaque" só existe no slide 1. Nos demais slides não inclua esse campo.`
+O campo "destaque" existe APENAS no slide 1. Nos outros slides NÃO inclua "destaque".`
 
   const response = await client.messages.create({
     model:      'claude-haiku-4-5-20251001',
@@ -48,12 +34,18 @@ O campo "destaque" só existe no slide 1. Nos demais slides não inclua esse cam
     messages:   [{ role: 'user', content: prompt }],
   })
 
-  const texto = response.content[0].type === 'text' ? response.content[0].text : ''
+  const texto = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+
+  // Tenta extrair JSON mesmo se vier com texto ao redor
+  let jsonStr = texto
+  const match = texto.match(/\[[\s\S]*\]/)
+  if (match) jsonStr = match[0]
 
   let dados: Omit<Slide, 'id'>[]
   try {
-    dados = JSON.parse(texto)
+    dados = JSON.parse(jsonStr)
   } catch {
+    console.error('[gerar-slides] parse error, resposta:', texto.slice(0, 300))
     throw new Error('Erro ao processar resposta da IA. Tente novamente.')
   }
 
