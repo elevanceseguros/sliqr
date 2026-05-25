@@ -287,7 +287,7 @@ export default function CriarPage() {
   const cor = cfg.cor
 
   return (
-    <div style={{ padding:'2.5rem', maxWidth:'1100px' }}>
+    <div style={{ padding:'clamp(1rem, 4vw, 2.5rem)', maxWidth:'1100px' }}>
       <div style={{ marginBottom:'2rem' }}>
         <h1 style={{ fontSize:'1.75rem', fontWeight:700, letterSpacing:'-0.03em', marginBottom:'0.4rem' }}>Criar post</h1>
         <p style={{ color:'#8B95A8', fontSize:'0.9rem' }}>Configure o visual, digite o tema e crie.</p>
@@ -296,7 +296,7 @@ export default function CriarPage() {
       <div style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'20px', padding:'2rem', marginBottom:'1.5rem' }}>
 
         {/* CONFIG VISUAL */}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'1.5rem', marginBottom:'1.75rem', paddingBottom:'1.75rem', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:'1.25rem', marginBottom:'1.75rem', paddingBottom:'1.75rem', borderBottom:'1px solid rgba(255,255,255,0.07)' }}>
 
           <div>
             <label style={{ display:'block', fontSize:'0.72rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:'10px' }}>Cor principal</label>
@@ -403,7 +403,7 @@ export default function CriarPage() {
       </div>
 
       {slides.length > 0 && (
-        <div style={{ display:'grid', gridTemplateColumns:'360px 1fr', gap:'24px', alignItems:'start' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'min(360px, 100%) 1fr', gap:'24px', alignItems:'start' }}>
 
           <div style={{ position:'sticky', top:'24px' }}>
             <div style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'16px', padding:'1.25rem' }}>

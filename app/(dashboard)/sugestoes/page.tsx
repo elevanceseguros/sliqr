@@ -90,8 +90,8 @@ export default function SugestoesPage() {
   )
 
   return (
-    <div style={{ padding:'2.5rem', maxWidth:'800px' }}>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'2rem' }}>
+    <div style={{ padding:'clamp(1rem, 4vw, 2.5rem)', maxWidth:'800px' }}>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:'1rem', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'2rem' }}>
         <div>
           <h1 style={{ fontSize:'1.75rem', fontWeight:700, letterSpacing:'-0.03em', marginBottom:'0.4rem' }}>Sugestões para {empresa.nome}</h1>
           <p style={{ color:'#8B95A8', fontSize:'0.9rem' }}>Clique em qualquer sugestão para criar o carrossel com 1 clique.</p>

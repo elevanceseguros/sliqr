@@ -56,7 +56,7 @@ export default function EmpresaPage() {
   const cor = '#2D6FFF'
 
   return (
-    <div style={{ padding:'2.5rem', maxWidth:'680px' }}>
+    <div style={{ padding:'clamp(1rem, 4vw, 2.5rem)', maxWidth:'680px' }}>
       <div style={{ marginBottom:'2rem' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'0.5rem' }}>
           <Building2 size={20} style={{ color: cor }} />
@@ -123,7 +123,7 @@ export default function EmpresaPage() {
             <label style={{ display:'block', fontSize:'0.72rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:'12px' }}>
               Objetivo principal no Instagram
             </label>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:'10px' }}>
               {OBJETIVOS.map(o => (
                 <button key={o.id} type="button" onClick={() => setForm(p => ({ ...p, objetivo: o.id }))}
                   style={{ padding:'1rem', borderRadius:'12px', border: form.objetivo===o.id ? `1px solid ${cor}` : '1px solid rgba(255,255,255,0.07)', background: form.objetivo===o.id ? `${cor}18` : '#111827', cursor:'pointer', textAlign:'left', transition:'all 0.15s' }}>
