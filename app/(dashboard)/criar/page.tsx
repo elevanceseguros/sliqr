@@ -1,55 +1,20 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { Zap, Download, ChevronUp, ChevronDown, Loader2, RefreshCw, Upload, Image as ImageIcon, Move } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Zap, Download, ChevronUp, ChevronDown, Loader2, RefreshCw, Upload, Image as ImageIcon, Sparkles } from 'lucide-react'
 import { Tom, TOM_LABELS, Slide } from '@/types'
 import { createClient } from '@/lib/supabase/client'
 import JSZip from 'jszip'
 
 const TONS: Tom[] = ['vender', 'ensinar', 'urgencia', 'inspirar']
-
 const FONTES = [
   { id: 'modern',  label: 'Moderna',  css: 'system-ui, -apple-system, sans-serif',       peso: '800' },
   { id: 'classic', label: 'Clássica', css: 'Georgia, "Times New Roman", serif',           peso: '700' },
   { id: 'bold',    label: 'Bold',     css: '"Arial Black", "Helvetica Neue", sans-serif', peso: '900' },
 ]
 
-const TEMA_EN: Record<string, string> = {
-  'seguro auto':'car road safety insurance','seguro carro':'car road protection',
-  'plano de saude':'healthcare doctor hospital','plano de saúde':'healthcare doctor hospital',
-  'emagrecimento':'fitness healthy body weight loss','marmita':'healthy meal food preparation',
-  'farmacia':'pharmacy medicine pills','farmácia':'pharmacy medicine pills',
-  'remedio':'medicine healthcare clinic','remédio':'medicine healthcare clinic',
-  'imovel':'real estate house building','imóvel':'real estate house building',
-  'consorcio':'investment finance planning','consórcio':'investment finance planning',
-  'moto':'motorcycle road freedom','academia':'gym workout fitness training',
-  'dentista':'dental smile teeth clinic','nutrição':'nutrition healthy food',
-  'seguro vida':'family life protection insurance','financeiro':'finance money business',
-}
-
-function temaEN(tema: string): string {
-  const l = tema.toLowerCase().trim()
-  for (const [pt, en] of Object.entries(TEMA_EN)) { if (l.includes(pt)) return en }
-  return tema + ' professional'
-}
-
-async function buscarFotos(tema: string, qtd: number): Promise<string[]> {
-  try {
-    const res  = await fetch(`/api/foto?tema=${encodeURIComponent(temaEN(tema))}&qtd=${qtd * 2}`)
-    const data = await res.json()
-    return (data.urls ?? []).slice(0, qtd)
-  } catch { return [] }
-}
-
-async function novaFoto(tema: string, excluir: string[]): Promise<string> {
-  try {
-    const page = Math.floor(Math.random() * 8) + 1
-    const res  = await fetch(`/api/foto?tema=${encodeURIComponent(temaEN(tema))}&qtd=10&page=${page}`)
-    const data = await res.json()
-    const nova = (data.urls ?? []).find((u: string) => u && !excluir.includes(u))
-    return nova ?? ''
-  } catch { return '' }
-}
+interface LogoCfg { url: string; x: number; y: number; size: number }
+interface Cfg { cor: string; fonteId: string; logo: LogoCfg }
 
 function carregarImg(src: string): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
@@ -66,9 +31,6 @@ function quebrar(ctx: CanvasRenderingContext2D, texto: string, maxW: number): st
   }
   if (atual) linhas.push(atual); return linhas
 }
-
-interface LogoConfig { url: string; x: number; y: number; size: number }
-interface Cfg { cor: string; fonteId: string; logo: LogoConfig }
 
 async function renderSlide(slide: Slide, total: number, fotoUrl: string, cfg: Cfg, preview = false): Promise<Blob> {
   const SIZE = preview ? 680 : 1080; const S = SIZE / 1080
@@ -89,9 +51,8 @@ async function renderSlide(slide: Slide, total: number, fotoUrl: string, cfg: Cf
   }
 
   const grad = ctx.createLinearGradient(0, 0, 0, SIZE)
-  grad.addColorStop(0, 'rgba(4,6,14,0.84)'); grad.addColorStop(0.42, 'rgba(4,6,14,0.50)'); grad.addColorStop(1, 'rgba(4,6,14,0.95)')
+  grad.addColorStop(0, 'rgba(4,6,14,0.82)'); grad.addColorStop(0.42, 'rgba(4,6,14,0.48)'); grad.addColorStop(1, 'rgba(4,6,14,0.94)')
   ctx.fillStyle = grad; ctx.fillRect(0, 0, SIZE, SIZE)
-
   ctx.fillStyle = cor; ctx.fillRect(0, 0, SIZE, 7 * S)
   ctx.fillStyle = cor; ctx.globalAlpha = 0.55; ctx.fillRect(0, 0, 5 * S, SIZE); ctx.globalAlpha = 1
 
@@ -101,8 +62,8 @@ async function renderSlide(slide: Slide, total: number, fotoUrl: string, cfg: Cf
     ctx.font = `${fonte.peso} ${86 * S}px ${fonte.css}`
     const lD = quebrar(ctx, slide.destaque, LRG)
     ctx.fillStyle = cor; ctx.globalAlpha = 0.14
-    ctx.beginPath(); ctx.roundRect(PAD - 14 * S, curY - 72 * S, LRG + 28 * S, lD.length * 98 * S + 16 * S, 10 * S); ctx.fill(); ctx.globalAlpha = 1
-    ctx.fillStyle = cor
+    ctx.beginPath(); ctx.roundRect(PAD - 14 * S, curY - 72 * S, LRG + 28 * S, lD.length * 98 * S + 16 * S, 10 * S)
+    ctx.fill(); ctx.globalAlpha = 1; ctx.fillStyle = cor
     for (const l of lD) { ctx.fillText(l, PAD, curY); curY += 98 * S }
     curY += 16 * S
   }
@@ -120,19 +81,14 @@ async function renderSlide(slide: Slide, total: number, fotoUrl: string, cfg: Cf
     curY += 4 * S
   }
 
-  // Logo com posição e tamanho configuráveis
   if (cfg.logo.url) {
     try {
       const logo = await carregarImg(cfg.logo.url)
-      const lH   = cfg.logo.size * S
-      const lW   = (logo.width / logo.height) * lH
-      const lX   = cfg.logo.x * S
-      const lY   = cfg.logo.y * S
-      ctx.drawImage(logo, lX, lY, lW, lH)
+      const lH = cfg.logo.size * S; const lW = (logo.width / logo.height) * lH
+      ctx.drawImage(logo, cfg.logo.x * S, cfg.logo.y * S, lW, lH)
     } catch {}
   }
 
-  // Dots (sem numeração)
   const dotY = SIZE - 48 * S; let dotX = PAD
   for (let i = 0; i < total; i++) {
     const a = i === slide.ordem - 1; const dW = a ? 30 * S : 7 * S
@@ -144,14 +100,12 @@ async function renderSlide(slide: Slide, total: number, fotoUrl: string, cfg: Cf
   return new Promise(r => cv.toBlob(b => r(b!), 'image/png', 0.95))
 }
 
-// Preview canvas com drag da logo
 function SlideCanvas({ slide, total, fotoUrl, cfg, onLogoMove }: {
   slide: Slide; total: number; fotoUrl: string; cfg: Cfg
   onLogoMove?: (x: number, y: number) => void
 }) {
-  const ref   = useRef<HTMLCanvasElement>(null)
-  const drag  = useRef(false)
-  const SIZE  = 340
+  const ref  = useRef<HTMLCanvasElement>(null)
+  const drag = useRef(false)
 
   useEffect(() => {
     if (!ref.current || !slide) return
@@ -160,25 +114,23 @@ function SlideCanvas({ slide, total, fotoUrl, cfg, onLogoMove }: {
       const img = new Image()
       img.onload = () => {
         if (!ref.current) return
-        ref.current.width = ref.current.height = SIZE
-        ref.current.getContext('2d')!.drawImage(img, 0, 0, SIZE, SIZE)
+        ref.current.width = ref.current.height = 340
+        ref.current.getContext('2d')!.drawImage(img, 0, 0, 340, 340)
         URL.revokeObjectURL(url)
       }
       img.src = url
     })
   }, [slide, total, fotoUrl, cfg])
 
-  function posFromEvent(e: React.MouseEvent<HTMLCanvasElement>) {
-    const rect = ref.current!.getBoundingClientRect()
-    const scaleX = 1080 / rect.width; const scaleY = 1080 / rect.height
-    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY }
-  }
-
   return (
-    <canvas ref={ref} width={SIZE} height={SIZE}
-      style={{ width:'100%', height:'auto', borderRadius:'12px', display:'block', cursor: cfg.logo.url && onLogoMove ? 'move' : 'default' }}
-      onMouseDown={e => { if (cfg.logo.url && onLogoMove) drag.current = true }}
-      onMouseMove={e => { if (drag.current && onLogoMove) { const p = posFromEvent(e); onLogoMove(p.x, p.y) } }}
+    <canvas ref={ref} width={340} height={340}
+      style={{ width:'100%', height:'auto', borderRadius:'12px', display:'block', cursor: cfg.logo.url && onLogoMove ? 'crosshair' : 'default' }}
+      onMouseDown={() => { if (cfg.logo.url) drag.current = true }}
+      onMouseMove={e => {
+        if (!drag.current || !onLogoMove || !ref.current) return
+        const r = ref.current.getBoundingClientRect()
+        onLogoMove((e.clientX - r.left) * (1080 / r.width), (e.clientY - r.top) * (1080 / r.height))
+      }}
       onMouseUp={() => { drag.current = false }}
       onMouseLeave={() => { drag.current = false }}
     />
@@ -187,18 +139,20 @@ function SlideCanvas({ slide, total, fotoUrl, cfg, onLogoMove }: {
 
 export default function CriarPage() {
   const supabase = createClient()
-  const [tema, setTema]         = useState('')
-  const [tom, setTom]           = useState<Tom>('vender')
-  const [qtd, setQtd]           = useState(5)
-  const [slides, setSlides]     = useState<Slide[]>([])
-  const [gerando, setGerando]   = useState(false)
-  const [erro, setErro]         = useState('')
-  const [baixando, setBaixando] = useState(false)
-  const [editando, setEditando] = useState<string | null>(null)
-  const [session, setSession]   = useState<any>(null)
-  const [fotos, setFotos]       = useState<string[]>([])
+  const [tema, setTema]           = useState('')
+  const [tom, setTom]             = useState<Tom>('vender')
+  const [qtd, setQtd]             = useState(5)
+  const [slides, setSlides]       = useState<Slide[]>([])
+  const [gerando, setGerando]     = useState(false)
+  const [gerandoFotos, setGerandoFotos] = useState(false)
+  const [erro, setErro]           = useState('')
+  const [baixando, setBaixando]   = useState(false)
+  const [editando, setEditando]   = useState<string | null>(null)
+  const [session, setSession]     = useState<any>(null)
+  const [fotos, setFotos]         = useState<string[]>([])
   const [slideAtivo, setSlideAtivo] = useState(0)
-  const [trocando, setTrocando] = useState(false)
+  const [trocando, setTrocando]   = useState(false)
+  const [usarIA, setUsarIA]       = useState(true)
   const [cfg, setCfg] = useState<Cfg>({
     cor: '#2D6FFF', fonteId: 'modern',
     logo: { url: '', x: 870, y: 30, size: 80 }
@@ -213,41 +167,97 @@ export default function CriarPage() {
     return new Promise((r, j) => { const f = new FileReader(); f.onload = () => r(f.result as string); f.onerror = j; f.readAsDataURL(file) })
   }
 
+  async function gerarFotosIA(tema: string, qtd: number): Promise<string[]> {
+    const urls: string[] = []
+    for (let i = 0; i < qtd; i++) {
+      try {
+        const res  = await fetch('/api/gerar-imagem', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tema, idx: i }),
+        })
+        const data = await res.json()
+        urls.push(data.url ?? '')
+      } catch { urls.push('') }
+    }
+    return urls
+  }
+
+  async function buscarFotosUnsplash(tema: string, qtd: number): Promise<string[]> {
+    try {
+      const TEMA_EN: Record<string,string> = {
+        'seguro auto':'car road safety insurance','plano de saude':'healthcare doctor hospital',
+        'plano de saúde':'healthcare doctor hospital','emagrecimento':'fitness healthy body',
+        'marmita':'healthy meal food','farmacia':'pharmacy medicine','farmácia':'pharmacy medicine',
+        'imovel':'real estate house','imóvel':'real estate house','moto':'motorcycle road',
+      }
+      let q = tema + ' professional'
+      for (const [pt,en] of Object.entries(TEMA_EN)) { if (tema.toLowerCase().includes(pt)) { q = en; break } }
+      const res  = await fetch(`/api/foto?tema=${encodeURIComponent(q)}&qtd=${qtd * 2}`)
+      const data = await res.json()
+      return (data.urls ?? []).slice(0, qtd)
+    } catch { return [] }
+  }
+
   async function gerar() {
     if (!tema.trim()) { setErro('Digite o tema.'); return }
     setErro(''); setGerando(true); setSlides([]); setFotos([]); setSlideAtivo(0)
-    buscarFotos(tema, qtd).then(setFotos)
+
     try {
-      const res  = await fetch('/api/gerar', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ tema, tom, qtdSlides: qtd, accessToken: session?.access_token, refreshToken: session?.refresh_token }) })
+      const res  = await fetch('/api/gerar', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ tema, tom, qtdSlides: qtd, accessToken: session?.access_token, refreshToken: session?.refresh_token })
+      })
       const data = await res.json()
       if (!res.ok) { setErro(data.erro ?? 'Erro ao gerar.'); return }
       setSlides(data.slides)
-    } finally { setGerando(false) }
+      setGerando(false)
+
+      // Gera fotos em paralelo após ter os slides
+      setGerandoFotos(true)
+      const urls = usarIA ? await gerarFotosIA(tema, qtd) : await buscarFotosUnsplash(tema, qtd)
+      setFotos(urls)
+      setGerandoFotos(false)
+
+    } catch (e: any) {
+      setErro(e.message); setGerando(false); setGerandoFotos(false)
+    }
   }
 
   async function trocarFoto() {
     setTrocando(true)
-    const nova = await novaFoto(tema, fotos)
-    if (nova) setFotos(p => { const n = [...p]; n[slideAtivo] = nova; return n })
-    setTrocando(false)
+    try {
+      if (usarIA) {
+        const res  = await fetch('/api/gerar-imagem', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ tema, idx: slideAtivo + 10 + Math.floor(Math.random()*10) })
+        })
+        const data = await res.json()
+        if (data.url) setFotos(p => { const n=[...p]; n[slideAtivo]=data.url; return n })
+      } else {
+        const page = Math.floor(Math.random()*8)+1
+        const res  = await fetch(`/api/foto?tema=${encodeURIComponent(tema)}&qtd=5&page=${page}`)
+        const data = await res.json()
+        const nova = (data.urls??[]).find((u:string) => u && !fotos.includes(u))
+        if (nova) setFotos(p => { const n=[...p]; n[slideAtivo]=nova; return n })
+      }
+    } finally { setTrocando(false) }
   }
 
-  function editarSlide(id: string, campo: 'titulo' | 'corpo', v: string) {
+  function editarSlide(id: string, campo: 'titulo'|'corpo', v: string) {
     setSlides(p => p.map(s => s.id === id ? { ...s, [campo]: v } : s))
   }
 
-  function moverSlide(idx: number, dir: 'up' | 'down') {
-    const n = [...slides]; const a = dir === 'up' ? idx - 1 : idx + 1
-    if (a < 0 || a >= n.length) return
-    ;[n[idx], n[a]] = [n[a], n[idx]]; n.forEach((s, i) => { s.ordem = i + 1 })
+  function moverSlide(idx: number, dir: 'up'|'down') {
+    const n=[...slides]; const a=dir==='up'?idx-1:idx+1
+    if (a<0||a>=n.length) return
+    ;[n[idx],n[a]]=[n[a],n[idx]]; n.forEach((s,i)=>{s.ordem=i+1})
     setSlides(n); setSlideAtivo(a)
   }
 
   async function baixarUm(slide: Slide) {
-    const blob = await renderSlide(slide, slides.length, fotos[slide.ordem - 1] ?? '', cfg)
+    const blob = await renderSlide(slide, slides.length, fotos[slide.ordem-1]??'', cfg)
     const url  = URL.createObjectURL(blob); const a = document.createElement('a')
-    a.href = url; a.download = `slide_${String(slide.ordem).padStart(2,'0')}.png`; a.click(); URL.revokeObjectURL(url)
+    a.href=url; a.download=`slide_${String(slide.ordem).padStart(2,'0')}.png`; a.click(); URL.revokeObjectURL(url)
   }
 
   async function baixarTudo() {
@@ -255,11 +265,11 @@ export default function CriarPage() {
     try {
       const zip = new JSZip()
       for (const s of slides) {
-        const blob = await renderSlide(s, slides.length, fotos[s.ordem - 1] ?? '', cfg)
+        const blob = await renderSlide(s, slides.length, fotos[s.ordem-1]??'', cfg)
         zip.file(`slide_${String(s.ordem).padStart(2,'0')}.png`, blob)
       }
-      const blob = await zip.generateAsync({ type:'blob' }); const url = URL.createObjectURL(blob)
-      const a = document.createElement('a'); a.href = url; a.download = `sliqr_${tema.slice(0,20).replace(/\s/g,'_')}.zip`; a.click(); URL.revokeObjectURL(url)
+      const blob = await zip.generateAsync({type:'blob'}); const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href=url; a.download=`sliqr_${tema.slice(0,20).replace(/\s/g,'_')}.zip`; a.click(); URL.revokeObjectURL(url)
     } finally { setBaixando(false) }
   }
 
@@ -281,10 +291,10 @@ export default function CriarPage() {
             <label style={{ display:'block', fontSize:'0.72rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:'10px' }}>Cor principal</label>
             <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', alignItems:'center' }}>
               {['#2D6FFF','#00C896','#FF4D4D','#A855F7','#F59E0B','#EC4899','#14B8A6'].map(c => (
-                <button key={c} onClick={() => setCfg(p => ({ ...p, cor: c }))}
-                  style={{ width:'26px', height:'26px', borderRadius:'50%', background:c, border: cor === c ? '3px solid #fff' : '3px solid transparent', cursor:'pointer', transition:'transform 0.15s', transform: cor === c ? 'scale(1.2)' : 'scale(1)' }} />
+                <button key={c} onClick={() => setCfg(p => ({...p, cor:c}))}
+                  style={{ width:'26px', height:'26px', borderRadius:'50%', background:c, border: cor===c?'3px solid #fff':'3px solid transparent', cursor:'pointer', transform: cor===c?'scale(1.2)':'scale(1)', transition:'transform 0.15s' }} />
               ))}
-              <input type="color" value={cor} onChange={e => setCfg(p => ({ ...p, cor: e.target.value }))}
+              <input type="color" value={cor} onChange={e => setCfg(p => ({...p, cor:e.target.value}))}
                 style={{ width:'26px', height:'26px', borderRadius:'50%', border:'2px solid rgba(255,255,255,0.15)', cursor:'pointer', padding:0, background:'transparent' }} />
             </div>
           </div>
@@ -293,8 +303,8 @@ export default function CriarPage() {
             <label style={{ display:'block', fontSize:'0.72rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:'10px' }}>Fonte</label>
             <div style={{ display:'flex', gap:'8px' }}>
               {FONTES.map(f => (
-                <button key={f.id} onClick={() => setCfg(p => ({ ...p, fonteId: f.id }))}
-                  style={{ padding:'6px 14px', borderRadius:'8px', border: cfg.fonteId === f.id ? `1px solid ${cor}` : '1px solid rgba(255,255,255,0.1)', background: cfg.fonteId === f.id ? `${cor}18` : 'transparent', color: cfg.fonteId === f.id ? cor : '#8B95A8', fontSize:'0.82rem', fontFamily: f.css, fontWeight: cfg.fonteId === f.id ? '700' : '400', cursor:'pointer' }}>
+                <button key={f.id} onClick={() => setCfg(p => ({...p, fonteId:f.id}))}
+                  style={{ padding:'6px 14px', borderRadius:'8px', border: cfg.fonteId===f.id?`1px solid ${cor}`:'1px solid rgba(255,255,255,0.1)', background: cfg.fonteId===f.id?`${cor}18`:'transparent', color: cfg.fonteId===f.id?cor:'#8B95A8', fontSize:'0.82rem', fontFamily:f.css, fontWeight: cfg.fonteId===f.id?'700':'400', cursor:'pointer' }}>
                   {f.label}
                 </button>
               ))}
@@ -304,28 +314,23 @@ export default function CriarPage() {
           <div>
             <label style={{ display:'block', fontSize:'0.72rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:'10px' }}>Logo</label>
             <input ref={logoRef} type="file" accept="image/*" style={{ display:'none' }}
-              onChange={async e => { const f = e.target.files?.[0]; if (!f) return; const b = await lerB64(f); setCfg(p => ({ ...p, logo: { ...p.logo, url: b } })) }} />
+              onChange={async e => { const f=e.target.files?.[0]; if(!f) return; const b=await lerB64(f); setCfg(p=>({...p,logo:{...p.logo,url:b}})) }} />
             <button onClick={() => logoRef.current?.click()}
-              style={{ display:'flex', alignItems:'center', gap:'8px', background: cfg.logo.url ? `${cor}18` : '#111827', border: cfg.logo.url ? `1px solid ${cor}55` : '1px solid rgba(255,255,255,0.1)', borderRadius:'8px', padding:'8px 14px', color: cfg.logo.url ? cor : '#8B95A8', fontSize:'0.8rem', cursor:'pointer', fontFamily:'Sora, sans-serif', marginBottom:'8px' }}>
+              style={{ display:'flex', alignItems:'center', gap:'8px', background: cfg.logo.url?`${cor}18`:'#111827', border: cfg.logo.url?`1px solid ${cor}55`:'1px solid rgba(255,255,255,0.1)', borderRadius:'8px', padding:'8px 14px', color: cfg.logo.url?cor:'#8B95A8', fontSize:'0.8rem', cursor:'pointer', fontFamily:'Sora, sans-serif', marginBottom:'8px' }}>
               <Upload size={13}/> {cfg.logo.url ? 'Logo carregada ✓' : 'Upload da logo'}
             </button>
             {cfg.logo.url && (
-              <div style={{ display:'flex', flexDirection:'column', gap:'6px' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+              <div>
+                <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'4px' }}>
                   <span style={{ fontSize:'0.7rem', color:'#4A5568', width:'50px' }}>Tamanho</span>
                   <input type="range" min={40} max={300} value={cfg.logo.size}
-                    onChange={e => setCfg(p => ({ ...p, logo: { ...p.logo, size: Number(e.target.value) } }))}
-                    style={{ flex:1, accentColor: cor }} />
+                    onChange={e => setCfg(p=>({...p,logo:{...p.logo,size:Number(e.target.value)}}))}
+                    style={{ flex:1, accentColor:cor }} />
                   <span style={{ fontSize:'0.7rem', color:'#4A5568', width:'30px' }}>{cfg.logo.size}px</span>
                 </div>
-                <p style={{ fontSize:'0.68rem', color:'#4A5568', margin:0 }}>
-                  <Move size={10} style={{ display:'inline', marginRight:'4px' }}/>
-                  Arraste a logo no preview para reposicionar
-                </p>
-                <button onClick={() => setCfg(p => ({ ...p, logo: { ...p.logo, url: '' } }))}
-                  style={{ background:'transparent', border:'none', color:'#4A5568', fontSize:'0.7rem', cursor:'pointer', textAlign:'left', padding:0 }}>
-                  Remover logo
-                </button>
+                <p style={{ fontSize:'0.68rem', color:'#4A5568', margin:'0 0 4px' }}>Arraste no preview para reposicionar</p>
+                <button onClick={() => setCfg(p=>({...p,logo:{...p.logo,url:''}}))}
+                  style={{ background:'transparent', border:'none', color:'#4A5568', fontSize:'0.7rem', cursor:'pointer', padding:0 }}>Remover logo</button>
               </div>
             )}
           </div>
@@ -334,7 +339,7 @@ export default function CriarPage() {
         {/* TEMA + TOM */}
         <div style={{ marginBottom:'1.25rem' }}>
           <label style={{ display:'block', fontSize:'0.72rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:'8px' }}>Tema do post</label>
-          <input value={tema} onChange={e => setTema(e.target.value)} onKeyDown={e => e.key === 'Enter' && gerar()}
+          <input value={tema} onChange={e => setTema(e.target.value)} onKeyDown={e => e.key==='Enter'&&gerar()}
             placeholder="Ex: seguro auto, plano de saúde para MEI, marmita saudável..."
             style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.85rem 1rem', color:'#F0F4FF', fontSize:'0.95rem', fontFamily:'Sora, sans-serif', outline:'none' }} />
         </div>
@@ -344,26 +349,45 @@ export default function CriarPage() {
           <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
             {TONS.map(t => (
               <button key={t} onClick={() => setTom(t)}
-                style={{ padding:'7px 16px', borderRadius:'100px', border: tom === t ? `1px solid ${cor}88` : '1px solid rgba(255,255,255,0.07)', background: tom === t ? `${cor}18` : 'transparent', color: tom === t ? cor : '#8B95A8', fontSize:'0.85rem', fontWeight:500, cursor:'pointer', fontFamily:'Sora, sans-serif' }}>
+                style={{ padding:'7px 16px', borderRadius:'100px', border: tom===t?`1px solid ${cor}88`:'1px solid rgba(255,255,255,0.07)', background: tom===t?`${cor}18`:'transparent', color: tom===t?cor:'#8B95A8', fontSize:'0.85rem', fontWeight:500, cursor:'pointer', fontFamily:'Sora, sans-serif' }}>
                 {TOM_LABELS[t]}
               </button>
             ))}
           </div>
         </div>
 
-        <div style={{ marginBottom:'1.5rem' }}>
+        <div style={{ marginBottom:'1.25rem' }}>
           <label style={{ display:'block', fontSize:'0.72rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:'8px' }}>
-            Quantos slides? <span style={{ color: cor }}>{qtd}</span>
+            Quantos slides? <span style={{ color:cor }}>{qtd}</span>
           </label>
-          <input type="range" min={1} max={10} value={qtd} onChange={e => setQtd(Number(e.target.value))} style={{ width:'100%', accentColor: cor }} />
+          <input type="range" min={1} max={10} value={qtd} onChange={e => setQtd(Number(e.target.value))} style={{ width:'100%', accentColor:cor }} />
           <div style={{ display:'flex', justifyContent:'space-between', fontSize:'0.72rem', color:'#4A5568', marginTop:'4px' }}><span>1</span><span>10</span></div>
+        </div>
+
+        {/* FONTE DA IMAGEM */}
+        <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'1.5rem', padding:'12px 16px', background:'#080B12', borderRadius:'10px', border:'1px solid rgba(255,255,255,0.07)' }}>
+          <Sparkles size={16} style={{ color: usarIA ? cor : '#4A5568', flexShrink:0 }} />
+          <div style={{ flex:1 }}>
+            <p style={{ fontSize:'0.85rem', fontWeight:600, margin:'0 0 2px', color: usarIA ? '#F0F4FF' : '#8B95A8' }}>
+              {usarIA ? 'Imagens geradas por IA (Flux)' : 'Fotos do Unsplash'}
+            </p>
+            <p style={{ fontSize:'0.75rem', color:'#4A5568', margin:0 }}>
+              {usarIA ? 'Imagens únicas criadas especificamente para o seu tema' : 'Banco de fotos profissionais'}
+            </p>
+          </div>
+          <button onClick={() => setUsarIA(p => !p)}
+            style={{ width:'44px', height:'24px', borderRadius:'12px', border:'none', background: usarIA ? cor : '#1A2235', cursor:'pointer', position:'relative', transition:'background 0.2s' }}>
+            <span style={{ position:'absolute', top:'3px', left: usarIA?'22px':'3px', width:'18px', height:'18px', borderRadius:'50%', background:'#fff', transition:'left 0.2s', display:'block' }}/>
+          </button>
         </div>
 
         {erro && <p style={{ color:'#FC8181', fontSize:'0.85rem', marginBottom:'1rem' }}>{erro}</p>}
 
-        <button onClick={gerar} disabled={gerando}
-          style={{ display:'flex', alignItems:'center', gap:'8px', background: cor, color:'#fff', border:'none', borderRadius:'10px', padding:'0.85rem 2rem', fontFamily:'Sora, sans-serif', fontWeight:600, fontSize:'0.95rem', cursor: gerando ? 'not-allowed' : 'pointer', opacity: gerando ? 0.7 : 1, boxShadow:`0 8px 24px ${cor}44` }}>
-          {gerando ? <><Loader2 size={16} style={{ animation:'spin 1s linear infinite' }}/> Gerando slides...</> : <><Zap size={16}/> Criar slides</>}
+        <button onClick={gerar} disabled={gerando||gerandoFotos}
+          style={{ display:'flex', alignItems:'center', gap:'8px', background:cor, color:'#fff', border:'none', borderRadius:'10px', padding:'0.85rem 2rem', fontFamily:'Sora, sans-serif', fontWeight:600, fontSize:'0.95rem', cursor: (gerando||gerandoFotos)?'not-allowed':'pointer', opacity: (gerando||gerandoFotos)?0.7:1, boxShadow:`0 8px 24px ${cor}44` }}>
+          {gerando ? <><Loader2 size={16} style={{ animation:'spin 1s linear infinite' }}/> Gerando texto...</>
+           : gerandoFotos ? <><Loader2 size={16} style={{ animation:'spin 1s linear infinite' }}/> Gerando imagens com IA...</>
+           : <><Zap size={16}/> Criar slides</>}
         </button>
       </div>
 
@@ -372,22 +396,28 @@ export default function CriarPage() {
 
           <div style={{ position:'sticky', top:'24px' }}>
             <div style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'16px', padding:'1.25rem' }}>
-              {slides[slideAtivo] && (
+              {gerandoFotos && (
+                <div style={{ aspectRatio:'1', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'#080B12', borderRadius:'12px', marginBottom:'0' }}>
+                  <Loader2 size={24} style={{ color:cor, animation:'spin 1s linear infinite', marginBottom:'10px' }}/>
+                  <p style={{ color:'#8B95A8', fontSize:'0.82rem', margin:0 }}>Gerando imagens com IA...</p>
+                </div>
+              )}
+              {!gerandoFotos && slides[slideAtivo] && (
                 <SlideCanvas
                   slide={slides[slideAtivo]} total={slides.length}
-                  fotoUrl={fotos[slideAtivo] ?? ''} cfg={cfg}
-                  onLogoMove={(x, y) => setCfg(p => ({ ...p, logo: { ...p.logo, x: Math.round(x), y: Math.round(y) } }))}
+                  fotoUrl={fotos[slideAtivo]??''} cfg={cfg}
+                  onLogoMove={(x,y) => setCfg(p=>({...p,logo:{...p.logo,x:Math.round(x),y:Math.round(y)}}))}
                 />
               )}
 
               <div style={{ display:'flex', gap:'8px', marginTop:'10px' }}>
                 <button onClick={trocarFoto} disabled={trocando}
                   style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background:'#111827', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'8px', padding:'7px', color:'#8B95A8', fontSize:'0.75rem', cursor:'pointer', fontFamily:'Sora, sans-serif' }}>
-                  {trocando ? <Loader2 size={12} style={{ animation:'spin 1s linear infinite' }}/> : <RefreshCw size={12}/>}
-                  Nova foto
+                  {trocando ? <Loader2 size={12} style={{ animation:'spin 1s linear infinite' }}/> : usarIA ? <Sparkles size={12}/> : <RefreshCw size={12}/>}
+                  {usarIA ? 'Nova IA' : 'Nova foto'}
                 </button>
                 <input ref={fotoRef} type="file" accept="image/*" style={{ display:'none' }}
-                  onChange={async e => { const f = e.target.files?.[0]; if (!f) return; const b = await lerB64(f); setFotos(p => { const n = [...p]; n[slideAtivo] = b; return n }) }} />
+                  onChange={async e => { const f=e.target.files?.[0]; if(!f) return; const b=await lerB64(f); setFotos(p=>{const n=[...p];n[slideAtivo]=b;return n}) }} />
                 <button onClick={() => fotoRef.current?.click()}
                   style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background:'#111827', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'8px', padding:'7px', color:'#8B95A8', fontSize:'0.75rem', cursor:'pointer', fontFamily:'Sora, sans-serif' }}>
                   <ImageIcon size={12}/> Minha foto
@@ -395,21 +425,21 @@ export default function CriarPage() {
               </div>
 
               <div style={{ display:'flex', gap:'7px', marginTop:'12px', justifyContent:'center' }}>
-                {slides.map((_, i) => (
+                {slides.map((_,i) => (
                   <button key={i} onClick={() => setSlideAtivo(i)}
-                    style={{ width: i === slideAtivo ? '22px' : '7px', height:'7px', borderRadius:'4px', border:'none', background: i === slideAtivo ? cor : 'rgba(255,255,255,0.15)', cursor:'pointer', padding:0, transition:'all 0.2s' }} />
+                    style={{ width:i===slideAtivo?'22px':'7px', height:'7px', borderRadius:'4px', border:'none', background:i===slideAtivo?cor:'rgba(255,255,255,0.15)', cursor:'pointer', padding:0, transition:'all 0.2s' }} />
                 ))}
               </div>
 
               <div style={{ display:'flex', gap:'8px', marginTop:'12px' }}>
-                <button onClick={() => slides[slideAtivo] && baixarUm(slides[slideAtivo])}
+                <button onClick={() => slides[slideAtivo]&&baixarUm(slides[slideAtivo])}
                   style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background:'#111827', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'8px', padding:'0.6rem', color:'#8B95A8', fontSize:'0.78rem', fontWeight:500, cursor:'pointer', fontFamily:'Sora, sans-serif' }}>
                   <Download size={13}/> Este slide
                 </button>
                 <button onClick={baixarTudo} disabled={baixando}
-                  style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background: cor, border:'none', borderRadius:'8px', padding:'0.6rem', color:'#fff', fontSize:'0.78rem', fontWeight:600, cursor:'pointer', fontFamily:'Sora, sans-serif', opacity: baixando ? 0.7 : 1 }}>
-                  {baixando ? <Loader2 size={13} style={{ animation:'spin 1s linear infinite' }}/> : <Download size={13}/>}
-                  {baixando ? 'Gerando...' : 'Baixar ZIP'}
+                  style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background:cor, border:'none', borderRadius:'8px', padding:'0.6rem', color:'#fff', fontSize:'0.78rem', fontWeight:600, cursor:'pointer', fontFamily:'Sora, sans-serif', opacity:baixando?0.7:1 }}>
+                  {baixando?<Loader2 size={13} style={{ animation:'spin 1s linear infinite' }}/>:<Download size={13}/>}
+                  {baixando?'Gerando...':'Baixar ZIP'}
                 </button>
               </div>
             </div>
@@ -417,19 +447,19 @@ export default function CriarPage() {
 
           <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
             <h2 style={{ fontSize:'1rem', fontWeight:600, letterSpacing:'-0.02em', marginBottom:'4px' }}>
-              {slides.length} slide{slides.length > 1 ? 's' : ''} — clique para editar
+              {slides.length} slide{slides.length>1?'s':''} — clique para editar
             </h2>
-            {slides.map((slide, idx) => (
+            {slides.map((slide,idx) => (
               <div key={slide.id} onClick={() => setSlideAtivo(idx)}
-                style={{ background: slideAtivo === idx ? '#111827' : '#0D1117', border: slideAtivo === idx ? `1px solid ${cor}55` : '1px solid rgba(255,255,255,0.07)', borderRadius:'12px', padding:'1.25rem', cursor:'pointer', transition:'all 0.2s' }}>
+                style={{ background:slideAtivo===idx?'#111827':'#0D1117', border:slideAtivo===idx?`1px solid ${cor}55`:'1px solid rgba(255,255,255,0.07)', borderRadius:'12px', padding:'1.25rem', cursor:'pointer', transition:'all 0.2s' }}>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:'1rem' }}>
                   <div style={{ flex:1 }}>
                     <span style={{ fontFamily:'JetBrains Mono, monospace', fontSize:'0.62rem', color:'#4A5568', letterSpacing:'0.1em' }}>SLIDE {String(slide.ordem).padStart(2,'0')}</span>
-                    {editando === slide.id ? (
+                    {editando===slide.id ? (
                       <>
-                        <input value={slide.titulo} onChange={e => editarSlide(slide.id, 'titulo', e.target.value)} onClick={e => e.stopPropagation()}
+                        <input value={slide.titulo} onChange={e=>editarSlide(slide.id,'titulo',e.target.value)} onClick={e=>e.stopPropagation()}
                           style={{ display:'block', width:'100%', background:'#080B12', border:`1px solid ${cor}55`, borderRadius:'6px', padding:'6px 10px', color:'#F0F4FF', fontSize:'0.95rem', fontWeight:600, fontFamily:'Sora, sans-serif', outline:'none', marginTop:'6px', marginBottom:'8px' }} />
-                        <textarea value={slide.corpo} onChange={e => editarSlide(slide.id, 'corpo', e.target.value)} onClick={e => e.stopPropagation()} rows={3}
+                        <textarea value={slide.corpo} onChange={e=>editarSlide(slide.id,'corpo',e.target.value)} onClick={e=>e.stopPropagation()} rows={3}
                           style={{ display:'block', width:'100%', background:'#080B12', border:`1px solid ${cor}55`, borderRadius:'6px', padding:'6px 10px', color:'#8B95A8', fontSize:'0.85rem', fontFamily:'Sora, sans-serif', outline:'none', resize:'vertical', lineHeight:1.6 }} />
                       </>
                     ) : (
@@ -439,10 +469,10 @@ export default function CriarPage() {
                       </>
                     )}
                   </div>
-                  <div style={{ display:'flex', flexDirection:'column', gap:'5px', flexShrink:0 }} onClick={e => e.stopPropagation()}>
-                    <button onClick={() => moverSlide(idx, 'up')} disabled={idx === 0} style={{ background:'#111827', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'6px', padding:'5px', cursor:'pointer', color: idx === 0 ? '#4A5568' : '#8B95A8', display:'flex' }}><ChevronUp size={13}/></button>
-                    <button onClick={() => moverSlide(idx, 'down')} disabled={idx === slides.length - 1} style={{ background:'#111827', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'6px', padding:'5px', cursor:'pointer', color: idx === slides.length - 1 ? '#4A5568' : '#8B95A8', display:'flex' }}><ChevronDown size={13}/></button>
-                    <button onClick={() => setEditando(editando === slide.id ? null : slide.id)} style={{ background: editando === slide.id ? `${cor}22` : '#111827', border: editando === slide.id ? `1px solid ${cor}55` : '1px solid rgba(255,255,255,0.07)', borderRadius:'6px', padding:'5px', cursor:'pointer', color: editando === slide.id ? cor : '#8B95A8', display:'flex' }}>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'5px', flexShrink:0 }} onClick={e=>e.stopPropagation()}>
+                    <button onClick={()=>moverSlide(idx,'up')} disabled={idx===0} style={{ background:'#111827', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'6px', padding:'5px', cursor:'pointer', color:idx===0?'#4A5568':'#8B95A8', display:'flex' }}><ChevronUp size={13}/></button>
+                    <button onClick={()=>moverSlide(idx,'down')} disabled={idx===slides.length-1} style={{ background:'#111827', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'6px', padding:'5px', cursor:'pointer', color:idx===slides.length-1?'#4A5568':'#8B95A8', display:'flex' }}><ChevronDown size={13}/></button>
+                    <button onClick={()=>setEditando(editando===slide.id?null:slide.id)} style={{ background:editando===slide.id?`${cor}22`:'#111827', border:editando===slide.id?`1px solid ${cor}55`:'1px solid rgba(255,255,255,0.07)', borderRadius:'6px', padding:'5px', cursor:'pointer', color:editando===slide.id?cor:'#8B95A8', display:'flex' }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
                   </div>
