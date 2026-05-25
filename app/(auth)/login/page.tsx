@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [senha, setSenha]           = useState('')
   const [erro, setErro]             = useState('')
   const [carregando, setCarregando] = useState(false)
+  const [debug, setDebug]           = useState('')
 
   async function loginGoogle() {
     setCarregando(true)
@@ -22,23 +23,26 @@ export default function LoginPage() {
   async function loginEmail(e: React.FormEvent) {
     e.preventDefault()
     setErro('')
+    setDebug('')
     setCarregando(true)
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
 
     if (error) {
-      setErro('Email ou senha incorretos.')
+      setErro('Email ou senha incorretos. ' + error.message)
       setCarregando(false)
       return
     }
 
     if (!data.session) {
-      setErro('Erro ao criar sessão. Tente novamente.')
+      setErro('Sessão não criada.')
       setCarregando(false)
       return
     }
 
-    // Envia os tokens para o servidor setar os cookies
+    setDebug('Login OK, token: ' + data.session.access_token.slice(0, 20) + '...')
+
+    // Tenta setar sessão server-side
     const res = await fetch('/api/auth/session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -48,10 +52,14 @@ export default function LoginPage() {
       }),
     })
 
+    const resBody = await res.json()
+    setDebug(prev => prev + ' | API: ' + JSON.stringify(resBody) + ' status: ' + res.status)
+
     if (res.ok) {
-      window.location.href = '/criar'
+      setDebug(prev => prev + ' | Redirecionando...')
+      setTimeout(() => { window.location.href = '/criar' }, 1000)
     } else {
-      setErro('Erro ao iniciar sessão. Tente novamente.')
+      setErro('Erro API: ' + JSON.stringify(resBody))
       setCarregando(false)
     }
   }
@@ -95,7 +103,8 @@ export default function LoginPage() {
                 style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'8px', padding:'0.7rem 1rem', color:'#F0F4FF', fontSize:'0.9rem', fontFamily:'Sora, sans-serif', outline:'none' }}
                 placeholder="••••••••" />
             </div>
-            {erro && <p style={{ color:'#FC8181', fontSize:'0.82rem', margin:0 }}>{erro}</p>}
+            {erro  && <p style={{ color:'#FC8181', fontSize:'0.82rem', margin:0, wordBreak:'break-all' }}>{erro}</p>}
+            {debug && <p style={{ color:'#6B9FFF', fontSize:'0.72rem', margin:0, wordBreak:'break-all', fontFamily:'monospace' }}>{debug}</p>}
             <button type="submit" disabled={carregando}
               style={{ background:'#2D6FFF', color:'#fff', border:'none', borderRadius:'8px', padding:'0.8rem', fontFamily:'Sora, sans-serif', fontWeight:600, fontSize:'0.9rem', cursor: carregando ? 'not-allowed' : 'pointer', opacity: carregando ? 0.7 : 1 }}>
               {carregando ? 'Entrando...' : 'Entrar'}
