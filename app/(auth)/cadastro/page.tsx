@@ -2,12 +2,10 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function CadastroPage() {
   const supabase = createClient()
-  const router   = useRouter()
   const [email, setEmail]   = useState('')
   const [senha, setSenha]   = useState('')
   const [nome, setNome]     = useState('')
@@ -18,7 +16,7 @@ export default function CadastroPage() {
   async function loginGoogle() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options:  { redirectTo: `${location.origin}/auth/callback` },
+      options: { redirectTo: window.location.origin + '/auth/callback' },
     })
   }
 
@@ -27,10 +25,18 @@ export default function CadastroPage() {
     setErro('')
     setLoading(true)
     const { error } = await supabase.auth.signUp({
-      email, password: senha,
-      options: { data: { full_name: nome } },
+      email,
+      password: senha,
+      options: {
+        data: { full_name: nome },
+        emailRedirectTo: window.location.origin + '/auth/callback',
+      },
     })
-    if (error) { setErro(error.message); setLoading(false); return }
+    if (error) {
+      setErro(error.message)
+      setLoading(false)
+      return
+    }
     setOk(true)
     setLoading(false)
   }
@@ -38,9 +44,17 @@ export default function CadastroPage() {
   if (ok) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#080B12', padding:'1rem' }}>
       <div style={{ textAlign:'center', maxWidth:'400px' }}>
-        <div style={{ fontSize:'3rem', marginBottom:'1rem' }}>✉️</div>
-        <h2 style={{ fontWeight:700, marginBottom:'0.5rem' }}>Confirme seu email</h2>
-        <p style={{ color:'#8B95A8', lineHeight:1.7 }}>Enviamos um link de confirmação para <strong>{email}</strong>. Clique no link para ativar sua conta.</p>
+        <div style={{ width:'56px', height:'56px', background:'rgba(45,111,255,0.15)', border:'1px solid rgba(45,111,255,0.35)', borderRadius:'16px', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 1.5rem' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <h2 style={{ fontWeight:700, fontSize:'1.4rem', letterSpacing:'-0.02em', marginBottom:'0.75rem' }}>Confirme seu email</h2>
+        <p style={{ color:'#8B95A8', lineHeight:1.7, marginBottom:'1.5rem' }}>
+          Enviamos um link de confirmação para <strong style={{ color:'#F0F4FF' }}>{email}</strong>.<br/>
+          Clique no link para ativar sua conta.
+        </p>
+        <Link href="/login" style={{ color:'#2D6FFF', textDecoration:'none', fontSize:'0.875rem', fontWeight:500 }}>
+          Voltar para o login
+        </Link>
       </div>
     </div>
   )
@@ -59,7 +73,8 @@ export default function CadastroPage() {
         </div>
 
         <div style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'20px', padding:'2rem' }}>
-          <button onClick={loginGoogle} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', background:'#111827', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.8rem', color:'#F0F4FF', fontSize:'0.9rem', fontWeight:500, cursor:'pointer', fontFamily:'Sora, sans-serif', marginBottom:'1.5rem' }}>
+          <button onClick={loginGoogle}
+            style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', background:'#111827', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.8rem', color:'#F0F4FF', fontSize:'0.9rem', fontWeight:500, cursor:'pointer', fontFamily:'Sora, sans-serif', marginBottom:'1.5rem' }}>
             <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
             Cadastrar com Google
           </button>
@@ -91,11 +106,12 @@ export default function CadastroPage() {
             </div>
             {erro && <p style={{ color:'#FC8181', fontSize:'0.82rem', margin:0 }}>{erro}</p>}
             <button type="submit" disabled={loading}
-              style={{ background:'#2D6FFF', color:'#fff', border:'none', borderRadius:'8px', padding:'0.8rem', fontFamily:'Sora, sans-serif', fontWeight:600, fontSize:'0.9rem', cursor:'pointer', opacity: loading ? 0.7 : 1 }}>
+              style={{ background:'#2D6FFF', color:'#fff', border:'none', borderRadius:'8px', padding:'0.8rem', fontFamily:'Sora, sans-serif', fontWeight:600, fontSize:'0.9rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
               {loading ? 'Criando conta...' : 'Criar conta grátis'}
             </button>
           </form>
         </div>
+
         <p style={{ textAlign:'center', marginTop:'1.5rem', color:'#4A5568', fontSize:'0.85rem' }}>
           Já tem conta?{' '}
           <Link href="/login" style={{ color:'#2D6FFF', textDecoration:'none', fontWeight:500 }}>Entrar</Link>
