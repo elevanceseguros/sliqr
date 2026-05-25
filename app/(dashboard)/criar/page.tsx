@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Zap, Download, ChevronUp, ChevronDown, Loader2, RefreshCw, Upload, Image as ImageIcon, Sparkles } from 'lucide-react'
 import { Tom, TOM_LABELS, Slide } from '@/types'
 import { createClient } from '@/lib/supabase/client'
@@ -157,6 +158,16 @@ export default function CriarPage() {
     cor: '#2D6FFF', fonteId: 'modern',
     logo: { url: '', x: 870, y: 30, size: 80 }
   })
+
+  const searchParams = useSearchParams()
+
+  // Pré-preenche tema e tom se vieram de sugestão
+  useEffect(() => {
+    const t = searchParams.get('tema')
+    const m = searchParams.get('tom') as Tom | null
+    if (t) setTema(t)
+    if (m && ['vender','ensinar','urgencia','inspirar'].includes(m)) setTom(m)
+  }, [searchParams])
 
   const fotoRef = useRef<HTMLInputElement>(null)
   const logoRef = useRef<HTMLInputElement>(null)
@@ -486,3 +497,4 @@ export default function CriarPage() {
     </div>
   )
 }
+// Query params handled via useSearchParams in component - already in place

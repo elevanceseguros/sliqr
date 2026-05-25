@@ -3,30 +3,31 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Zap, Clock, LogOut } from 'lucide-react'
+import { Zap, Clock, LogOut, Building2, Lightbulb } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createClient()
-  const [plano, setPlano]       = useState('free')
-  const [postsHoje, setPostsHoje] = useState(0)
-  const [pronto, setPronto]     = useState(false)
+  const supabase  = createClient()
+  const pathname  = usePathname()
+  const [plano, setPlano]           = useState('free')
+  const [postsHoje, setPostsHoje]   = useState(0)
+  const [empresa, setEmpresa]       = useState<string>('')
+  const [pronto, setPronto]         = useState(false)
 
   useEffect(() => {
     async function verificar() {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        window.location.href = '/login'
-        return
-      }
+      if (!session) { window.location.href = '/login'; return }
+
       const { data: perfil } = await supabase
-        .from('perfis')
-        .select('plano, posts_hoje')
-        .eq('id', session.user.id)
-        .single()
-      if (perfil) {
-        setPlano(perfil.plano ?? 'free')
-        setPostsHoje(perfil.posts_hoje ?? 0)
-      }
+        .from('perfis').select('plano, posts_hoje').eq('id', session.user.id).single()
+      if (perfil) { setPlano(perfil.plano ?? 'free'); setPostsHoje(perfil.posts_hoje ?? 0) }
+
+      // Busca nome da empresa
+      const res  = await fetch(`/api/empresa?token=${session.access_token}`)
+      const data = await res.json()
+      if (data.empresa?.nome) setEmpresa(data.empresa.nome)
+
       setPronto(true)
     }
     verificar()
@@ -47,23 +48,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     free:'#4A5568', starter:'#2D6FFF', pro:'#00D4FF', ilimitado:'#6BCB77',
   }
 
+  function NavLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+    const ativo = pathname === href || pathname.startsWith(href + '/')
+    return (
+      <Link href={href} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'0.6rem 0.75rem', borderRadius:'8px', color: ativo ? '#F0F4FF' : '#8B95A8', textDecoration:'none', fontSize:'0.875rem', fontWeight: ativo ? 600 : 500, background: ativo ? 'rgba(45,111,255,0.12)' : 'transparent', transition:'all 0.2s' }}>
+        {icon} {label}
+      </Link>
+    )
+  }
+
   return (
     <div style={{ minHeight:'100vh', background:'#080B12', display:'flex' }}>
       <aside style={{ width:'220px', flexShrink:0, background:'#0D1117', borderRight:'1px solid rgba(255,255,255,0.07)', display:'flex', flexDirection:'column', padding:'1.5rem 1rem', position:'fixed', top:0, left:0, bottom:0 }}>
-        <Link href="/criar" style={{ display:'flex', alignItems:'center', gap:'8px', textDecoration:'none', marginBottom:'2rem' }}>
+
+        <Link href="/criar" style={{ display:'flex', alignItems:'center', gap:'8px', textDecoration:'none', marginBottom:'0.5rem' }}>
           <div style={{ width:'28px', height:'28px', background:'#2D6FFF', borderRadius:'7px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
             <svg width="15" height="15" viewBox="0 0 16 16" fill="white"><rect x="2" y="3" width="5" height="10" rx="1.5"/><rect x="9" y="3" width="5" height="6" rx="1.5"/></svg>
           </div>
           <span style={{ fontWeight:800, fontSize:'1.2rem', letterSpacing:'-0.04em', color:'#F0F4FF' }}>Sliqr</span>
         </Link>
 
+        {empresa && (
+          <p style={{ fontSize:'0.72rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', marginBottom:'1.5rem', paddingLeft:'36px', letterSpacing:'0.04em', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>
+            {empresa}
+          </p>
+        )}
+        {!empresa && <div style={{ marginBottom:'1.5rem' }}/>}
+
         <nav style={{ display:'flex', flexDirection:'column', gap:'4px', flex:1 }}>
-          <Link href="/criar" style={{ display:'flex', alignItems:'center', gap:'8px', padding:'0.6rem 0.75rem', borderRadius:'8px', color:'#8B95A8', textDecoration:'none', fontSize:'0.875rem', fontWeight:500 }}>
-            <Zap size={15}/> Criar post
-          </Link>
-          <Link href="/historico" style={{ display:'flex', alignItems:'center', gap:'8px', padding:'0.6rem 0.75rem', borderRadius:'8px', color:'#8B95A8', textDecoration:'none', fontSize:'0.875rem', fontWeight:500 }}>
-            <Clock size={15}/> Histórico
-          </Link>
+          <NavLink href="/criar"    icon={<Zap size={15}/>}        label="Criar post" />
+          <NavLink href="/sugestoes" icon={<Lightbulb size={15}/>} label="Sugestões" />
+          <NavLink href="/historico" icon={<Clock size={15}/>}     label="Histórico" />
+          <NavLink href="/empresa"  icon={<Building2 size={15}/>}  label="Minha empresa" />
         </nav>
 
         <div style={{ background:'#111827', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'10px', padding:'0.75rem', marginBottom:'1rem' }}>
