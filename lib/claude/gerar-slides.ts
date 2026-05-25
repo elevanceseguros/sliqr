@@ -10,23 +10,30 @@ const TOM_INSTRUCOES: Record<Tom, string> = {
   inspirar: 'Tom motivacional e humano. Conecte emocionalmente. Deixe o leitor esperançoso.',
 }
 
+function limparJSON(texto: string): string {
+  let s = texto.trim()
+  // Remove blocos markdown ```json ... ``` ou ``` ... ```
+  s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+  // Extrai o array JSON
+  const match = s.match(/\[[\s\S]*\]/)
+  if (match) return match[0]
+  return s
+}
+
 export async function gerarSlides(tema: string, tom: Tom, qtdSlides: number): Promise<Slide[]> {
-  const prompt = `Crie um carrossel de ${qtdSlides} slide(s) para Instagram sobre: "${tema}".
+  const prompt = `Você é um especialista em conteúdo para Instagram. Crie ${qtdSlides} slide(s) sobre: "${tema}".
 
 Estilo: ${TOM_INSTRUCOES[tom]}
 
 Regras:
-- Slide 1: título curto e impactante (máximo 8 palavras) para parar o scroll
-- Cada slide tem uma ideia única
-- Corpo: máximo 3 linhas curtas
+- Slide 1: título curto e impactante (máximo 8 palavras) + campo "destaque" com 2-4 palavras de gancho
+- Demais slides: apenas "ordem", "titulo", "corpo" — SEM o campo "destaque"
+- Corpo: máximo 3 linhas curtas separadas por \\n
 - Último slide: convite à ação direto
-- Linguagem simples, do dia a dia
+- Linguagem simples e direta
 
-RETORNE APENAS O JSON ABAIXO, SEM NENHUM TEXTO ANTES OU DEPOIS, SEM MARKDOWN:
-
-[{"ordem":1,"titulo":"titulo aqui","corpo":"linha 1\nlinha 2","destaque":"frase curta"},{"ordem":2,"titulo":"titulo","corpo":"linha 1\nlinha 2"}]
-
-O campo "destaque" existe APENAS no slide 1. Nos outros slides NÃO inclua "destaque".`
+Responda SOMENTE com o JSON puro, sem explicações:
+[{"ordem":1,"titulo":"...","corpo":"linha1\\nlinha2","destaque":"frase curta"},{"ordem":2,"titulo":"...","corpo":"linha1\\nlinha2"}]`
 
   const response = await client.messages.create({
     model:      'claude-haiku-4-5-20251001',
@@ -34,18 +41,14 @@ O campo "destaque" existe APENAS no slide 1. Nos outros slides NÃO inclua "dest
     messages:   [{ role: 'user', content: prompt }],
   })
 
-  const texto = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
-
-  // Tenta extrair JSON mesmo se vier com texto ao redor
-  let jsonStr = texto
-  const match = texto.match(/\[[\s\S]*\]/)
-  if (match) jsonStr = match[0]
+  const texto = response.content[0].type === 'text' ? response.content[0].text : ''
+  const jsonStr = limparJSON(texto)
 
   let dados: Omit<Slide, 'id'>[]
   try {
     dados = JSON.parse(jsonStr)
   } catch {
-    console.error('[gerar-slides] parse error, resposta:', texto.slice(0, 300))
+    console.error('[gerar-slides] parse error. Raw:', texto.slice(0, 400))
     throw new Error('Erro ao processar resposta da IA. Tente novamente.')
   }
 
