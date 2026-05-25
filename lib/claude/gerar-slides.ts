@@ -1,6 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { Slide, Tom } from '@/types'
-import { v4 as uuid } from 'crypto'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
