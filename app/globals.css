@@ -46,3 +46,8 @@ body {
     margin-left: 0 !important;
   }
 }
+
+/* criar page */
+@media (max-width: 640px) {
+  .sliqr-main { padding-left: 0 !important; }
+}

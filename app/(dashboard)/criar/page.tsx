@@ -403,7 +403,7 @@ export default function CriarPage() {
       </div>
 
       {slides.length > 0 && (
-        <div style={{ display:'grid', gridTemplateColumns:'min(360px, 100%) 1fr', gap:'24px', alignItems:'start' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))', gap:'24px', alignItems:'start' }}>
 
           <div style={{ position:'sticky', top:'24px' }}>
             <div style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'16px', padding:'1.25rem' }}>
