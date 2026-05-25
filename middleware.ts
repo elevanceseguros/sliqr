@@ -24,20 +24,26 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  await supabase.auth.getUser()
 
-  // Só protege rotas do dashboard — redireciona para login se não autenticado
-  const rotasProtegidas = ['/criar', '/editor', '/historico']
   const pathname = request.nextUrl.pathname
+  const rotasProtegidas = ['/criar', '/editor', '/historico']
   const eRotaProtegida = rotasProtegidas.some(r => pathname.startsWith(r))
 
-  if (eRotaProtegida && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  if (eRotaProtegida) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/).*)'],
+  matcher: [
+    '/criar/:path*',
+    '/editor/:path*',
+    '/historico/:path*',
+  ],
 }

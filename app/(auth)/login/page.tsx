@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
@@ -10,13 +10,6 @@ export default function LoginPage() {
   const [senha, setSenha]           = useState('')
   const [erro, setErro]             = useState('')
   const [carregando, setCarregando] = useState(false)
-
-  // Se já tem sessão, redireciona
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) window.location.href = '/criar'
-    })
-  }, [])
 
   async function loginGoogle() {
     setCarregando(true)
@@ -31,25 +24,22 @@ export default function LoginPage() {
     setErro('')
     setCarregando(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
-    })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
 
     if (error) {
       if (error.message.includes('Email not confirmed')) {
         setErro('Confirme seu email antes de entrar.')
-      } else if (error.message.includes('Invalid login')) {
-        setErro('Email ou senha incorretos.')
       } else {
-        setErro(error.message)
+        setErro('Email ou senha incorretos.')
       }
       setCarregando(false)
       return
     }
 
     if (data.session) {
-      window.location.replace('/criar')
+      // Pequena pausa para garantir que os cookies sejam gravados
+      await new Promise(r => setTimeout(r, 500))
+      window.location.href = '/criar'
     }
   }
 
