@@ -5,12 +5,11 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 export default function CadastroPage() {
-  const supabase = createClient()
-  const [email, setEmail]   = useState('')
-  const [senha, setSenha]   = useState('')
-  const [nome, setNome]     = useState('')
-  const [erro, setErro]     = useState('')
-  const [ok, setOk]         = useState(false)
+  const supabase  = createClient()
+  const [email, setEmail]     = useState('')
+  const [senha, setSenha]     = useState('')
+  const [nome, setNome]       = useState('')
+  const [erro, setErro]       = useState('')
   const [loading, setLoading] = useState(false)
 
   async function loginGoogle() {
@@ -24,40 +23,35 @@ export default function CadastroPage() {
     e.preventDefault()
     setErro('')
     setLoading(true)
-    const { error } = await supabase.auth.signUp({
+
+    // 1. Cadastra
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password: senha,
-      options: {
-        data: { full_name: nome },
-        emailRedirectTo: window.location.origin + '/auth/callback',
-      },
+      options: { data: { full_name: nome } },
     })
-    if (error) {
-      setErro(error.message)
+
+    if (signUpError) {
+      setErro(signUpError.message)
       setLoading(false)
       return
     }
-    setOk(true)
-    setLoading(false)
-  }
 
-  if (ok) return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#080B12', padding:'1rem' }}>
-      <div style={{ textAlign:'center', maxWidth:'400px' }}>
-        <div style={{ width:'56px', height:'56px', background:'rgba(45,111,255,0.15)', border:'1px solid rgba(45,111,255,0.35)', borderRadius:'16px', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 1.5rem' }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        </div>
-        <h2 style={{ fontWeight:700, fontSize:'1.4rem', letterSpacing:'-0.02em', marginBottom:'0.75rem' }}>Confirme seu email</h2>
-        <p style={{ color:'#8B95A8', lineHeight:1.7, marginBottom:'1.5rem' }}>
-          Enviamos um link de confirmação para <strong style={{ color:'#F0F4FF' }}>{email}</strong>.<br/>
-          Clique no link para ativar sua conta.
-        </p>
-        <Link href="/login" style={{ color:'#2D6FFF', textDecoration:'none', fontSize:'0.875rem', fontWeight:500 }}>
-          Voltar para o login
-        </Link>
-      </div>
-    </div>
-  )
+    // 2. Faz login imediato (sem precisar confirmar email)
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password: senha,
+    })
+
+    if (signInError) {
+      setErro('Conta criada! Entre com seu email e senha.')
+      setLoading(false)
+      return
+    }
+
+    // 3. Redireciona
+    window.location.href = '/criar'
+  }
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#080B12', padding:'1rem' }}>
