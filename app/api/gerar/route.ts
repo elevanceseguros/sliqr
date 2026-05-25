@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { gerarSlides } from '@/lib/claude/gerar-slides'
 import { LIMITES_PLANO, Tom, Plano } from '@/types'
 
@@ -11,20 +11,24 @@ export async function POST(request: NextRequest) {
       accessToken?: string; refreshToken?: string
     }
 
-    const supabase = createClient()
-
-    // Seta sessão se vier token no body
-    if (accessToken && refreshToken) {
-      await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-    }
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
+    if (!accessToken) {
       return NextResponse.json({ erro: 'Não autorizado' }, { status: 401 })
     }
 
-    const { data: perfil } = await supabase
+    // Usa service role para buscar usuário pelo token
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    // Valida o token
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(accessToken)
+
+    if (userError || !user) {
+      return NextResponse.json({ erro: 'Token inválido' }, { status: 401 })
+    }
+
+    const { data: perfil } = await supabaseAdmin
       .from('perfis')
       .select('*')
       .eq('id', user.id)
@@ -37,13 +41,12 @@ export async function POST(request: NextRequest) {
     const plano   = (perfil.plano ?? 'free') as Plano
     const limites = LIMITES_PLANO[plano]
 
-    // Verifica limite diário
     const hoje        = new Date().toISOString().split('T')[0]
     const ultimoReset = perfil.ultimo_reset?.split('T')[0]
     let postsHoje     = perfil.posts_hoje ?? 0
 
     if (ultimoReset !== hoje) {
-      await supabase.from('perfis').update({ posts_hoje: 0, ultimo_reset: new Date().toISOString() }).eq('id', user.id)
+      await supabaseAdmin.from('perfis').update({ posts_hoje: 0, ultimo_reset: new Date().toISOString() }).eq('id', user.id)
       postsHoje = 0
     }
 
@@ -61,7 +64,7 @@ export async function POST(request: NextRequest) {
     const slidesPermitidos = Math.min(qtdSlides, limites.slidesPerPost)
     const slides = await gerarSlides(tema, tom, slidesPermitidos)
 
-    const { data: carrossel, error } = await supabase
+    const { data: carrossel, error } = await supabaseAdmin
       .from('carrosseis')
       .insert({ usuario_id: user.id, tema, tom, slides, status: 'pronto' })
       .select()
@@ -69,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error
 
-    await supabase.from('perfis').update({ posts_hoje: postsHoje + 1 }).eq('id', user.id)
+    await supabaseAdmin.from('perfis').update({ posts_hoje: postsHoje + 1 }).eq('id', user.id)
 
     return NextResponse.json({ carrossel_id: carrossel.id, slides })
 
