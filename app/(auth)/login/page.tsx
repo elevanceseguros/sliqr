@@ -27,19 +27,32 @@ export default function LoginPage() {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
 
     if (error) {
-      if (error.message.includes('Email not confirmed')) {
-        setErro('Confirme seu email antes de entrar.')
-      } else {
-        setErro('Email ou senha incorretos.')
-      }
+      setErro('Email ou senha incorretos.')
       setCarregando(false)
       return
     }
 
-    if (data.session) {
-      // Pequena pausa para garantir que os cookies sejam gravados
-      await new Promise(r => setTimeout(r, 500))
+    if (!data.session) {
+      setErro('Erro ao criar sessão. Tente novamente.')
+      setCarregando(false)
+      return
+    }
+
+    // Envia os tokens para o servidor setar os cookies
+    const res = await fetch('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_token:  data.session.access_token,
+        refresh_token: data.session.refresh_token,
+      }),
+    })
+
+    if (res.ok) {
       window.location.href = '/criar'
+    } else {
+      setErro('Erro ao iniciar sessão. Tente novamente.')
+      setCarregando(false)
     }
   }
 
