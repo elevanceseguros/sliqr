@@ -187,8 +187,12 @@ export default function CriarPage() {
           body: JSON.stringify({ tema, idx: i }),
         })
         const data = await res.json()
+        if (data.erro) console.error('[fal.ai] erro slide', i, ':', data.erro)
         urls.push(data.url ?? '')
-      } catch { urls.push('') }
+      } catch (e: any) {
+        console.error('[fal.ai] catch:', e.message)
+        urls.push('')
+      }
     }
     return urls
   }

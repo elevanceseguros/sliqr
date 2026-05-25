@@ -29,9 +29,7 @@ function buildPrompt(tema: string, idx: number): string {
   for (const [pt, en] of Object.entries(TEMA_EN)) {
     if (l.includes(pt)) { base = en; break }
   }
-
-  // Variações por índice do slide para ter fotos diferentes
-  const variações = [
+  const vars = [
     'wide angle shot, cinematic lighting, modern aesthetic',
     'close up, warm lighting, professional photography',
     'aerial view, dramatic lighting, vibrant colors',
@@ -43,45 +41,51 @@ function buildPrompt(tema: string, idx: number): string {
     'candid style, urban environment, dynamic',
     'portrait style, serious professional tone',
   ]
-
-  const variacao = variações[idx % variações.length]
-
-  return `${base}, ${variacao}, photorealistic, high quality, 8k, no text, no watermark, no logo`
+  return `${base}, ${vars[idx % vars.length]}, photorealistic, high quality, 8k, no text, no watermark, no logo`
 }
 
 export async function POST(request: NextRequest) {
+  const key = process.env.FAL_API_KEY
+  if (!key) {
+    console.error('[gerar-imagem] FAL_API_KEY não configurada')
+    return NextResponse.json({ url: '', erro: 'FAL_API_KEY não configurada' })
+  }
+
   try {
     const { tema, idx = 0 } = await request.json()
-
     const prompt = buildPrompt(tema, idx)
+
+    console.log('[gerar-imagem] gerando para tema:', tema, 'idx:', idx)
 
     const res = await fetch('https://fal.run/fal-ai/flux/schnell', {
       method: 'POST',
       headers: {
-        'Authorization': `Key ${process.env.FAL_API_KEY}`,
+        'Authorization': `Key ${key}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         prompt,
-        image_size:           'square_hd',
-        num_inference_steps:  4,
-        num_images:           1,
-        enable_safety_checker: true,
+        image_size:            'square_hd',
+        num_inference_steps:   4,
+        num_images:            1,
+        enable_safety_checker: false,
       }),
     })
 
+    const texto = await res.text()
+    console.log('[gerar-imagem] status:', res.status, 'body:', texto.slice(0, 200))
+
     if (!res.ok) {
-      const err = await res.text()
-      console.error('[gerar-imagem] fal.ai error:', err)
-      return NextResponse.json({ url: '' }, { status: 200 }) // fallback silencioso
+      return NextResponse.json({ url: '', erro: `fal.ai ${res.status}: ${texto.slice(0,100)}` })
     }
 
-    const data = await res.json()
+    const data = JSON.parse(texto)
     const url  = data.images?.[0]?.url ?? ''
+    console.log('[gerar-imagem] url gerada:', url.slice(0, 80))
     return NextResponse.json({ url })
 
   } catch (err: any) {
-    console.error('[gerar-imagem]', err)
-    return NextResponse.json({ url: '' })
+    console.error('[gerar-imagem] erro:', err.message)
+    return NextResponse.json({ url: '', erro: err.message })
   }
 }
