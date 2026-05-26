@@ -151,11 +151,7 @@ function CriarInner() {
   const [fotos,setFotos]=useState<string[]>([])
   const [slideAtivo,setSlideAtivo]=useState(0)
   const [trocando,setTrocando]=useState(false)
-  const [usarIA,setUsarIA]=useState(true)
-  const usarIARef=useRef(true)
-  const [erroIA,setErroIA]=useState('')
   const [cfg,setCfg]=useState<Cfg>({cor:'#2D6FFF',fonteId:'modern',logo:{url:'',x:870,y:30,size:80}})
-  useEffect(()=>{ usarIARef.current=usarIA },[usarIA])
   const fotoRef=useRef<HTMLInputElement>(null)
   const logoRef=useRef<HTMLInputElement>(null)
 
@@ -171,12 +167,11 @@ function CriarInner() {
 
   async function gerarFotosIA(tema:string,qtd:number):Promise<string[]>{
     const urls:string[]=[]
-    setErroIA('')
     for(let i=0;i<qtd;i++){
       try{
         const res=await fetch('/api/gerar-imagem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema,idx:i})})
         const data=await res.json()
-        if(data.erro){console.error('[fal.ai]',data.erro);setErroIA(data.erro)}
+        if(data.erro){console.error('[fal.ai]',data.erro)}
         urls.push(data.url??'')
       }catch(e:any){console.error('[fal.ai]',e.message);urls.push('')}
     }
@@ -204,12 +199,8 @@ function CriarInner() {
       setSlides(data.slides)
       setGerando(false)
       setGerandoFotos(true)
-      console.log('[gerar] usarIA ref:', usarIARef.current)
-      const urls=usarIARef.current?await gerarFotosIA(tema,qtd):await buscarFotosUnsplash(tema,qtd)
+      const urls=await gerarFotosIA(tema,qtd)
       console.log('[gerar] urls geradas:', urls.length, 'vazias:', urls.filter(u=>!u).length)
-      if(usarIARef.current && urls.every(u=>!u)){
-        setErroIA('fal.ai retornou vazio — verifique os logs da Vercel')
-      }
       setFotos(urls)
       setGerandoFotos(false)
     }catch(e:any){setErro(e.message);setGerando(false);setGerandoFotos(false)}
@@ -218,18 +209,10 @@ function CriarInner() {
   async function trocarFoto(){
     setTrocando(true)
     try{
-      if(usarIARef.current){
-        const res=await fetch('/api/gerar-imagem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema,idx:slideAtivo+10+Math.floor(Math.random()*10)})})
-        const data=await res.json()
-        if(data.url) setFotos(p=>{const n=[...p];n[slideAtivo]=data.url;return n})
-        if(data.erro) setErroIA(data.erro)
-      }else{
-        const page=Math.floor(Math.random()*8)+1
-        const res=await fetch(`/api/foto?tema=${encodeURIComponent(tema)}&qtd=5&page=${page}`)
-        const data=await res.json()
-        const nova=(data.urls??[]).find((u:string)=>u&&!fotos.includes(u))
-        if(nova)setFotos(p=>{const n=[...p];n[slideAtivo]=nova;return n})
-      }
+      const res=await fetch('/api/gerar-imagem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema,idx:slideAtivo+10+Math.floor(Math.random()*10)})})
+      const data=await res.json()
+      if(data.url) setFotos(p=>{const n=[...p];n[slideAtivo]=data.url;return n})
+      if(data.erro) console.error('[fal.ai trocar]',data.erro)
     }finally{setTrocando(false)}
   }
 
@@ -354,26 +337,10 @@ function CriarInner() {
           <div style={{display:'flex',justifyContent:'space-between',fontSize:'0.72rem',color:'#4A5568',marginTop:'4px'}}><span>1</span><span>10</span></div>
         </div>
 
-        {/* TOGGLE IA */}
-        <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'1.5rem',padding:'12px 16px',background:'#080B12',borderRadius:'10px',border:'1px solid rgba(255,255,255,0.07)'}}>
-          <Sparkles size={16} style={{color:usarIA?cor:'#4A5568',flexShrink:0}}/>
-          <div style={{flex:1}}>
-            <p style={{fontSize:'0.85rem',fontWeight:600,margin:'0 0 2px',color:usarIA?'#F0F4FF':'#8B95A8'}}>
-              {usarIA?'Imagens geradas por IA':'Fotos do Unsplash'}
-            </p>
-            <p style={{fontSize:'0.75rem',color:'#4A5568',margin:0}}>
-              {usarIA?'Imagens únicas criadas para o seu tema':'Banco de fotos profissionais'}
-            </p>
-          </div>
-          <button onClick={()=>setUsarIA(p=>!p)}
-            style={{width:'44px',height:'24px',borderRadius:'12px',border:'none',background:usarIA?cor:'#1A2235',cursor:'pointer',position:'relative',transition:'background 0.2s',flexShrink:0}}>
-            <span style={{position:'absolute',top:'3px',left:usarIA?'22px':'3px',width:'18px',height:'18px',borderRadius:'50%',background:'#fff',transition:'left 0.2s',display:'block'}}/>
-          </button>
-        </div>
+
 
         {erro&&<p style={{color:'#FC8181',fontSize:'0.85rem',marginBottom:'1rem'}}>{erro}</p>}
-        {erroIA&&<p style={{color:'#F59E0B',fontSize:'0.8rem',marginBottom:'1rem'}}>⚠ fal.ai: {erroIA}</p>}
-
+        
         <button onClick={gerar} disabled={gerando||gerandoFotos}
           style={{display:'flex',alignItems:'center',gap:'8px',background:cor,color:'#fff',border:'none',borderRadius:'10px',padding:'0.85rem 2rem',fontFamily:'Sora, sans-serif',fontWeight:600,fontSize:'0.95rem',cursor:(gerando||gerandoFotos)?'not-allowed':'pointer',opacity:(gerando||gerandoFotos)?0.7:1,boxShadow:`0 8px 24px ${cor}44`}}>
           {gerando?<><Loader2 size={16} style={{animation:'spin 1s linear infinite'}}/> Gerando texto...</>
@@ -406,8 +373,8 @@ function CriarInner() {
               <div style={{display:'flex',gap:'8px',marginTop:'10px'}}>
                 <button onClick={trocarFoto} disabled={trocando}
                   style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',background:'#111827',border:'1px solid rgba(255,255,255,0.08)',borderRadius:'8px',padding:'7px',color:'#8B95A8',fontSize:'0.75rem',cursor:'pointer',fontFamily:'Sora, sans-serif'}}>
-                  {trocando?<Loader2 size={12} style={{animation:'spin 1s linear infinite'}}/>:usarIA?<Sparkles size={12}/>:<RefreshCw size={12}/>}
-                  {usarIA?'Nova IA':'Nova foto'}
+                  {trocando?<Loader2 size={12} style={{animation:'spin 1s linear infinite'}}/>:<Sparkles size={12}/>}
+                  Nova IA
                 </button>
                 <input ref={fotoRef} type="file" accept="image/*" style={{display:'none'}}
                   onChange={async e=>{const f=e.target.files?.[0];if(!f)return;const b=await lerB64(f);setFotos(p=>{const n=[...p];n[slideAtivo]=b;return n})}}/>
