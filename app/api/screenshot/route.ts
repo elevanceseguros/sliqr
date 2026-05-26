@@ -4,7 +4,8 @@ export const maxDuration = 30
 
 export async function POST(request: NextRequest) {
   try {
-    const { html } = await request.json()
+    const body = await request.json()
+    const html = body?.html
 
     if (!html || typeof html !== 'string') {
       return NextResponse.json(
@@ -31,16 +32,13 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         html,
         format: 'png',
-
         viewport_width: 1080,
         viewport_height: 1080,
         device_scale_factor: 2,
         full_page: false,
-
         wait_until: ['load', 'networkidle2'],
         delay: 1,
         timeout: 30,
-
         cache: false,
         block_ads: true,
         block_cookie_banners: true,
