@@ -50,6 +50,7 @@ function CriarInner() {
   const [cfg, setCfg] = useState<SlideCfg>({
     cor: '#2D6FFF',
     fonte: 'inter',
+    estilo: 'modern',
     logoUrl: '',
     logoX: 0.5,
     logoY: 0.91,
