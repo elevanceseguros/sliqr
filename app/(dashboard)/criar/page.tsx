@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Zap, Download, Loader2, Upload } from 'lucide-react'
+import { Zap, Download, Loader2, Upload, Image as ImageIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { gerarHTML, SlideCfg } from '@/lib/slides/gerar-html'
 import JSZip from 'jszip'
@@ -15,6 +15,15 @@ const FONTES = [
 ]
 const QTD_OPTS = [1,2,3,4,5,6,7,8,9,10]
 
+function deveUsarImagemIA(i: number, total: number) {
+  if (total <= 1) return true
+  if (i === 0) return true
+  if (i === total - 1) return true
+  if (total >= 4 && i === Math.floor(total / 2)) return true
+  if (total >= 8 && i === 2) return true
+  return false
+}
+
 function CriarInner() {
   const supabase = createClient()
   const searchParams = useSearchParams()
@@ -24,11 +33,14 @@ function CriarInner() {
   const [qtd, setQtd] = useState(5)
   const [cor, setCor] = useState('#2D6FFF')
   const [fonte, setFonte] = useState('inter')
+  const [usarIA, setUsarIA] = useState(true)
+
   const [gerando, setGerando] = useState(false)
   const [progresso, setProgresso] = useState(0)
   const [etapa, setEtapa] = useState('')
   const [slides, setSlides] = useState<any[]>([])
   const [imgs, setImgs] = useState<string[]>([])
+  const [imagensIA, setImagensIA] = useState<Record<number, string>>({})
   const [slideAtivo, setSlideAtivo] = useState(0)
   const [baixando, setBaixando] = useState(false)
   const [baixandoPct, setBaixandoPct] = useState(0)
@@ -76,6 +88,7 @@ function CriarInner() {
   function loadImage(src: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const img = new Image()
+      img.crossOrigin = 'anonymous'
       img.onload = () => resolve(img)
       img.onerror = reject
       img.src = src
@@ -120,6 +133,28 @@ function CriarInner() {
     return data.url
   }
 
+  async function gerarImagemIA(slide: any, i: number): Promise<string | null> {
+    try {
+      const res = await fetch('/api/imagem-ia', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          tema: prompt,
+          titulo: slide?.titulo ?? '',
+          slideIndex: i,
+          cor,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok || data.erro) return null
+
+      return data.url ?? null
+    } catch {
+      return null
+    }
+  }
+
   async function gerar() {
     if (!prompt.trim()) {
       setErro('Descreva o que você quer criar.')
@@ -130,6 +165,7 @@ function CriarInner() {
     setGerando(true)
     setSlides([])
     setImgs([])
+    setImagensIA({})
     setLegenda('')
     setSlideAtivo(0)
     setProgresso(5)
@@ -154,8 +190,33 @@ function CriarInner() {
       const slidesGerados = Array.isArray(data.slides) ? data.slides.slice(0, qtd) : []
       setSlides(slidesGerados)
 
-      setProgresso(20)
-      setEtapa('Renderizando imagens...')
+      const imagensIAtemp: Record<number, string> = {}
+
+      if (usarIA) {
+        setEtapa('Criando imagens de apoio com IA...')
+        setProgresso(18)
+
+        const indices = slidesGerados
+          .map((_: any, i: number) => i)
+          .filter((i: number) => deveUsarImagemIA(i, slidesGerados.length))
+
+        for (let k = 0; k < indices.length; k++) {
+          const i = indices[k]
+          setEtapa(`Criando imagem IA ${k + 1} de ${indices.length}...`)
+
+          const url = await gerarImagemIA(slidesGerados[i], i)
+
+          if (url) {
+            imagensIAtemp[i] = url
+            setImagensIA({ ...imagensIAtemp })
+          }
+
+          setProgresso(18 + Math.round(((k + 1) / Math.max(indices.length, 1)) * 27))
+        }
+      }
+
+      setProgresso(48)
+      setEtapa('Renderizando os posts...')
 
       const imagens: string[] = []
 
@@ -163,15 +224,16 @@ function CriarInner() {
         const html = gerarHTML(slidesGerados[i], slidesGerados.length, i, {
           cor,
           fonte,
+          imagemUrl: imagensIAtemp[i],
         })
 
         const img = await gerarScreenshot(html)
         imagens.push(img)
         setImgs([...imagens])
 
-        const pct = 20 + Math.round(((i + 1) / slidesGerados.length) * 65)
+        const pct = 48 + Math.round(((i + 1) / slidesGerados.length) * 38)
         setProgresso(pct)
-        setEtapa(`Gerando slide ${i + 1} de ${slidesGerados.length}...`)
+        setEtapa(`Renderizando slide ${i + 1} de ${slidesGerados.length}...`)
       }
 
       setProgresso(90)
@@ -331,7 +393,7 @@ function CriarInner() {
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
-            placeholder="Ex: 5 benefícios do seguro de vida para MEI&#10;Ex: Por que fazer manipulados na Pharmapenha&#10;Ex: Como escolher o plano de saúde ideal"
+            placeholder="Ex: 5 benefícios da proteção veicular&#10;Ex: Por que fazer manipulados na Pharmapenha&#10;Ex: Como escolher o plano de saúde ideal"
             rows={3}
             style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'12px', padding:'1rem', color:'#F0F4FF', fontSize:'0.95rem', outline:'none', resize:'vertical', lineHeight:1.6, boxSizing:'border-box', fontFamily:'inherit' }}
           />
@@ -394,6 +456,22 @@ function CriarInner() {
               </button>
             ))}
           </div>
+        </div>
+
+        <div style={{ marginBottom:'1.5rem' }}>
+          <button
+            onClick={() => setUsarIA(v => !v)}
+            style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:'12px', width:'100%', maxWidth:'390px', background:usarIA ? `${cor}18` : '#111827', border:usarIA ? `1px solid ${cor}55` : '1px solid rgba(255,255,255,0.1)', borderRadius:'12px', padding:'12px 14px', color:usarIA ? cor : '#8B95A8', fontSize:'0.86rem', fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}
+          >
+            <span style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+              <ImageIcon size={16}/> Usar imagens IA automáticas
+            </span>
+            <span>{usarIA ? 'Ativo' : 'Desligado'}</span>
+          </button>
+
+          <p style={{ color:'#4A5568', fontSize:'0.75rem', marginTop:'8px' }}>
+            Quando ativo, o Sliqr gera imagens de apoio em alguns slides estratégicos.
+          </p>
         </div>
 
         <div style={{ marginBottom:'1.5rem' }}>
@@ -469,7 +547,7 @@ function CriarInner() {
           </div>
 
           {imgs.length > 0 && (
-            <p style={{ fontSize:'0.78rem', color:'#4A5568', marginTop:'8px' }}>{imgs.length} de {qtd} slides gerados</p>
+            <p style={{ fontSize:'0.78rem', color:'#4A5568', marginTop:'8px' }}>{imgs.length} de {qtd} slides renderizados</p>
           )}
         </div>
       )}
@@ -485,10 +563,7 @@ function CriarInner() {
               onMouseLeave={onMouseUp}
             >
               {imgAtiva && (
-                <img
-                  src={imgAtiva}
-                  style={{ width:'100%', height:'auto', borderRadius:'12px', display:'block' }}
-                />
+                <img src={imgAtiva} style={{ width:'100%', height:'auto', borderRadius:'12px', display:'block' }} />
               )}
 
               {cfg.logoUrl && (
@@ -510,31 +585,15 @@ function CriarInner() {
             </div>
 
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'12px', marginTop:'12px' }}>
-              <button
-                onClick={() => setSlideAtivo(p => Math.max(0, p - 1))}
-                disabled={slideAtivo === 0}
-                style={{ width:'32px', height:'32px', borderRadius:'50%', border:'1px solid rgba(255,255,255,0.15)', background:'rgba(255,255,255,0.06)', color:slideAtivo===0 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.7)', cursor:slideAtivo===0 ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}
-              >
-                ‹
-              </button>
+              <button onClick={() => setSlideAtivo(p => Math.max(0, p - 1))} disabled={slideAtivo === 0} style={{ width:'32px', height:'32px', borderRadius:'50%', border:'1px solid rgba(255,255,255,0.15)', background:'rgba(255,255,255,0.06)', color:slideAtivo===0 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.7)', cursor:slideAtivo===0 ? 'not-allowed' : 'pointer' }}>‹</button>
 
               <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
                 {imgs.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSlideAtivo(i)}
-                    style={{ width:i===slideAtivo ? '22px' : '7px', height:'7px', borderRadius:'4px', border:'none', background:i===slideAtivo ? cor : 'rgba(255,255,255,0.2)', cursor:'pointer', padding:0, transition:'all 0.2s' }}
-                  />
+                  <button key={i} onClick={() => setSlideAtivo(i)} style={{ width:i===slideAtivo ? '22px' : '7px', height:'7px', borderRadius:'4px', border:'none', background:i===slideAtivo ? cor : 'rgba(255,255,255,0.2)', cursor:'pointer', padding:0, transition:'all 0.2s' }} />
                 ))}
               </div>
 
-              <button
-                onClick={() => setSlideAtivo(p => Math.min(imgs.length - 1, p + 1))}
-                disabled={slideAtivo === imgs.length - 1}
-                style={{ width:'32px', height:'32px', borderRadius:'50%', border:'1px solid rgba(255,255,255,0.15)', background:'rgba(255,255,255,0.06)', color:slideAtivo===imgs.length-1 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.7)', cursor:slideAtivo===imgs.length-1 ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}
-              >
-                ›
-              </button>
+              <button onClick={() => setSlideAtivo(p => Math.min(imgs.length - 1, p + 1))} disabled={slideAtivo === imgs.length - 1} style={{ width:'32px', height:'32px', borderRadius:'50%', border:'1px solid rgba(255,255,255,0.15)', background:'rgba(255,255,255,0.06)', color:slideAtivo===imgs.length-1 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.7)', cursor:slideAtivo===imgs.length-1 ? 'not-allowed' : 'pointer' }}>›</button>
             </div>
 
             {baixando && (
@@ -544,18 +603,11 @@ function CriarInner() {
             )}
 
             <div style={{ display:'flex', gap:'8px', marginTop:'12px' }}>
-              <button
-                onClick={baixarUm}
-                style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background:'#111827', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.7rem', color:'#8B95A8', fontSize:'0.82rem', fontWeight:500, cursor:'pointer', fontFamily:'inherit' }}
-              >
+              <button onClick={baixarUm} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background:'#111827', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.7rem', color:'#8B95A8', fontSize:'0.82rem', fontWeight:500, cursor:'pointer', fontFamily:'inherit' }}>
                 <Download size={14}/> Este slide
               </button>
 
-              <button
-                onClick={baixarTudo}
-                disabled={baixando}
-                style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background:cor, border:'none', borderRadius:'10px', padding:'0.7rem', color:'#fff', fontSize:'0.82rem', fontWeight:700, cursor:baixando ? 'not-allowed' : 'pointer', opacity:baixando ? 0.75 : 1, fontFamily:'inherit' }}
-              >
+              <button onClick={baixarTudo} disabled={baixando} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background:cor, border:'none', borderRadius:'10px', padding:'0.7rem', color:'#fff', fontSize:'0.82rem', fontWeight:700, cursor:baixando ? 'not-allowed' : 'pointer', opacity:baixando ? 0.75 : 1, fontFamily:'inherit' }}>
                 {baixando ? <Loader2 size={14} style={{ animation:'spin 1s linear infinite' }}/> : <Download size={14}/>}
                 {baixando ? `Preparando ZIP... ${baixandoPct}%` : 'Baixar todos (ZIP)'}
               </button>
@@ -567,10 +619,7 @@ function CriarInner() {
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'12px' }}>
                 <span style={{ fontSize:'0.85rem', fontWeight:600 }}>Legenda + hashtags</span>
 
-                <button
-                  onClick={() => navigator.clipboard.writeText(legenda)}
-                  style={{ background:`${cor}18`, border:`1px solid ${cor}55`, borderRadius:'8px', padding:'6px 14px', color:cor, fontSize:'0.78rem', fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}
-                >
+                <button onClick={() => navigator.clipboard.writeText(legenda)} style={{ background:`${cor}18`, border:`1px solid ${cor}55`, borderRadius:'8px', padding:'6px 14px', color:cor, fontSize:'0.78rem', fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>
                   Copiar
                 </button>
               </div>
