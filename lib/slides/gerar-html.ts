@@ -1,6 +1,6 @@
 const ICONS: Record<string, string> = {
   shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
-  heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z"/>',
+  heart: '<path d="M20.84 4.61a5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z"/>',
   star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
   check: '<path d="M20 6L9 17l-5-5"/>',
   alert: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
@@ -44,6 +44,7 @@ export interface SlideCfg {
   logoX?: number
   logoY?: number
   logoW?: number
+  imagemUrl?: string
 }
 
 export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg): string {
@@ -52,6 +53,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg)
   const muted = isLight ? 'rgba(15,23,42,.72)' : 'rgba(255,255,255,.76)'
   const accent = '#ffffff'
   const hot = '#ffd43b'
+  const imagemUrl = cfg.imagemUrl
 
   const FF: Record<string, string> = {
     inter: 'Inter',
@@ -76,11 +78,19 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg)
     </div>
   `
 
+  const visual = imagemUrl
+    ? `
+      <div class="aiVisualWrap">
+        <img class="aiVisual" src="${esc(imagemUrl)}" />
+      </div>
+    `
+    : ''
+
   let body = ''
 
   if (slide.tipo === 'capa') {
     body = `
-      <section class="center left">
+      <section class="center left hasVisual">
         <div class="badge">${icon('zap', 22, hot)} CONTEÚDO RÁPIDO</div>
         <h1>${clampText(slide.titulo, 92)}</h1>
         ${slide.subtitulo ? `<p>${clampText(slide.subtitulo, 150)}</p>` : ''}
@@ -111,7 +121,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg)
       <section class="top">
         <div class="kicker">Checklist</div>
         <h2>${clampText(slide.titulo, 74)}</h2>
-        <div class="list">
+        <div class="list ${imagemUrl ? 'withVisual' : ''}">
           ${itens.map((it: string) => `
             <div class="row">
               <div class="check">${icon('check', 26, '#0f172a')}</div>
@@ -123,7 +133,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg)
     `
   } else {
     body = `
-      <section class="center">
+      <section class="center ${imagemUrl ? 'ctaWithVisual' : ''}">
         <div class="bigIcon">${icon('phone', 64, accent)}</div>
         <h1>${clampText(slide.titulo, 76)}</h1>
         ${slide.subtitulo ? `<p>${clampText(slide.subtitulo, 140)}</p>` : ''}
@@ -149,17 +159,47 @@ body{width:1080px;height:1080px;overflow:hidden;font-family:'${fn}',sans-serif}
     linear-gradient(145deg, ${cor} 0%, #07111f 115%);
 }
 .stage:before{
-  content:"";position:absolute;inset:0;opacity:.18;
+  content:"";position:absolute;inset:0;opacity:.15;
   background-image:linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
   background-size:42px 42px;mask-image:linear-gradient(to bottom, black, transparent 86%);
 }
 .stage:after{
-  content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg, rgba(255,255,255,.08), transparent 32%),linear-gradient(0deg, rgba(0,0,0,.42), transparent 44%);
+  content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.24) 48%, rgba(0,0,0,.62) 100%),
+    linear-gradient(0deg, rgba(0,0,0,.44), transparent 44%);
 }
 .blob1,.blob2{position:absolute;border-radius:999px;filter:blur(85px);z-index:1}
 .blob1{width:460px;height:460px;right:-180px;top:180px;background:rgba(255,212,59,.18)}
 .blob2{width:520px;height:520px;left:-220px;bottom:-150px;background:rgba(255,255,255,.12)}
+.aiVisualWrap{
+  position:absolute;
+  right:-75px;
+  bottom:20px;
+  width:610px;
+  height:610px;
+  z-index:3;
+  border-radius:48px;
+  overflow:hidden;
+  opacity:.92;
+  transform:rotate(-2deg);
+  filter:drop-shadow(0 44px 90px rgba(0,0,0,.45));
+  mask-image:linear-gradient(90deg, transparent 0%, black 18%, black 82%, transparent 100%);
+}
+.aiVisualWrap:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 34%, rgba(7,17,31,.40) 78%),
+    linear-gradient(90deg, rgba(7,17,31,.55), transparent 35%);
+}
+.aiVisual{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transform:scale(1.08);
+}
 .progress{
   position:absolute;top:48px;left:64px;right:64px;z-index:20;display:flex;align-items:center;gap:14px;
   color:rgba(255,255,255,.72);font-size:20px;font-weight:800;letter-spacing:.04em;
@@ -167,23 +207,26 @@ body{width:1080px;height:1080px;overflow:hidden;font-family:'${fn}',sans-serif}
 .progress div{flex:1;height:6px;border-radius:999px;background:rgba(255,255,255,.16);overflow:hidden}
 .progress i{display:block;height:100%;border-radius:999px;background:${hot}}
 section{position:absolute;z-index:10;left:74px;right:74px}
-.center{top:120px;bottom:175px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.center{top:120px;bottom:145px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
 .center.left{align-items:flex-start;text-align:left}
-.top{top:118px;bottom:172px}
+.top{top:118px;bottom:120px}
 .badge,.kicker{
   display:inline-flex;align-items:center;gap:10px;width:max-content;max-width:850px;padding:14px 20px;border-radius:999px;
   background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.86);
   font-size:20px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:34px;
 }
 h1{
-  max-width:900px;font-size:88px;line-height:.98;font-weight:900;letter-spacing:-4px;color:#fff;text-transform:uppercase;
-  text-shadow:0 16px 55px rgba(0,0,0,.28);
+  max-width:${imagemUrl ? '690px' : '900px'};
+  font-size:${imagemUrl ? '78px' : '88px'};
+  line-height:.98;font-weight:900;letter-spacing:-4px;color:#fff;text-transform:uppercase;
+  text-shadow:0 16px 55px rgba(0,0,0,.34);
 }
 h2{
-  max-width:900px;font-size:72px;line-height:1.02;font-weight:900;letter-spacing:-3px;color:#fff;text-transform:uppercase;
+  max-width:${imagemUrl ? '720px' : '900px'};
+  font-size:72px;line-height:1.02;font-weight:900;letter-spacing:-3px;color:#fff;text-transform:uppercase;
   text-shadow:0 16px 50px rgba(0,0,0,.25);margin-bottom:40px;
 }
-p{max-width:790px;margin-top:30px;color:${muted};font-size:35px;line-height:1.36;font-weight:650}
+p{max-width:${imagemUrl ? '620px' : '790px'};margin-top:30px;color:${muted};font-size:35px;line-height:1.36;font-weight:650}
 .cards{display:flex;gap:24px;margin-top:22px}
 .card{
   flex:1;min-height:360px;border-radius:38px;padding:28px;background:rgba(255,255,255,.105);
@@ -193,7 +236,7 @@ p{max-width:790px;margin-top:30px;color:${muted};font-size:35px;line-height:1.36
 .card .num{color:${hot};font-size:24px;font-weight:900;letter-spacing:.08em}
 .card .icon{width:92px;height:92px;border-radius:28px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center}
 .card strong{display:block;color:#fff;font-size:31px;line-height:1.18;font-weight:850}
-.list{margin-top:22px;display:flex;flex-direction:column;gap:18px}
+.list{margin-top:22px;display:flex;flex-direction:column;gap:18px;max-width:${imagemUrl ? '610px' : '100%'}}
 .row{
   min-height:92px;display:flex;align-items:center;gap:22px;padding:20px 26px;border-radius:28px;
   background:rgba(255,255,255,.105);border:1px solid rgba(255,255,255,.16);
@@ -209,19 +252,15 @@ p{max-width:790px;margin-top:30px;color:${muted};font-size:35px;line-height:1.36
   margin-top:48px;display:inline-flex;align-items:center;gap:16px;padding:24px 48px;border-radius:999px;background:${hot};
   color:#0f172a;font-size:30px;font-weight:950;box-shadow:0 28px 80px rgba(0,0,0,.30);
 }
-.footer{
-  position:absolute;left:64px;right:64px;bottom:46px;height:108px;z-index:8;border-radius:34px;
-  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(24px);
-}
 </style>
 </head>
 <body>
   <div class="stage">
     <div class="blob1"></div>
     <div class="blob2"></div>
+    ${visual}
     ${progress}
     ${body}
-    <div class="footer"></div>
   </div>
 </body>
 </html>`
