@@ -137,7 +137,7 @@ body{width:1080px;height:1080px;overflow:hidden;font-family:'${fn}',sans-serif;}
   <div style="position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,${drk(cor,0.6)},${cor},${drk(cor,0.6)})"></div>
 
   <!-- Conteúdo principal -->
-  <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;bottom:${DOT_AREA}px;display:flex;flex-direction:column;${isCTA?'justify-content:center;align-items:center;text-align:center;':'justify-content:center;'}">
+  <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${1080-PAD-DOT_AREA}px;display:flex;flex-direction:column;${isCTA?'justify-content:center;align-items:center;text-align:center;':'justify-content:center;'}">
     ${body}
   </div>
 
