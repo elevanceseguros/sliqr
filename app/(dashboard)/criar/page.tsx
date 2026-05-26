@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Zap, Download, ChevronUp, ChevronDown, Loader2, Upload, Image as ImageIcon, Sparkles, RefreshCw } from 'lucide-react'
+import { Zap, Download, ChevronUp, ChevronDown, Loader2, Upload, Image as RefreshCw } from 'lucide-react'
 import { Tom, TOM_LABELS, Slide } from '@/types'
 import { createClient } from '@/lib/supabase/client'
 import JSZip from 'jszip'
@@ -344,7 +344,6 @@ function CriarInner() {
   const [baixando, setBaixando] = useState(false)
   const [editando, setEditando] = useState<string | null>(null)
   const [session, setSession]   = useState<any>(null)
-  const [fotos, setFotos]       = useState<string[]>([])
   const [slideAtivo, setSlideAtivo] = useState(0)
   const [slidesImg, setSlidesImg] = useState<string[]>([])
   const [trocando, setTrocando] = useState(false)
@@ -354,7 +353,6 @@ function CriarInner() {
     logo: { url: '', x: 870, y: 30, size: 80 }
   })
 
-  const fotoRef = useRef<HTMLInputElement>(null)
   const logoRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { supabase.auth.getSession().then(({ data }) => setSession(data.session)) }, [])
@@ -599,32 +597,15 @@ function CriarInner() {
                   <Loader2 size={24} style={{ color:cor, animation:'spin 1s linear infinite', marginBottom:'10px' }}/>
                   <p style={{ color:'#8B95A8', fontSize:'0.82rem', margin:0 }}>Gerando imagens...</p>
                 </div>
-              ) : (
-                imgAtiva && (
+              ) : imgAtiva ? (
                 <img src={imgAtiva} style={{ width:'100%', height:'auto', borderRadius:'12px', display:'block' }} />
-              )}
-              {!gerandoFotos && !imgAtiva && slides[slideAtivo] && (
+              ) : (
                 <div style={{ aspectRatio:'1', background:'#111827', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  <p style={{ color:'#4A5568', fontSize:'0.8rem' }}>Gerando...</p>
-                </div>                )
-              )}
-
-              {/* Ações de foto — só se fundo = foto-ia */}
-              {cfg.fundoId === 'foto-ia' && (
-                <div style={{ display:'flex', gap:'8px', marginTop:'10px' }}>
-                  <button onClick={trocarFoto} disabled={trocando}
-                    style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background:'#111827', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'8px', padding:'7px', color:'#8B95A8', fontSize:'0.75rem', cursor:'pointer' }}>
-                    {trocando ? <Loader2 size={12} style={{animation:'spin 1s linear infinite'}}/> : <Sparkles size={12}/>}
-                    Nova IA
-                  </button>
-                  <input ref={fotoRef} type="file" accept="image/*" style={{ display:'none' }}
-                    onChange={async e => { const f=e.target.files?.[0]; if(!f) return; const b=await lerB64(f); setFotos(p=>{const n=[...p];n[slideAtivo]=b;return n}) }}/>
-                  <button onClick={() => fotoRef.current?.click()}
-                    style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', background:'#111827', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'8px', padding:'7px', color:'#8B95A8', fontSize:'0.75rem', cursor:'pointer' }}>
-                    <ImageIcon size={12}/> Minha foto
-                  </button>
+                  <p style={{ color:'#4A5568', fontSize:'0.8rem' }}>Aguardando geração...</p>
                 </div>
               )}
+
+
 
               {/* Dots */}
               <div style={{ display:'flex', gap:'7px', marginTop:'12px', justifyContent:'center', flexWrap:'wrap' }}>
