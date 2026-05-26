@@ -8,18 +8,21 @@ async function getBrowser() {
     const puppeteer = (await import('puppeteer-core')).default
     return puppeteer.launch({
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
-      headless: chromium.headless as any,
+      headless: true,
+      defaultViewport: { width: 1080, height: 1080 },
     })
   }
   const puppeteer = (await import('puppeteer-core')).default
   return puppeteer.launch({
     headless: true,
+    defaultViewport: { width: 1080, height: 1080 },
     executablePath:
-      process.platform === 'win32' ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
-      : process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-      : '/usr/bin/google-chrome-stable',
+      process.platform === 'win32'
+        ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+        : process.platform === 'darwin'
+        ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        : '/usr/bin/google-chrome-stable',
   })
 }
 
@@ -38,7 +41,6 @@ export async function POST(request: NextRequest) {
     await browser.close()
     browser = undefined
 
-    // Retorna base64 para o frontend
     const b64 = Buffer.from(png).toString('base64')
     return NextResponse.json({ url: `data:image/png;base64,${b64}` })
 
