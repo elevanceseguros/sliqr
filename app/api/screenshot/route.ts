@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     browser = await getBrowser()
     const page = await browser.newPage()
     await page.setViewport({ width: 1080, height: 1080, deviceScaleFactor: 1 })
-    await page.setContent(html, { waitUntil: 'networkidle2', timeout: 30000 })
+    await page.setContent(html, { waitUntil: 'load', timeout: 30000 })
 
     const png = await page.screenshot({ type: 'png' })
     await browser.close()
