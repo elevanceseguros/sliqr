@@ -82,157 +82,207 @@ function quebrar(ctx: CanvasRenderingContext2D, texto: string, maxW: number): st
 }
 
 async function renderSlide(
-  slide: Slide, total: number, fotoUrl: string, cfg: Cfg, preview = false
+  slide: any, total: number, _fotoUrl: string, cfg: Cfg, preview = false
 ): Promise<Blob> {
   const SIZE  = preview ? 680 : 1080
   const S     = SIZE / 1080
   const fonte = FONTES.find(f => f.id === cfg.fonteId) ?? FONTES[0]
   const cor   = cfg.cor
-  const escuro = (hex: string, f = 0.4) => {
-    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16)
-    return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`
-  }
+
+  // Cor do texto — branco se fundo escuro, preto se fundo claro
   const lum = (hex: string) => {
-    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16)
+    const r=parseInt(hex.slice(1,3)||'0',16)
+    const g=parseInt(hex.slice(3,5)||'0',16)
+    const b=parseInt(hex.slice(5,7)||'0',16)
     return (r*0.299+g*0.587+b*0.114)/255
   }
-
-  const isFoto   = cfg.fundoId === 'foto-ia' && !!fotoUrl
-  const isDark   = isFoto || lum(cor) < 0.5
-  const txtMain  = isDark ? '#FFFFFF' : '#111827'
-  const txtSub   = isDark ? 'rgba(255,255,255,0.80)' : 'rgba(0,0,0,0.65)'
-  const accent   = isDark ? cor : escuro(cor, 0.7)
+  const isDark  = lum(cor) < 0.55
+  const txtMain = isDark ? '#FFFFFF' : '#111111'
+  const txtSub  = isDark ? 'rgba(255,255,255,0.82)' : 'rgba(0,0,0,0.60)'
+  const escuro  = (f=0.45) => {
+    const r=parseInt(cor.slice(1,3),16),g=parseInt(cor.slice(3,5),16),b=parseInt(cor.slice(5,7),16)
+    return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`
+  }
 
   const cv  = document.createElement('canvas')
   cv.width  = cv.height = SIZE
   const ctx = cv.getContext('2d')!
 
-  // ── FUNDO ──────────────────────────────────────────────
-  if (isFoto) {
-    ctx.fillStyle = '#060810'; ctx.fillRect(0,0,SIZE,SIZE)
-    try {
-      const img = await carregarImg(fotoUrl.startsWith('data:') ? fotoUrl : `/api/proxy-img?src=${encodeURIComponent(fotoUrl)}`)
-      const sc  = Math.max(SIZE/img.width, SIZE/img.height)
-      ctx.drawImage(img,(SIZE-img.width*sc)/2,(SIZE-img.height*sc)/2,img.width*sc,img.height*sc)
-    } catch {}
-    const ov = ctx.createLinearGradient(0,0,0,SIZE)
-    ov.addColorStop(0,'rgba(4,6,16,0.85)'); ov.addColorStop(0.4,'rgba(4,6,16,0.60)'); ov.addColorStop(1,'rgba(4,6,16,0.95)')
-    ctx.fillStyle = ov; ctx.fillRect(0,0,SIZE,SIZE)
-  } else if (cfg.fundoId === 'gradiente') {
-    const g = ctx.createLinearGradient(0,0,SIZE*0.8,SIZE)
-    g.addColorStop(0, cor); g.addColorStop(1, escuro(cor, 0.45))
-    ctx.fillStyle = g; ctx.fillRect(0,0,SIZE,SIZE)
+  // ── FUNDO ──
+  if (cfg.fundoId === 'gradiente') {
+    const g = ctx.createLinearGradient(0, 0, SIZE, SIZE)
+    g.addColorStop(0, cor); g.addColorStop(1, escuro(0.5))
+    ctx.fillStyle = g
   } else {
-    ctx.fillStyle = cor; ctx.fillRect(0,0,SIZE,SIZE)
+    ctx.fillStyle = cor
   }
+  ctx.fillRect(0, 0, SIZE, SIZE)
 
-  // ── ELEMENTOS DECORATIVOS ──────────────────────────────
-  // Círculo grande canto superior direito
-  ctx.beginPath(); ctx.arc(SIZE-10*S,10*S,220*S,0,Math.PI*2)
-  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'; ctx.fill()
+  // Losango decorativo canto inferior direito (estilo Gemini)
+  ctx.save()
+  ctx.translate(SIZE - 36*S, SIZE - 36*S)
+  ctx.rotate(Math.PI / 4)
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)'
+  ctx.fillRect(-18*S, -18*S, 36*S, 36*S)
+  ctx.restore()
 
-  // Círculo médio canto inferior esquerdo
-  ctx.beginPath(); ctx.arc(0,SIZE,160*S,0,Math.PI*2)
-  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'; ctx.fill()
+  const PAD  = 72*S
+  const LRG  = SIZE - PAD * 2
+  const MEIO = SIZE / 2
 
-  // Barra de acento no topo
-  const barCor = isDark ? 'rgba(255,255,255,0.9)' : escuro(cor,0.6)
-  ctx.fillStyle = barCor; ctx.fillRect(0,0,SIZE,8*S)
+  const tipo = slide.tipo ?? 'lista'
 
-  const PAD = 80*S
-  const LRG = SIZE - PAD*2
-
-  // ── CABEÇALHO ─────────────────────────────────────────
-  // Logo (canto superior direito)
-  let logoW = 0
+  // ── LOGO NO RODAPÉ (centralizada) ──
+  const rodapeY = SIZE - 120*S
   if (cfg.logo.url) {
     try {
       const logo = await carregarImg(cfg.logo.url)
-      const lH   = cfg.logo.size * S
-      logoW      = (logo.width/logo.height)*lH
-      ctx.globalAlpha = 0.95
-      ctx.drawImage(logo, SIZE-PAD-logoW, PAD*0.4, logoW, lH)
-      ctx.globalAlpha = 1
+      const lH   = 70*S
+      const lW   = (logo.width / logo.height) * lH
+      ctx.drawImage(logo, MEIO - lW/2, rodapeY + 10*S, lW, lH)
     } catch {}
+  } else {
+    // Nome do app como fallback
+    ctx.font      = `700 ${22*S}px ${fonte.css}`
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.25)'
+    ctx.textAlign = 'center'
+    ctx.fillText('Sliqr', MEIO, rodapeY + 50*S)
+    ctx.textAlign = 'left'
   }
-
-  // Número do slide — badge no topo esquerdo
-  const badgeY = PAD * 0.75
-  ctx.font      = `700 ${26*S}px ${fonte.css}`
-  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.35)'
-  ctx.fillText(`${slide.ordem} / ${total}`, PAD, badgeY)
-
-  // ── EMOJI grande (lado esquerdo, zona média) ───────────
-  const emojiSize = 72*S
-  let curY = SIZE * 0.20
-
-  if ((slide as any).emoji) {
-    ctx.font     = `${emojiSize}px serif`
-    ctx.fillText((slide as any).emoji, PAD, curY + emojiSize*0.8)
-    curY += emojiSize * 1.2
-  }
-
-  // ── TAG DESTAQUE (só slide 1) ─────────────────────────
-  if (slide.ordem === 1 && slide.destaque) {
-    const fsTag = 28*S
-    ctx.font    = `700 ${fsTag}px ${fonte.css}`
-    const tw    = ctx.measureText(slide.destaque.toUpperCase()).width
-    // Pill
-    const pillH = fsTag*1.6, pillW = tw + 28*S
-    const pillY = curY - fsTag*0.85
-    ctx.fillStyle   = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.10)'
-    ctx.beginPath(); ctx.roundRect(PAD-6*S, pillY, pillW, pillH, pillH/2); ctx.fill()
-    ctx.fillStyle = txtMain
-    ctx.fillText(slide.destaque.toUpperCase(), PAD, curY)
-    curY += fsTag * 2.0
-  }
-
-  // ── TÍTULO ────────────────────────────────────────────
-  const fsTit = (slide.ordem === 1 ? 78 : 86) * S
-  ctx.font      = `${fonte.peso} ${fsTit}px ${fonte.css}`
-  ctx.fillStyle = txtMain
-  if (isFoto) { ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=14*S }
-  for (const l of quebrar(ctx, slide.titulo, LRG)) {
-    ctx.fillText(l, PAD, curY); curY += fsTit * 1.22
-  }
-  ctx.shadowColor='transparent'; ctx.shadowBlur=0
-  curY += 18*S
-
-  // Linha divisória
-  ctx.fillStyle   = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.15)'
-  ctx.fillRect(PAD, curY, LRG*0.4, 2*S)
-  curY += 24*S
-
-  // ── CORPO ─────────────────────────────────────────────
-  const fsCorpo = 40*S
-  ctx.font      = `400 ${fsCorpo}px ${fonte.css}`
-  ctx.fillStyle = txtSub
-  if (isFoto) { ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=8*S }
-
-  const linhas = slide.corpo.split('\n').filter(Boolean)
-  for (const linha of linhas) {
-    // Mede se cabe na linha — se não, quebra
-    for (const parte of quebrar(ctx, linha, LRG)) {
-      ctx.fillText(parte, PAD, curY); curY += fsCorpo * 1.55
-    }
-  }
-  ctx.shadowColor='transparent'; ctx.shadowBlur=0
-
-  // ── RODAPÉ ────────────────────────────────────────────
-  const rodapeY = SIZE - 48*S
 
   // Linha divisória rodapé
   ctx.fillStyle = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.10)'
-  ctx.fillRect(PAD, rodapeY - 20*S, LRG, 1*S)
+  ctx.fillRect(PAD, rodapeY - 8*S, LRG, 1.5*S)
 
-  // Dots de progresso
-  let dotX = PAD
-  for (let i = 0; i < total; i++) {
-    const ativo = i === slide.ordem - 1
-    const dW    = ativo ? 28*S : 7*S
-    ctx.beginPath(); ctx.roundRect(dotX, rodapeY, dW, 7*S, 3.5*S)
-    ctx.fillStyle = ativo ? (isDark ? '#FFFFFF' : escuro(cor,0.5)) : (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)')
-    ctx.fill(); dotX += dW + 9*S
+  // ── TIPO: CAPA ──────────────────────────────────────────
+  if (tipo === 'capa') {
+    // Título enorme, centralizado verticalmente
+    const fsTit = 108*S
+    ctx.font      = `${fonte.peso} ${fsTit}px ${fonte.css}`
+    ctx.fillStyle = txtMain
+    ctx.textAlign = 'left'
+
+    // Quebrar título e calcular altura total
+    const linhas  = quebrar(ctx, slide.titulo, LRG)
+    const altTotal = linhas.length * fsTit * 1.15
+    let curY = (rodapeY - altTotal) / 2 + fsTit * 0.85
+
+    for (const l of linhas) {
+      ctx.fillText(l, PAD, curY); curY += fsTit * 1.15
+    }
+
+    // Subtítulo
+    if (slide.subtitulo || slide.corpo) {
+      const sub = slide.subtitulo || slide.corpo
+      ctx.font      = `400 ${40*S}px ${fonte.css}`
+      ctx.fillStyle = txtSub
+      for (const l of quebrar(ctx, sub, LRG)) {
+        ctx.fillText(l, PAD, curY + 20*S); curY += 52*S
+      }
+    }
+  }
+
+  // ── TIPO: ICONES ─────────────────────────────────────────
+  else if (tipo === 'icones') {
+    // Título no topo
+    const fsTit = 96*S
+    ctx.font      = `${fonte.peso} ${fsTit}px ${fonte.css}`
+    ctx.fillStyle = txtMain
+    ctx.textAlign = 'left'
+    const linhasTit = quebrar(ctx, slide.titulo, LRG)
+    let curY = PAD + fsTit
+    for (const l of linhasTit) { ctx.fillText(l, PAD, curY); curY += fsTit * 1.15 }
+
+    // Ícones centralizados
+    const itens = slide.itens ?? []
+    const qtd   = itens.length
+    const colW  = LRG / qtd
+    const iconY = curY + 80*S
+
+    for (let i = 0; i < qtd; i++) {
+      const cx = PAD + colW * i + colW / 2
+
+      // Círculo de fundo do ícone
+      ctx.beginPath(); ctx.arc(cx, iconY, 80*S, 0, Math.PI*2)
+      ctx.fillStyle = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
+      ctx.fill()
+
+      // Emoji do ícone
+      ctx.font      = `${88*S}px serif`
+      ctx.textAlign = 'center'
+      ctx.fillText(itens[i].icone ?? '●', cx, iconY + 30*S)
+
+      // Label abaixo
+      ctx.font      = `600 ${36*S}px ${fonte.css}`
+      ctx.fillStyle = txtSub
+      ctx.textAlign = 'center'
+      const labelLinhas = quebrar(ctx, itens[i].label ?? '', colW - 20*S)
+      let ly = iconY + 110*S
+      for (const ll of labelLinhas) { ctx.fillText(ll, cx, ly); ly += 44*S }
+    }
+    ctx.textAlign = 'left'
+  }
+
+  // ── TIPO: CTA ────────────────────────────────────────────
+  else if (tipo === 'cta') {
+    const fsTit = 108*S
+    ctx.font      = `${fonte.peso} ${fsTit}px ${fonte.css}`
+    ctx.fillStyle = txtMain
+    ctx.textAlign = 'left'
+    const linhas  = quebrar(ctx, slide.titulo, LRG)
+    const altTotal = linhas.length * fsTit * 1.15
+    let curY = (rodapeY - altTotal - 140*S) / 2 + fsTit * 0.85
+
+    for (const l of linhas) { ctx.fillText(l, PAD, curY); curY += fsTit * 1.15 }
+
+    // Botão CTA
+    const botaoTxt = slide.destaque || slide.botao || 'SAIBA MAIS'
+    const fsBotao  = 36*S
+    ctx.font       = `700 ${fsBotao}px ${fonte.css}`
+    const btw      = ctx.measureText(botaoTxt).width
+    const btPad    = 36*S
+    const btH      = 72*S
+    const btW      = btw + btPad * 2
+    const btX      = PAD
+    const btY      = curY + 40*S
+
+    // Fundo do botão — cor mais escura
+    ctx.fillStyle = escuro(0.55)
+    ctx.beginPath(); ctx.roundRect(btX, btY, btW, btH, btH/2); ctx.fill()
+
+    // Texto do botão
+    ctx.fillStyle = '#FFFFFF'
+    ctx.textAlign = 'left'
+    ctx.fillText(botaoTxt, btX + btPad, btY + btH*0.65)
+    ctx.textAlign = 'left'
+  }
+
+  // ── TIPO: LISTA (padrão) ─────────────────────────────────
+  else {
+    const fsTit = 88*S
+    ctx.font      = `${fonte.peso} ${fsTit}px ${fonte.css}`
+    ctx.fillStyle = txtMain
+    ctx.textAlign = 'left'
+    const linhasTit = quebrar(ctx, slide.titulo, LRG)
+    let curY = PAD + fsTit * 0.9
+    for (const l of linhasTit) { ctx.fillText(l, PAD, curY); curY += fsTit * 1.18 }
+    curY += 24*S
+
+    // Linha divisória
+    ctx.fillStyle = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'
+    ctx.fillRect(PAD, curY, LRG * 0.35, 2.5*S)
+    curY += 36*S
+
+    // Corpo
+    const fsCorpo = 42*S
+    ctx.font      = `400 ${fsCorpo}px ${fonte.css}`
+    ctx.fillStyle = txtSub
+    const linhasCorpo = (slide.corpo || '').split('\n').filter(Boolean)
+    for (const linha of linhasCorpo) {
+      for (const parte of quebrar(ctx, linha, LRG)) {
+        ctx.fillText(parte, PAD, curY); curY += fsCorpo * 1.6
+      }
+    }
   }
 
   return new Promise(r => cv.toBlob(b => r(b!), 'image/png', 0.95))

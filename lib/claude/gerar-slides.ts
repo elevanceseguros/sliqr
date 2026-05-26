@@ -18,32 +18,28 @@ function limparJSON(texto: string): string {
 }
 
 export async function gerarSlides(tema: string, tom: Tom, qtdSlides: number): Promise<Slide[]> {
-  const prompt = `Você é especialista em conteúdo para carrossel do Instagram. Crie ${qtdSlides} slide(s) sobre: "${tema}".
-Tom: ${TOM_INSTRUCOES[tom]}
+  const prompt = `Você cria carrosséis para Instagram no estilo educativo/informativo.
+Tema: "${tema}" | Tom: ${TOM_INSTRUCOES[tom]} | Slides: ${qtdSlides}
 
-ESTRUTURA DE CADA SLIDE:
-- "destaque": SÓ no slide 1. Tag curta tipo "Sabia disso?", "Atenção MEI", "Leia isso"
-- "titulo": Título principal. Máximo 8 palavras. Impactante.
-- "corpo": Conteúdo do slide. MÍNIMO 3 linhas, MÁXIMO 5 linhas. Cada linha separada por \\n.
-  Para layout de lista: cada linha = um item completo (ex: "✅ Consultas e exames cobertos")
-  Para layout normal: frases curtas que explicam o título
-- "emoji": Um emoji que representa o slide (ex: "🏥", "💰", "✅", "⚠️")
+TIPOS DE SLIDE (use variedade):
+- tipo "capa": slide 1. Título grande em maiúsculas + subtítulo curto. SEM itens.
+- tipo "icones": título + 2 a 3 itens com ícone e label curta (ex: "🏥 Hospitais" / "💊 Medicamentos")  
+- tipo "lista": título + 3 a 5 linhas de texto corrido (pode usar ✅ no início)
+- tipo "cta": último slide. Título grande (ex: "FALE COMIGO AGORA") + botão (ex: "CLIQUE NO LINK DA BIO")
 
 REGRAS:
-- Slide 1: apresenta o tema com gancho forte
-- Slides do meio: cada um aborda UM benefício/ponto específico com detalhes reais
-- Último slide: CTA direto (ex: "Fale comigo agora", "Link na bio")
-- Use emojis nas linhas do corpo quando fizer sentido
-- Corpo NUNCA pode ter menos de 3 linhas
-
-EXEMPLO CORPO BOM (5 linhas):
-"✅ Consultas médicas inclusas\\n✅ Exames laboratoriais cobertos\\n✅ Internação com acompanhante\\n✅ Rede credenciada em todo Brasil\\n✅ Carência reduzida para MEI"
-
-EXEMPLO CORPO RUIM (curto demais):
-"Proteção completa\\nSem complicações"
+- Título SEMPRE em maiúsculas
+- Textos curtos e diretos
+- Slide capa: subtítulo em minúsculas, frase de impacto
+- Slide CTA: campo "botao" com texto do botão
 
 Responda SOMENTE com JSON:
-[{"ordem":1,"titulo":"...","corpo":"linha1\\nlinha2\\nlinha3","destaque":"tag curta","emoji":"🏥"},{"ordem":2,"titulo":"...","corpo":"linha1\\nlinha2\\nlinha3\\nlinha4","emoji":"💰"}]`
+[
+  {"ordem":1,"tipo":"capa","titulo":"SEU PLANO DE SAÚDE AINDA VALE A PENA?","subtitulo":"O mercado muda. Sua saúde merece o melhor."},
+  {"ordem":2,"tipo":"icones","titulo":"CONFIRA A REDE E O REEMBOLSO","itens":[{"icone":"🏥","label":"Hospitais & Médicos"},{"icone":"💰","label":"Valor de volta"}]},
+  {"ordem":3,"tipo":"lista","titulo":"O QUE TODO PLANO PRECISA TER","corpo":"✅ Consultas e exames cobertos\\n✅ Rede credenciada ampla\\n✅ Internação com acompanhante\\n✅ Carência reduzida"},
+  {"ordem":4,"tipo":"cta","titulo":"SOLICITE SUA ANÁLISE GRATUITA","botao":"CLIQUE NO LINK DA BIO"}
+]`
 
   const response = await client.messages.create({
     model:      'claude-haiku-4-5-20251001',
@@ -61,5 +57,12 @@ Responda SOMENTE com JSON:
     throw new Error('Erro ao processar resposta da IA. Tente novamente.')
   }
 
-  return dados.map(s => ({ ...s, id: Math.random().toString(36).slice(2) }))
+  // Normaliza para compatibilidade com tipo Slide
+  return dados.map(s => ({
+    ...s,
+    id:     Math.random().toString(36).slice(2),
+    titulo: s.titulo ?? '',
+    corpo:  s.subtitulo ?? (s.corpo ?? '') ,
+    destaque: s.botao ?? '',
+  }))
 }
