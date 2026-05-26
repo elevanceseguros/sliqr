@@ -1,224 +1,92 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const maxDuration = 60
+export const maxDuration = 45
 
-type TipoVisual =
-  | 'capa'
-  | 'carro'
-  | 'chave'
-  | 'escudo'
-  | 'familia'
-  | 'saude'
-  | 'empresa'
-  | 'casa'
-  | 'produto'
-  | 'abstrato'
-
-function normalizarTema(v: any) {
-  return String(v ?? '').trim().slice(0, 280)
-}
-
-function detectarVisual(tema: string, slideIndex: number): TipoVisual {
+function buildPrompt(tema: string, tipo: string): string {
   const t = tema.toLowerCase()
 
-  if (
-    t.includes('proteção veicular') ||
-    t.includes('seguro auto') ||
-    t.includes('carro') ||
-    t.includes('veículo') ||
-    t.includes('veiculo') ||
-    t.includes('moto')
-  ) {
-    const ciclo: TipoVisual[] = ['carro', 'escudo', 'chave', 'carro', 'familia']
-    return ciclo[slideIndex % ciclo.length]
-  }
+  // Prompts específicos por nicho — sem texto, sem letras, só objeto visual
+  if (t.match(/seguro\s?auto|carro|veicular|proteção\s?veicular|guincho/))
+    return 'luxury car key on dark polished marble surface, soft studio bokeh lighting, no text, no words, no letters, photorealistic commercial product photography, 8k'
 
-  if (
-    t.includes('plano de saúde') ||
-    t.includes('plano de saude') ||
-    t.includes('saúde') ||
-    t.includes('saude') ||
-    t.includes('convênio') ||
-    t.includes('convenio')
-  ) {
-    const ciclo: TipoVisual[] = ['saude', 'familia', 'escudo', 'empresa', 'saude']
-    return ciclo[slideIndex % ciclo.length]
-  }
+  if (t.match(/seguro\s?de\s?vida|vida|família|proteção\s?familiar/))
+    return 'silhouette of happy family at golden sunset beach, warm cinematic light, no text, no words, photorealistic, emotional'
 
-  if (
-    t.includes('seguro residencial') ||
-    t.includes('casa') ||
-    t.includes('apartamento') ||
-    t.includes('imóvel') ||
-    t.includes('imovel')
-  ) {
-    const ciclo: TipoVisual[] = ['casa', 'escudo', 'familia', 'chave', 'casa']
-    return ciclo[slideIndex % ciclo.length]
-  }
+  if (t.match(/plano\s?de\s?saúde|saúde|médico|hospital|clínica|steto/))
+    return 'elegant stethoscope on clean white marble surface, soft shadows, minimal medical photography, no text, no words, photorealistic'
 
-  if (
-    t.includes('seguro empresarial') ||
-    t.includes('empresa') ||
-    t.includes('mei') ||
-    t.includes('pme') ||
-    t.includes('negócio') ||
-    t.includes('negocio')
-  ) {
-    const ciclo: TipoVisual[] = ['empresa', 'escudo', 'chave', 'empresa', 'abstrato']
-    return ciclo[slideIndex % ciclo.length]
-  }
+  if (t.match(/farmácia|manipulado|composto|colágeno|suplemento|vitamina|goma/))
+    return 'premium glass dropper bottles with botanical herbs on marble surface, soft natural light, luxury health photography, no text, no letters, photorealistic'
 
-  if (
-    t.includes('farmácia') ||
-    t.includes('farmacia') ||
-    t.includes('manipulado') ||
-    t.includes('suplemento') ||
-    t.includes('vitamina') ||
-    t.includes('dermocosmético') ||
-    t.includes('dermocosmetico')
-  ) {
-    const ciclo: TipoVisual[] = ['produto', 'saude', 'escudo', 'produto', 'abstrato']
-    return ciclo[slideIndex % ciclo.length]
-  }
+  if (t.match(/imóvel|imobiliária|apartamento|casa|aluguel|compra/))
+    return 'modern luxury apartment living room, floor-to-ceiling windows, minimalist furniture, soft afternoon sunlight, no text, architectural photography, photorealistic'
 
-  return slideIndex === 0 ? 'capa' : 'abstrato'
-}
+  if (t.match(/financ|invest|dinheiro|renda|lucro|consórcio|banco/))
+    return 'gold coins and abstract financial elements on dark elegant surface, macro photography, luxury, no text, no numbers, no words, commercial photography'
 
-function promptVisual({
-  tema,
-  titulo,
-  tipo,
-  cor,
-}: {
-  tema: string
-  titulo: string
-  tipo: TipoVisual
-  cor: string
-}) {
-  const base = `
-Premium commercial advertising visual asset for a social media carousel.
-Dark elegant background, cinematic lighting, modern Brazilian marketing campaign style.
-Main brand color: ${cor}.
-No text, no letters, no words, no logo, no watermark.
-Isolated object composition, clean edges, high contrast, professional studio lighting.
-The image must work as a supporting visual element inside a graphic design layout.
-`.trim()
+  if (t.match(/nutri|alimentação|dieta|emagrecimento/))
+    return 'vibrant colorful healthy food flat lay, fresh fruits and vegetables on white surface, no text, no words, food photography, photorealistic'
 
-  const contexto = `Theme: ${tema}. Slide idea: ${titulo}.`
+  if (t.match(/advocacia|advogado|direito|jurídico/))
+    return 'wooden gavel and law books on dark mahogany desk, dramatic side lighting, no text, no words, professional legal photography'
 
-  const map: Record<TipoVisual, string> = {
-    capa: 'Abstract premium 3D marketing visual, glowing shield, elegant dynamic shapes, depth, dark blue background.',
-    carro: 'Modern car front view, premium realistic 3D render, dramatic light, protection feeling, dark blue studio background.',
-    chave: 'Premium modern car key, floating, realistic 3D render, metallic details, elegant light reflections.',
-    escudo: 'Premium 3D shield icon, protection concept, glossy material, subtle glow, realistic render.',
-    familia: 'Warm but professional scene of a family near a car, protective feeling, realistic advertising photography, elegant and safe atmosphere.',
-    saude: 'Premium healthcare visual, medical protection concept, subtle cross symbol, stethoscope, clean and modern, realistic 3D render.',
-    empresa: 'Premium business protection visual, modern office building or business team silhouette, elegant corporate lighting.',
-    casa: 'Premium modern house with protection shield, realistic 3D render, elegant lighting, safe home concept.',
-    produto: 'Premium pharmaceutical or cosmetic product packshot, clean laboratory feel, elegant 3D render, no readable text.',
-    abstrato: 'Premium abstract 3D composition, shield, glow, depth, elegant shapes, modern SaaS design feel.',
-  }
+  if (t.match(/contabilidade|contador|empresa|negócio|empreendedor/))
+    return 'modern workspace with laptop and minimal desk accessories, clean professional atmosphere, soft diffused light, no text, no words, corporate photography'
 
-  return `${base}\n${contexto}\nVisual: ${map[tipo]}`
-}
+  if (t.match(/marmita|delivery|restaurante|comida/))
+    return 'gourmet meal prep containers with colorful healthy food, overhead flat lay, soft natural light, no text, food photography, photorealistic'
 
-function extrairImagem(data: any): string | null {
-  if (data?.images?.[0]?.url) return data.images[0].url
-  if (data?.image?.url) return data.image.url
-  if (data?.url) return data.url
-  return null
+  if (tipo === 'cta')
+    return `abstract premium bokeh background with warm golden light circles, elegant, luxury feel, no text, no words, no letters, cinematic`
+
+  // Genérico
+  return `premium visual composition for business post about "${tema.slice(0,40)}", elegant shapes, professional studio lighting, no text, no words, no letters, no watermark, photorealistic commercial photography`
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const { tema, tipo } = await request.json()
+    const falKey = process.env.FAL_API_KEY
 
-    const tema = normalizarTema(body?.tema)
-    const titulo = normalizarTema(body?.titulo)
-    const cor = String(body?.cor ?? '#0f172a')
-    const slideIndex = Number.isFinite(Number(body?.slideIndex)) ? Number(body.slideIndex) : 0
-    const forcar = Boolean(body?.forcar)
-
-    if (!tema && !titulo) {
-      return NextResponse.json(
-        { erro: 'Tema ou título obrigatório' },
-        { status: 400 }
-      )
+    if (!falKey) {
+      return NextResponse.json({ url: '' })
     }
 
-    const key = process.env.FAL_API_KEY || process.env.FAL_KEY
-
-    if (!key) {
-      return NextResponse.json(
-        { erro: 'FAL_API_KEY ou FAL_KEY não configurada no Vercel' },
-        { status: 500 }
-      )
+    // Só gera para capa e cta — outros slides ficam com fundo sólido/gradiente
+    if (tipo && !['capa', 'cta'].includes(tipo)) {
+      return NextResponse.json({ url: '' })
     }
 
-    const tipo = forcar
-      ? detectarVisual(`${tema} ${titulo}`, slideIndex)
-      : detectarVisual(tema, slideIndex)
+    const prompt = buildPrompt(tema ?? '', tipo ?? 'capa')
 
-    const prompt = promptVisual({
-      tema,
-      titulo,
-      tipo,
-      cor,
-    })
-
-    const falRes = await fetch('https://fal.run/fal-ai/flux/schnell', {
-      method: 'POST',
+    const res = await fetch('https://fal.run/fal-ai/flux/schnell', {
+      method:  'POST',
       headers: {
-        Authorization: `Key ${key}`,
-        'Content-Type': 'application/json',
+        'Authorization': `Key ${falKey}`,
+        'Content-Type':  'application/json',
       },
       body: JSON.stringify({
         prompt,
-        image_size: 'square_hd',
-        num_images: 1,
-        num_inference_steps: 4,
-        enable_safety_checker: true,
-        output_format: 'png',
+        image_size:            'square_hd',
+        num_inference_steps:   4,
+        num_images:            1,
+        enable_safety_checker: false,
+        seed:                  Math.floor(Math.random() * 99999999),
       }),
     })
 
-    if (!falRes.ok) {
-      const err = await falRes.text()
-
-      return NextResponse.json(
-        {
-          erro: `fal.ai ${falRes.status}: ${err.slice(0, 1000)}`,
-        },
-        { status: 500 }
-      )
+    if (!res.ok) {
+      console.error('[imagem-ia] fal.ai erro:', res.status, await res.text().catch(()=>''))
+      return NextResponse.json({ url: '' })
     }
 
-    const data = await falRes.json()
-    const imageUrl = extrairImagem(data)
+    const data = await res.json()
+    const url  = data.images?.[0]?.url ?? ''
+    console.log('[imagem-ia] ok tipo:', tipo, 'url:', url.slice(0,60))
+    return NextResponse.json({ url })
 
-    if (!imageUrl) {
-      return NextResponse.json(
-        {
-          erro: 'fal.ai não retornou URL da imagem',
-          raw: data,
-        },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({
-      url: imageUrl,
-      tipo,
-      prompt,
-    })
   } catch (err: any) {
-    console.error('[imagem-ia]', err)
-
-    return NextResponse.json(
-      {
-        erro: err?.message ?? 'Erro ao gerar imagem IA',
-      },
-      { status: 500 }
-    )
+    console.error('[imagem-ia] erro:', err.message)
+    return NextResponse.json({ url: '' }) // Falha silenciosa — carrossel continua
   }
 }
