@@ -16,6 +16,18 @@ export default function LandingPage() {
         .fade3{animation:fadeUp 0.6s 0.2s ease both}
         .fade4{animation:fadeUp 0.6s 0.3s ease both}
         .fade5{animation:fadeUp 0.6s 0.4s ease both}
+
+        @media (max-width: 768px) {
+          .nav-links { display: none !important; }
+          .nav-cta-text { display: none !important; }
+          .hero-section { padding: 100px 5% 60px !important; }
+          .section-pad { padding: 4rem 5% !important; }
+          .cta-box { padding: 3rem 1.5rem !important; }
+          .planos-grid { grid-template-columns: 1fr !important; max-width: 420px; margin: 0 auto; }
+        }
+        @media (max-width: 480px) {
+          .hero-section { padding: 90px 4% 50px !important; }
+        }
       `}</style>
 
       {/* NAV */}
@@ -26,19 +38,19 @@ export default function LandingPage() {
           </div>
           Sliqr
         </div>
-        <div style={{display:'flex',gap:'0',background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'100px',padding:'4px'}}>
+        <div className="nav-links" style={{display:'flex',gap:'0',background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'100px',padding:'4px'}}>
           {['Como funciona','O que faz','Planos'].map(l => (
             <a key={l} href={`#${l.toLowerCase().replace(/ /g,'-')}`} style={{color:'#8B95A8',textDecoration:'none',fontSize:'0.8rem',fontWeight:500,padding:'0.4rem 1.1rem',borderRadius:'100px'}}>{l}</a>
           ))}
         </div>
         <div style={{display:'flex',gap:'10px',alignItems:'center'}}>
-          <Link href="/login" style={{color:'#8B95A8',textDecoration:'none',fontSize:'0.85rem',fontWeight:500,padding:'0.5rem 1rem'}}>Entrar</Link>
+          <Link href="/login" className="nav-cta-text" style={{color:'#8B95A8',textDecoration:'none',fontSize:'0.85rem',fontWeight:500,padding:'0.5rem 1rem'}}>Entrar</Link>
           <Link href="/cadastro" style={{background:'#2D6FFF',color:'#fff',textDecoration:'none',borderRadius:'8px',padding:'0.55rem 1.25rem',fontSize:'0.85rem',fontWeight:600}}>Criar grátis</Link>
         </div>
       </nav>
 
       {/* HERO */}
-      <section style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:'120px 5% 80px',position:'relative',overflow:'hidden'}}>
+      <section className="hero-section" style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:'120px 5% 80px',position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(45,111,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(45,111,255,0.04) 1px,transparent 1px)',backgroundSize:'60px 60px',maskImage:'radial-gradient(ellipse 80% 60% at 50% 40%,black 30%,transparent 80%)',pointerEvents:'none'}}/>
         <div style={{position:'absolute',width:'600px',height:'400px',background:'rgba(45,111,255,0.12)',filter:'blur(120px)',borderRadius:'50%',top:'5%',left:'50%',transform:'translateX(-50%)',pointerEvents:'none'}}/>
 
@@ -71,7 +83,7 @@ export default function LandingPage() {
       </section>
 
       {/* COMO FUNCIONA */}
-      <section id="como-funciona" style={{padding:'7rem 5%',borderTop:'1px solid rgba(255,255,255,0.07)'}}>
+      <section id="como-funciona" className="section-pad" style={{padding:'7rem 5%',borderTop:'1px solid rgba(255,255,255,0.07)'}}>
         <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.7rem',letterSpacing:'0.1em',textTransform:'uppercase',color:'#2D6FFF',marginBottom:'1rem',display:'flex',alignItems:'center',gap:'8px'}}>
           <span style={{width:'20px',height:'1px',background:'#2D6FFF',display:'block'}}/>Simples assim
         </div>
@@ -94,14 +106,14 @@ export default function LandingPage() {
       </section>
 
       {/* PLANOS */}
-      <section id="planos" style={{padding:'7rem 5%',borderTop:'1px solid rgba(255,255,255,0.07)'}}>
+      <section id="planos" className="section-pad" style={{padding:'7rem 5%',borderTop:'1px solid rgba(255,255,255,0.07)'}}>
         <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.7rem',letterSpacing:'0.1em',textTransform:'uppercase',color:'#2D6FFF',marginBottom:'1rem',display:'flex',alignItems:'center',gap:'8px'}}>
           <span style={{width:'20px',height:'1px',background:'#2D6FFF',display:'block'}}/>Planos
         </div>
         <h2 style={{fontSize:'clamp(2rem,3.5vw,2.8rem)',fontWeight:700,letterSpacing:'-0.03em',lineHeight:1.1,marginBottom:'4rem'}}>
           Comece grátis.<br/><span style={{background:'linear-gradient(90deg,#2D6FFF,#00D4FF)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>Pague só quando quiser mais.</span>
         </h2>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'16px',alignItems:'start'}}>
+        <div className="planos-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'16px',alignItems:'start'}}>
           {[
             {nome:'Free',preco:'R$0',periodo:'para sempre',features:['1 post por dia','1 slide por post','Baixar pacote'],off:['Sem edição','Com marca d\'água'],featured:false},
             {nome:'Starter',preco:'R$37',periodo:'/mês',features:['1 post por dia','Até 5 slides','Baixar separado ou ZIP','Edite antes de baixar','Sem marca d\'água'],off:['Sem logo própria'],featured:false},
@@ -141,8 +153,8 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section style={{padding:'6rem 5%',borderTop:'1px solid rgba(255,255,255,0.07)'}}>
-        <div style={{maxWidth:'800px',margin:'0 auto',background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'24px',padding:'5rem 3rem',textAlign:'center',position:'relative',overflow:'hidden'}}>
+      <section className="section-pad" style={{padding:'6rem 5%',borderTop:'1px solid rgba(255,255,255,0.07)'}}>
+        <div className="cta-box" style={{maxWidth:'800px',margin:'0 auto',background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'24px',padding:'5rem 3rem',textAlign:'center',position:'relative',overflow:'hidden'}}>
           <div style={{position:'absolute',top:'-80px',left:'50%',transform:'translateX(-50%)',width:'400px',height:'200px',background:'rgba(45,111,255,0.1)',filter:'blur(60px)',borderRadius:'50%',pointerEvents:'none'}}/>
           <h2 style={{fontSize:'clamp(2rem,4vw,3rem)',fontWeight:700,letterSpacing:'-0.03em',lineHeight:1.1,marginBottom:'1rem',position:'relative'}}>
             Crie seu primeiro post<br/><span style={{background:'linear-gradient(90deg,#2D6FFF,#00D4FF)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>agora. É grátis.</span>
@@ -163,7 +175,7 @@ export default function LandingPage() {
           </div>
           Sliqr
         </div>
-        <div style={{display:'flex',gap:'2rem'}}>
+        <div style={{display:'flex',gap:'1.5rem',flexWrap:'wrap'}}>
           {['Privacidade','Termos de uso','Contato'].map(l => (
             <a key={l} href="#" style={{color:'#4A5568',textDecoration:'none',fontSize:'0.8rem'}}>{l}</a>
           ))}
