@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const { html, logoUrl, logoX, logoY, logoW } = await request.json()
 
-    if (!html) {
+    if (!html || typeof html !== 'string') {
       return NextResponse.json({ erro: 'HTML obrigatório' }, { status: 400 })
     }
 
@@ -56,11 +56,16 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         html: htmlFinal,
         format: 'png',
+
         viewport_width: 1080,
         viewport_height: 1080,
         device_scale_factor: 2,
-        wait_until: 'networkidle2',
+        full_page: false,
+
+        wait_until: ['load', 'networkidle2'],
         delay: 1,
+        timeout: 30,
+
         cache: false,
         block_ads: true,
         block_cookie_banners: true,
@@ -73,7 +78,20 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(
         {
-          erro: `ScreenshotOne ${imgRes.status}: ${err.slice(0, 700)}`,
+          erro: `ScreenshotOne ${imgRes.status}: ${err.slice(0, 1000)}`,
+        },
+        { status: 500 }
+      )
+    }
+
+    const contentType = imgRes.headers.get('content-type') ?? 'image/png'
+
+    if (!contentType.includes('image')) {
+      const text = await imgRes.text()
+
+      return NextResponse.json(
+        {
+          erro: `ScreenshotOne retornou ${contentType}: ${text.slice(0, 1000)}`,
         },
         { status: 500 }
       )
@@ -81,7 +99,6 @@ export async function POST(request: NextRequest) {
 
     const buffer = await imgRes.arrayBuffer()
     const base64 = Buffer.from(buffer).toString('base64')
-    const contentType = imgRes.headers.get('content-type') ?? 'image/png'
 
     return NextResponse.json({
       url: `data:${contentType};base64,${base64}`,
