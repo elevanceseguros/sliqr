@@ -223,9 +223,9 @@ function CriarInner() {
 
       for (let i = 0; i < slidesGerados.length; i++) {
         const html = gerarHTML(slidesGerados[i], slidesGerados.length, i, {
-          cor,
-          fonte,
-          estilo,
+          cor: cfg.cor,
+          fonte: cfg.fonte,
+          estilo: cfg.estilo,
           logoUrl: cfg.logoUrl,
           logoX: cfg.logoX,
           logoY: cfg.logoY,
