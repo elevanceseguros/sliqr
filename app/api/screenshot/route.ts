@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
 
 export const maxDuration = 30
-
-function signQuery(queryString: string, secretKey: string) {
-  return crypto
-    .createHmac('sha256', secretKey)
-    .update(queryString)
-    .digest('hex')
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,11 +11,10 @@ export async function POST(request: NextRequest) {
     }
 
     const accessKey = process.env.SCREENSHOTONE_ACCESS_KEY
-    const secretKey = process.env.SCREENSHOTONE_SECRET_KEY
 
-    if (!accessKey || !secretKey) {
+    if (!accessKey) {
       return NextResponse.json(
-        { erro: 'ScreenshotOne não configurado' },
+        { erro: 'SCREENSHOTONE_ACCESS_KEY não configurado' },
         { status: 500 }
       )
     }
@@ -56,37 +47,33 @@ export async function POST(request: NextRequest) {
         : `${htmlFinal}${logoTag}`
     }
 
-    const encodedHtml = Buffer.from(htmlFinal, 'utf8').toString('base64')
-    const dataUrl = `data:text/html;base64,${encodedHtml}`
-
-    const params = new URLSearchParams({
-      access_key: accessKey,
-      url: dataUrl,
-      format: 'png',
-      viewport_width: '1080',
-      viewport_height: '1080',
-      device_scale_factor: '2',
-      wait_until: 'networkidle2',
-      delay: '1',
-      cache: 'false',
-      block_ads: 'true',
-      block_cookie_banners: 'true',
-      omit_background: 'false',
+    const imgRes = await fetch('https://api.screenshotone.com/take', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Key': accessKey,
+      },
+      body: JSON.stringify({
+        html: htmlFinal,
+        format: 'png',
+        viewport_width: 1080,
+        viewport_height: 1080,
+        device_scale_factor: 2,
+        wait_until: 'networkidle2',
+        delay: 1,
+        cache: false,
+        block_ads: true,
+        block_cookie_banners: true,
+        omit_background: false,
+      }),
     })
-
-    const queryString = params.toString()
-    const signature = signQuery(queryString, secretKey)
-
-    const screenshotUrl = `https://api.screenshotone.com/take?${queryString}&signature=${signature}`
-
-    const imgRes = await fetch(screenshotUrl)
 
     if (!imgRes.ok) {
       const err = await imgRes.text()
 
       return NextResponse.json(
         {
-          erro: `ScreenshotOne ${imgRes.status}: ${err.slice(0, 500)}`,
+          erro: `ScreenshotOne ${imgRes.status}: ${err.slice(0, 700)}`,
         },
         { status: 500 }
       )
