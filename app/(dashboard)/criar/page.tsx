@@ -84,222 +84,160 @@ function quebrar(ctx: CanvasRenderingContext2D, texto: string, maxW: number): st
 async function renderSlide(
   slide: Slide, total: number, fotoUrl: string, cfg: Cfg, preview = false
 ): Promise<Blob> {
-  const SIZE   = preview ? 680 : 1080
-  const S      = SIZE / 1080
-  const fonte  = FONTES.find(f => f.id === cfg.fonteId) ?? FONTES[0]
-  const cor    = cfg.cor
-  const cor2   = cfg.corSecundaria
-  const escuro = escurecer(cor, 0.35)
-  const txtCor = corTexto(cor)
-  const PAD    = 80 * S
-  const LRG    = SIZE - PAD * 2
+  const SIZE  = preview ? 680 : 1080
+  const S     = SIZE / 1080
+  const fonte = FONTES.find(f => f.id === cfg.fonteId) ?? FONTES[0]
+  const cor   = cfg.cor
+  const escuro = (hex: string, f = 0.4) => {
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16)
+    return `rgb(${Math.round(r*f)},${Math.round(g*f)},${Math.round(b*f)})`
+  }
+  const lum = (hex: string) => {
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16)
+    return (r*0.299+g*0.587+b*0.114)/255
+  }
+
+  const isFoto   = cfg.fundoId === 'foto-ia' && !!fotoUrl
+  const isDark   = isFoto || lum(cor) < 0.5
+  const txtMain  = isDark ? '#FFFFFF' : '#111827'
+  const txtSub   = isDark ? 'rgba(255,255,255,0.80)' : 'rgba(0,0,0,0.65)'
+  const accent   = isDark ? cor : escuro(cor, 0.7)
 
   const cv  = document.createElement('canvas')
   cv.width  = cv.height = SIZE
   const ctx = cv.getContext('2d')!
 
-  // ── FUNDO ──
-  if (cfg.fundoId === 'foto-ia' && fotoUrl) {
-    // Fundo com foto
-    ctx.fillStyle = '#060810'; ctx.fillRect(0, 0, SIZE, SIZE)
+  // ── FUNDO ──────────────────────────────────────────────
+  if (isFoto) {
+    ctx.fillStyle = '#060810'; ctx.fillRect(0,0,SIZE,SIZE)
     try {
       const img = await carregarImg(fotoUrl.startsWith('data:') ? fotoUrl : `/api/proxy-img?src=${encodeURIComponent(fotoUrl)}`)
-      const sc  = Math.max(SIZE / img.width, SIZE / img.height)
-      ctx.drawImage(img, (SIZE - img.width*sc)/2, (SIZE - img.height*sc)/2, img.width*sc, img.height*sc)
+      const sc  = Math.max(SIZE/img.width, SIZE/img.height)
+      ctx.drawImage(img,(SIZE-img.width*sc)/2,(SIZE-img.height*sc)/2,img.width*sc,img.height*sc)
     } catch {}
     const ov = ctx.createLinearGradient(0,0,0,SIZE)
-    ov.addColorStop(0,'rgba(4,6,16,0.80)'); ov.addColorStop(0.5,'rgba(4,6,16,0.55)'); ov.addColorStop(1,'rgba(4,6,16,0.92)')
+    ov.addColorStop(0,'rgba(4,6,16,0.85)'); ov.addColorStop(0.4,'rgba(4,6,16,0.60)'); ov.addColorStop(1,'rgba(4,6,16,0.95)')
     ctx.fillStyle = ov; ctx.fillRect(0,0,SIZE,SIZE)
   } else if (cfg.fundoId === 'gradiente') {
-    // Gradiente: cor principal → escurecida
-    const grad = ctx.createLinearGradient(0, 0, SIZE, SIZE)
-    grad.addColorStop(0, cor)
-    grad.addColorStop(1, escuro)
-    ctx.fillStyle = grad; ctx.fillRect(0,0,SIZE,SIZE)
+    const g = ctx.createLinearGradient(0,0,SIZE*0.8,SIZE)
+    g.addColorStop(0, cor); g.addColorStop(1, escuro(cor, 0.45))
+    ctx.fillStyle = g; ctx.fillRect(0,0,SIZE,SIZE)
   } else {
-    // Sólido
     ctx.fillStyle = cor; ctx.fillRect(0,0,SIZE,SIZE)
   }
 
-  // ── ELEMENTOS DECORATIVOS ──
-  const isFoto = cfg.fundoId === 'foto-ia'
-  const txtPrincipal = isFoto ? '#FFFFFF' : txtCor
-  const txtSecundario = isFoto ? 'rgba(220,228,255,0.85)' : (luminosidade(cor) > 0.5 ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.75)')
-  const acento = isFoto ? cor : (luminosidade(cor) > 0.5 ? '#0D1117' : '#FFFFFF')
+  // ── ELEMENTOS DECORATIVOS ──────────────────────────────
+  // Círculo grande canto superior direito
+  ctx.beginPath(); ctx.arc(SIZE-10*S,10*S,220*S,0,Math.PI*2)
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'; ctx.fill()
 
-  // Círculo decorativo canto superior direito
-  ctx.beginPath()
-  ctx.arc(SIZE - 60*S, 60*S, 180*S, 0, Math.PI*2)
-  ctx.fillStyle = isFoto ? `${cor}22` : (luminosidade(cor) > 0.5 ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)')
-  ctx.fill()
+  // Círculo médio canto inferior esquerdo
+  ctx.beginPath(); ctx.arc(0,SIZE,160*S,0,Math.PI*2)
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'; ctx.fill()
 
-  // Círculo menor canto inferior esquerdo
-  ctx.beginPath()
-  ctx.arc(80*S, SIZE - 80*S, 100*S, 0, Math.PI*2)
-  ctx.fillStyle = isFoto ? `${cor}18` : (luminosidade(cor) > 0.5 ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)')
-  ctx.fill()
+  // Barra de acento no topo
+  const barCor = isDark ? 'rgba(255,255,255,0.9)' : escuro(cor,0.6)
+  ctx.fillStyle = barCor; ctx.fillRect(0,0,SIZE,8*S)
 
-  // Linha de acento no topo
-  ctx.fillStyle = isFoto ? cor : acento
-  ctx.globalAlpha = isFoto ? 1 : 0.25
-  ctx.fillRect(PAD, 44*S, 56*S, 5*S)
-  ctx.globalAlpha = 1
+  const PAD = 80*S
+  const LRG = SIZE - PAD*2
 
-  // Número do slide — discreto canto superior direito
-  ctx.font      = `500 ${24*S}px ${fonte.css}`
-  ctx.fillStyle = isFoto ? 'rgba(255,255,255,0.3)' : (luminosidade(cor) > 0.5 ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.3)')
-  ctx.textAlign = 'right'
-  ctx.fillText(`${slide.ordem}/${total}`, SIZE - PAD, 64*S)
-  ctx.textAlign = 'left'
-
-  // ── LAYOUT DO CONTEÚDO ──
-  let curY = SIZE * 0.20
-
-  if (cfg.layoutId === 'bullets') {
-    // LAYOUT: bullets
-    // Título
-    const fsTit = 64*S
-    ctx.font      = `${fonte.peso} ${fsTit}px ${fonte.css}`
-    ctx.fillStyle = txtPrincipal
-    if (isFoto) { ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 10*S }
-    for (const l of quebrar(ctx, slide.titulo, LRG)) {
-      ctx.fillText(l, PAD, curY); curY += fsTit * 1.25
-    }
-    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0
-    curY += 30*S
-
-    // Bullet points do corpo
-    const linhas = slide.corpo.split('\n').filter(Boolean)
-    const fsItem = 40*S
-    ctx.font = `500 ${fsItem}px ${fonte.css}`
-    for (const linha of linhas) {
-      // Ícone bullet
-      ctx.fillStyle = isFoto ? cor : acento
-      ctx.globalAlpha = 0.9
-      ctx.beginPath()
-      ctx.arc(PAD + 14*S, curY - 12*S, 8*S, 0, Math.PI*2)
-      ctx.fill()
-      ctx.globalAlpha = 1
-      // Texto
-      ctx.fillStyle = txtSecundario
-      ctx.fillText(linha, PAD + 36*S, curY)
-      curY += fsItem * 1.65
-    }
-
-  } else if (cfg.layoutId === 'pergunta') {
-    // LAYOUT: pergunta/resposta
-    // Destaque = pergunta no topo
-    if (slide.destaque) {
-      const fsD = 38*S
-      ctx.font = `600 ${fsD}px ${fonte.css}`
-      ctx.fillStyle = isFoto ? cor : acento
-      ctx.globalAlpha = 0.85
-      // Pill de fundo
-      const tw = ctx.measureText(slide.destaque).width
-      ctx.beginPath()
-      ctx.roundRect(PAD - 12*S, curY - fsD*0.85, tw + 24*S, fsD*1.3, 6*S)
-      ctx.fillStyle = isFoto ? `${cor}30` : (luminosidade(cor) > 0.5 ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)')
-      ctx.fill()
-      ctx.globalAlpha = 1
-      ctx.fillStyle = isFoto ? cor : acento
-      ctx.fillText(slide.destaque, PAD, curY)
-      curY += fsD * 2
-    }
-    // Título = resposta grande
-    const fsTit = 80*S
-    ctx.font      = `${fonte.peso} ${fsTit}px ${fonte.css}`
-    ctx.fillStyle = txtPrincipal
-    if (isFoto) { ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 12*S }
-    for (const l of quebrar(ctx, slide.titulo, LRG)) {
-      ctx.fillText(l, PAD, curY); curY += fsTit * 1.2
-    }
-    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0
-    curY += 20*S
-    // Corpo = detalhe
-    ctx.font = `400 ${40*S}px ${fonte.css}`
-    ctx.fillStyle = txtSecundario
-    for (const linha of slide.corpo.split('\n').filter(Boolean).slice(0,3)) {
-      ctx.fillText(linha, PAD, curY); curY += 56*S
-    }
-
-  } else {
-    // LAYOUT PADRÃO: título + corpo
-    // Destaque (slide 1)
-    if (slide.ordem === 1 && slide.destaque) {
-      const fsD = 32*S
-      ctx.font      = `700 ${fsD}px ${fonte.css}`
-      ctx.fillStyle = isFoto ? cor : acento
-      const txt     = slide.destaque.toUpperCase()
-      const tw      = ctx.measureText(txt).width
-      // Pill
-      ctx.globalAlpha = 0.15
-      ctx.fillStyle   = isFoto ? cor : acento
-      ctx.beginPath()
-      ctx.roundRect(PAD - 10*S, curY - fsD*0.85, tw + 20*S, fsD*1.25, 4*S)
-      ctx.fill()
-      ctx.globalAlpha = 1
-      ctx.fillStyle   = isFoto ? cor : acento
-      ctx.fillText(txt, PAD, curY)
-      curY += fsD * 1.8
-    }
-
-    // Título grande
-    const fsTit = (slide.ordem === 1 ? 74 : 82) * S
-    ctx.font      = `${fonte.peso} ${fsTit}px ${fonte.css}`
-    ctx.fillStyle = txtPrincipal
-    if (isFoto) { ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 12*S }
-    for (const l of quebrar(ctx, slide.titulo, LRG)) {
-      ctx.fillText(l, PAD, curY); curY += fsTit * 1.22
-    }
-    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0
-
-    // Linha decorativa
-    curY += 20*S
-    ctx.fillStyle   = isFoto ? cor : acento
-    ctx.globalAlpha = 0.5
-    ctx.fillRect(PAD, curY, 50*S, 3*S)
-    ctx.globalAlpha = 1
-    curY += 28*S
-
-    // Corpo
-    ctx.font      = `400 ${42*S}px ${fonte.css}`
-    ctx.fillStyle = txtSecundario
-    for (const linha of slide.corpo.split('\n').filter(Boolean).slice(0,3)) {
-      for (const parte of quebrar(ctx, linha, LRG)) {
-        ctx.fillText(parte, PAD, curY); curY += 56*S
-      }
-    }
-  }
-
-  // ── LOGO ──
+  // ── CABEÇALHO ─────────────────────────────────────────
+  // Logo (canto superior direito)
+  let logoW = 0
   if (cfg.logo.url) {
     try {
       const logo = await carregarImg(cfg.logo.url)
       const lH   = cfg.logo.size * S
-      const lW   = (logo.width / logo.height) * lH
-      ctx.globalAlpha = 0.92
-      ctx.drawImage(logo, cfg.logo.x*S, cfg.logo.y*S, lW, lH)
+      logoW      = (logo.width/logo.height)*lH
+      ctx.globalAlpha = 0.95
+      ctx.drawImage(logo, SIZE-PAD-logoW, PAD*0.4, logoW, lH)
       ctx.globalAlpha = 1
     } catch {}
   }
 
-  // ── DOTS ──
-  const dotY = SIZE - 52*S
-  let   dotX = PAD
+  // Número do slide — badge no topo esquerdo
+  const badgeY = PAD * 0.75
+  ctx.font      = `700 ${26*S}px ${fonte.css}`
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.35)'
+  ctx.fillText(`${slide.ordem} / ${total}`, PAD, badgeY)
+
+  // ── EMOJI grande (lado esquerdo, zona média) ───────────
+  const emojiSize = 72*S
+  let curY = SIZE * 0.20
+
+  if ((slide as any).emoji) {
+    ctx.font     = `${emojiSize}px serif`
+    ctx.fillText((slide as any).emoji, PAD, curY + emojiSize*0.8)
+    curY += emojiSize * 1.2
+  }
+
+  // ── TAG DESTAQUE (só slide 1) ─────────────────────────
+  if (slide.ordem === 1 && slide.destaque) {
+    const fsTag = 28*S
+    ctx.font    = `700 ${fsTag}px ${fonte.css}`
+    const tw    = ctx.measureText(slide.destaque.toUpperCase()).width
+    // Pill
+    const pillH = fsTag*1.6, pillW = tw + 28*S
+    const pillY = curY - fsTag*0.85
+    ctx.fillStyle   = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.10)'
+    ctx.beginPath(); ctx.roundRect(PAD-6*S, pillY, pillW, pillH, pillH/2); ctx.fill()
+    ctx.fillStyle = txtMain
+    ctx.fillText(slide.destaque.toUpperCase(), PAD, curY)
+    curY += fsTag * 2.0
+  }
+
+  // ── TÍTULO ────────────────────────────────────────────
+  const fsTit = (slide.ordem === 1 ? 78 : 86) * S
+  ctx.font      = `${fonte.peso} ${fsTit}px ${fonte.css}`
+  ctx.fillStyle = txtMain
+  if (isFoto) { ctx.shadowColor='rgba(0,0,0,0.6)'; ctx.shadowBlur=14*S }
+  for (const l of quebrar(ctx, slide.titulo, LRG)) {
+    ctx.fillText(l, PAD, curY); curY += fsTit * 1.22
+  }
+  ctx.shadowColor='transparent'; ctx.shadowBlur=0
+  curY += 18*S
+
+  // Linha divisória
+  ctx.fillStyle   = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.15)'
+  ctx.fillRect(PAD, curY, LRG*0.4, 2*S)
+  curY += 24*S
+
+  // ── CORPO ─────────────────────────────────────────────
+  const fsCorpo = 40*S
+  ctx.font      = `400 ${fsCorpo}px ${fonte.css}`
+  ctx.fillStyle = txtSub
+  if (isFoto) { ctx.shadowColor='rgba(0,0,0,0.4)'; ctx.shadowBlur=8*S }
+
+  const linhas = slide.corpo.split('\n').filter(Boolean)
+  for (const linha of linhas) {
+    // Mede se cabe na linha — se não, quebra
+    for (const parte of quebrar(ctx, linha, LRG)) {
+      ctx.fillText(parte, PAD, curY); curY += fsCorpo * 1.55
+    }
+  }
+  ctx.shadowColor='transparent'; ctx.shadowBlur=0
+
+  // ── RODAPÉ ────────────────────────────────────────────
+  const rodapeY = SIZE - 48*S
+
+  // Linha divisória rodapé
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.10)'
+  ctx.fillRect(PAD, rodapeY - 20*S, LRG, 1*S)
+
+  // Dots de progresso
+  let dotX = PAD
   for (let i = 0; i < total; i++) {
     const ativo = i === slide.ordem - 1
-    const dW    = ativo ? 32*S : 8*S
-    ctx.beginPath()
-    ctx.roundRect(dotX, dotY, dW, 8*S, 4*S)
-    ctx.fillStyle = ativo
-      ? (isFoto ? cor : acento)
-      : (isFoto ? 'rgba(255,255,255,0.25)' : (luminosidade(cor) > 0.5 ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.25)'))
-    ctx.fill()
-    dotX += dW + 10*S
+    const dW    = ativo ? 28*S : 7*S
+    ctx.beginPath(); ctx.roundRect(dotX, rodapeY, dW, 7*S, 3.5*S)
+    ctx.fillStyle = ativo ? (isDark ? '#FFFFFF' : escuro(cor,0.5)) : (isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)')
+    ctx.fill(); dotX += dW + 9*S
   }
 
   return new Promise(r => cv.toBlob(b => r(b!), 'image/png', 0.95))
 }
+
 
 function SlideCanvas({ slide, total, fotoUrl, cfg, onLogoMove }: {
   slide: Slide; total: number; fotoUrl: string; cfg: Cfg
