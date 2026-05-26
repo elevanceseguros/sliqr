@@ -51,14 +51,17 @@ export async function POST(request: NextRequest) {
         />
       `
 
-      htmlFinal = htmlFinal.replace('</div>\n</body>', `${logoTag}</div>\n</body>`)
+      if (htmlFinal.includes('</div>\n</body>')) {
+        htmlFinal = htmlFinal.replace('</div>\n</body>', `${logoTag}</div>\n</body>`)
+      } else {
+        htmlFinal = htmlFinal.replace('</body>', `${logoTag}</body>`)
+      }
     }
 
     const params = new URLSearchParams({
       access_key: accessKey,
       html: htmlFinal,
       format: 'png',
-      response_type: 'image',
       viewport_width: '1080',
       viewport_height: '1080',
       device_scale_factor: '2',
@@ -79,23 +82,29 @@ export async function POST(request: NextRequest) {
 
     if (!imgRes.ok) {
       const err = await imgRes.text()
+
       return NextResponse.json(
-        { erro: `ScreenshotOne ${imgRes.status}: ${err.slice(0, 300)}` },
+        {
+          erro: `ScreenshotOne ${imgRes.status}: ${err.slice(0, 500)}`,
+        },
         { status: 500 }
       )
     }
 
     const buffer = await imgRes.arrayBuffer()
-    const b64 = Buffer.from(buffer).toString('base64')
-    const ct = imgRes.headers.get('content-type') ?? 'image/png'
+    const base64 = Buffer.from(buffer).toString('base64')
+    const contentType = imgRes.headers.get('content-type') ?? 'image/png'
 
     return NextResponse.json({
-      url: `data:${ct};base64,${b64}`,
+      url: `data:${contentType};base64,${base64}`,
     })
   } catch (err: any) {
     console.error('[screenshot]', err)
+
     return NextResponse.json(
-      { erro: err?.message ?? 'Erro ao gerar screenshot' },
+      {
+        erro: err?.message ?? 'Erro ao gerar screenshot',
+      },
       { status: 500 }
     )
   }
