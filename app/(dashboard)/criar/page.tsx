@@ -152,8 +152,10 @@ function CriarInner() {
   const [slideAtivo,setSlideAtivo]=useState(0)
   const [trocando,setTrocando]=useState(false)
   const [usarIA,setUsarIA]=useState(true)
+  const usarIARef=useRef(true)
   const [erroIA,setErroIA]=useState('')
   const [cfg,setCfg]=useState<Cfg>({cor:'#2D6FFF',fonteId:'modern',logo:{url:'',x:870,y:30,size:80}})
+  useEffect(()=>{ usarIARef.current=usarIA },[usarIA])
   const fotoRef=useRef<HTMLInputElement>(null)
   const logoRef=useRef<HTMLInputElement>(null)
 
@@ -202,7 +204,8 @@ function CriarInner() {
       setSlides(data.slides)
       setGerando(false)
       setGerandoFotos(true)
-      const urls=usarIA?await gerarFotosIA(tema,qtd):await buscarFotosUnsplash(tema,qtd)
+      console.log('[gerar] usarIA ref:', usarIARef.current)
+      const urls=usarIARef.current?await gerarFotosIA(tema,qtd):await buscarFotosUnsplash(tema,qtd)
       setFotos(urls)
       setGerandoFotos(false)
     }catch(e:any){setErro(e.message);setGerando(false);setGerandoFotos(false)}
@@ -211,7 +214,7 @@ function CriarInner() {
   async function trocarFoto(){
     setTrocando(true)
     try{
-      if(usarIA){
+      if(usarIARef.current){
         const res=await fetch('/api/gerar-imagem',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema,idx:slideAtivo+10+Math.floor(Math.random()*10)})})
         const data=await res.json()
         if(data.url) setFotos(p=>{const n=[...p];n[slideAtivo]=data.url;return n})
