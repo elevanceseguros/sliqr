@@ -225,8 +225,12 @@ function CriarInner() {
         const html = gerarHTML(slidesGerados[i], slidesGerados.length, i, {
           cor,
           fonte,
-          imagemUrl: imagensIAtemp[i],
-        })
+          estilo,
+          logoUrl: cfg.logoUrl,
+          logoX: cfg.logoX,
+          logoY: cfg.logoY,
+          logoW: cfg.logoW,
+        }, imagensIAtemp[i])
 
         const img = await gerarScreenshot(html)
         imagens.push(img)
