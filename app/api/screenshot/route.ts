@@ -4,10 +4,13 @@ export const maxDuration = 30
 
 export async function POST(request: NextRequest) {
   try {
-    const { html, logoUrl, logoX, logoY, logoW } = await request.json()
+    const { html } = await request.json()
 
     if (!html || typeof html !== 'string') {
-      return NextResponse.json({ erro: 'HTML obrigatório' }, { status: 400 })
+      return NextResponse.json(
+        { erro: 'HTML obrigatório' },
+        { status: 400 }
+      )
     }
 
     const accessKey = process.env.SCREENSHOTONE_ACCESS_KEY
@@ -19,34 +22,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let htmlFinal = html
-
-    if (logoUrl) {
-      const lW = logoW ?? 190
-      const lH = 82
-      const lX = Math.round((logoX ?? 0.5) * 1080 - lW / 2)
-      const lY = Math.round((logoY ?? 0.9) * 1080 - lH / 2)
-
-      const logoTag = `
-        <img
-          src="${logoUrl}"
-          style="
-            position:absolute;
-            left:${lX}px;
-            top:${lY}px;
-            width:${lW}px;
-            height:${lH}px;
-            object-fit:contain;
-            z-index:999;
-          "
-        />
-      `
-
-      htmlFinal = htmlFinal.includes('</body>')
-        ? htmlFinal.replace('</body>', `${logoTag}</body>`)
-        : `${htmlFinal}${logoTag}`
-    }
-
     const imgRes = await fetch('https://api.screenshotone.com/take', {
       method: 'POST',
       headers: {
@@ -54,7 +29,7 @@ export async function POST(request: NextRequest) {
         'X-Access-Key': accessKey,
       },
       body: JSON.stringify({
-        html: htmlFinal,
+        html,
         format: 'png',
 
         viewport_width: 1080,
