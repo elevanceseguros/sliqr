@@ -1,3 +1,4 @@
+// SVG icons outline estilo Feather/Lucide
 const ICONS: Record<string, string> = {
   'shield':       '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
   'heart':        '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
@@ -21,130 +22,133 @@ const ICONS: Record<string, string> = {
   'info':         '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
   'stethoscope':  '<path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/>',
   'piggy-bank':   '<path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.8 1.7-1.8 2-3h2v-4h-2c0-1-.5-1.5-1-2h0z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/>',
+  'hospital':     '<rect x="3" y="2" width="18" height="20" rx="2"/><line x1="9" y1="22" x2="9" y2="12"/><line x1="15" y1="22" x2="15" y2="12"/><path d="M3 12h18"/><path d="M3 7h3"/><path d="M3 17h3"/><line x1="12" y1="5" x2="12" y2="9"/><line x1="10" y1="7" x2="14" y2="7"/>',
+  'map':          '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>',
+  'tag':          '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
+  'activity':     '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
 }
 
-function ico(nome: string, sz = 44, cor = '#fff'): string {
+function ico(nome: string, sz: number, cor: string): string {
   const p = ICONS[nome] ?? ICONS['star']
-  return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${cor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`
+  return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${cor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;">${p}</svg>`
 }
 
 function lum(h: string) {
   return (parseInt(h.slice(1,3)||'88',16)*.299 + parseInt(h.slice(3,5)||'88',16)*.587 + parseInt(h.slice(5,7)||'88',16)*.114)/255
 }
-function drk(h: string, f=0.4): string {
-  return '#'+[1,3,5].map(i=>Math.round(parseInt(h.slice(i,i+2)||'88',16)*f).toString(16).padStart(2,'0')).join('')
+
+export interface SlideCfg {
+  cor: string
+  fonte: string
+  logoUrl?: string
+  logoX?: number
+  logoY?: number
+  logoW?: number
 }
 
-export interface SlideCfg { cor: string; fonte: string; logoUrl?: string; logoX?: number; logoY?: number; logoW?: number }
-
 export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg): string {
-  const cor = cfg.cor
-  const dk  = drk(cor, 0.38)
-  const dark = lum(cor) < 0.55
-  const txt  = dark ? '#fff' : '#111'
-  const sub  = dark ? 'rgba(255,255,255,0.78)' : 'rgba(0,0,0,0.65)'
-  const ic   = dark ? '#fff' : drk(cor, 0.45)
-  const ac   = dark ? 'rgba(255,255,255,0.13)' : 'rgba(0,0,0,0.08)'
-  const dv   = dark ? 'rgba(255,255,255,0.13)' : 'rgba(0,0,0,0.10)'
+  const cor   = cfg.cor
+  const dark  = lum(cor) < 0.55
+  const txt   = '#FFFFFF'  // texto sempre branco
+  const sub   = 'rgba(255,255,255,0.88)'
+  // Cor do ícone: azul escuro se fundo claro, branco se fundo escuro
+  const iconCor = dark ? '#FFFFFF' : '#1a3a5c'
 
   const FF: Record<string,string> = {
-    inter: 'Inter', montserrat: 'Montserrat', playfair: 'Playfair Display'
+    inter:      'Inter',
+    montserrat: 'Montserrat',
+    playfair:   'Playfair Display',
   }
   const fn = FF[cfg.fonte] ?? 'Inter'
-  const fw = cfg.fonte === 'playfair' ? '700' : '900'
 
-  // Fonte embutida via @import para garantir carregamento no hcti
   const fontImport = cfg.fonte === 'playfair'
     ? `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap');`
     : cfg.fonte === 'montserrat'
     ? `@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');`
     : `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');`
 
-  const dots = Array.from({length:total},(_,i)=>
-    `<div style="width:${i===idx?'28px':'8px'};height:8px;border-radius:4px;background:${i===idx?(dark?'rgba(255,255,255,0.9)':drk(cor,0.5)):(dark?'rgba(255,255,255,0.25)':'rgba(0,0,0,0.18)')};flex-shrink:0;"></div>`
-  ).join('')
+  // Logo no rodapé centralizada
+  const logoW = cfg.logoW ?? 160
+  const logoH = 64
+  const logoX = cfg.logoX != null ? Math.round(cfg.logoX * 1080 - logoW/2) : Math.round(1080/2 - logoW/2)
+  const logoY = cfg.logoY != null ? Math.round(cfg.logoY * 1080 - logoH/2) : Math.round(1080 - 120)
+  const logoHtml = cfg.logoUrl
+    ? `<img src="${cfg.logoUrl}" style="position:absolute;left:${logoX}px;top:${logoY}px;width:${logoW}px;height:${logoH}px;object-fit:contain;" />`
+    : ''
 
-  // PAD top = 80px, reserva 100px para dots em baixo
-  const PAD = 80
-  const DOT_AREA = 100
+  // Losango decorativo canto inferior direito (igual Gemini)
+  const losango = `<div style="position:absolute;bottom:44px;right:44px;width:32px;height:32px;background:rgba(255,255,255,0.22);transform:rotate(45deg);"></div>`
 
   let body = ''
 
+  // ── CAPA ── título enorme + subtítulo menor + logo
   if (slide.tipo === 'capa') {
     body = `
-    <!-- TAG -->
-    <div style="display:inline-flex;align-items:center;gap:12px;background:${ac};border:1px solid ${dark?'rgba(255,255,255,0.2)':'rgba(0,0,0,0.12)'};border-radius:8px;padding:12px 24px;margin-bottom:40px;">
-      ${ico(slide.icon_nome??'star', 22, ic)}
-      <span style="font-family:'${fn}';font-size:20px;font-weight:700;color:${ic};letter-spacing:2px;text-transform:uppercase;">${(slide.subtitulo??'').split(' ').slice(0,3).join(' ')}</span>
-    </div>
-    <!-- TÍTULO -->
-    <div style="font-family:'${fn}';font-size:96px;font-weight:${fw};line-height:1.0;color:${txt};margin-bottom:36px;letter-spacing:-2px;">${slide.titulo}</div>
-    <!-- SUBTÍTULO -->
-    <div style="font-family:'${fn}';font-size:40px;font-weight:400;color:${sub};line-height:1.65;max-width:860px;">${slide.subtitulo??''}</div>`
+    <div style="position:absolute;top:80px;left:80px;right:80px;bottom:160px;display:flex;flex-direction:column;justify-content:center;">
+      <div style="font-family:'${fn}',sans-serif;font-size:96px;font-weight:900;line-height:1.05;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${slide.titulo}</div>
+      ${slide.subtitulo ? `<div style="font-family:'${fn}',sans-serif;font-size:40px;font-weight:400;color:${sub};margin-top:28px;line-height:1.55;">${slide.subtitulo}</div>` : ''}
+    </div>`
 
-  } else if (slide.tipo === 'topico') {
-    body = `
-    <!-- ÍCONE -->
-    <div style="width:100px;height:100px;border-radius:24px;background:${ac};display:flex;align-items:center;justify-content:center;margin-bottom:44px;">
-      ${ico(slide.icon_nome??'star', 52, ic)}
-    </div>
-    <!-- TÍTULO -->
-    <div style="font-family:'${fn}';font-size:84px;font-weight:${fw};line-height:1.05;color:${txt};margin-bottom:24px;letter-spacing:-2px;">${slide.titulo}</div>
-    <!-- LINHA -->
-    <div style="width:64px;height:3px;background:${dark?'rgba(255,255,255,0.4)':drk(cor,0.35)};border-radius:2px;margin-bottom:28px;"></div>
-    <!-- CORPO -->
-    <div style="font-family:'${fn}';font-size:40px;font-weight:400;color:${sub};line-height:1.7;">${slide.corpo??''}</div>`
+  // ── ÍCONES ── título no topo + 2-3 ícones centralizados com label
+  } else if (slide.tipo === 'icones') {
+    const itens = slide.itens ?? []
+    const qtd   = Math.min(itens.length, 3)
+    const colW  = Math.round(860 / qtd)
 
-  } else if (slide.tipo === 'lista') {
-    const itens = (slide.itens??[]).slice(0,5)
-    const rows = itens.map((it:string)=>`
-      <div style="display:flex;align-items:center;gap:20px;padding:18px 0;border-bottom:1px solid ${dv};">
-        ${ico('check-circle', 34, ic)}
-        <span style="font-family:'${fn}';font-size:38px;font-weight:500;color:${txt};line-height:1.3;">${it}</span>
+    const cols = itens.slice(0, qtd).map((item: any) => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:20px;width:${colW}px;">
+        ${ico(item.icone ?? 'star', 110, iconCor)}
+        <div style="font-family:'${fn}',sans-serif;font-size:34px;font-weight:600;color:${txt};text-align:center;line-height:1.35;">${item.label}</div>
       </div>`).join('')
-    body = `
-    <div style="font-family:'${fn}';font-size:74px;font-weight:${fw};line-height:1.05;color:${txt};margin-bottom:36px;letter-spacing:-2px;">${slide.titulo}</div>
-    ${rows}`
 
-  } else { // cta
     body = `
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:1;">
-      <div style="font-family:'${fn}';font-size:96px;font-weight:${fw};line-height:1.0;color:${txt};margin-bottom:32px;letter-spacing:-2px;">${slide.titulo}</div>
-      <div style="font-family:'${fn}';font-size:40px;font-weight:400;color:${sub};margin-bottom:56px;line-height:1.6;">${slide.subtitulo??''}</div>
-      <div style="background:${ac};border:2px solid ${dark?'rgba(255,255,255,0.3)':drk(cor,0.35)};border-radius:999px;padding:24px 72px;display:inline-block;">
-        <span style="font-family:'${fn}';font-size:36px;font-weight:700;color:${txt};letter-spacing:1px;">Swipe para ver mais →</span>
+    <div style="position:absolute;top:80px;left:80px;right:80px;bottom:160px;display:flex;flex-direction:column;">
+      <div style="font-family:'${fn}',sans-serif;font-size:86px;font-weight:900;line-height:1.05;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:64px;">${slide.titulo}</div>
+      <div style="display:flex;justify-content:center;align-items:flex-start;gap:0px;flex:1;">
+        ${cols}
+      </div>
+    </div>`
+
+  // ── LISTA ── título + itens com check SVG
+  } else if (slide.tipo === 'lista') {
+    const itens = (slide.itens ?? []).slice(0, 5)
+    const rows = itens.map((it: string) => `
+      <div style="display:flex;align-items:center;gap:24px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,0.18);">
+        ${ico('check-circle', 36, iconCor)}
+        <span style="font-family:'${fn}',sans-serif;font-size:38px;font-weight:500;color:${txt};line-height:1.3;">${it}</span>
+      </div>`).join('')
+
+    body = `
+    <div style="position:absolute;top:80px;left:80px;right:80px;bottom:160px;display:flex;flex-direction:column;justify-content:center;">
+      <div style="font-family:'${fn}',sans-serif;font-size:76px;font-weight:900;line-height:1.05;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:36px;">${slide.titulo}</div>
+      ${rows}
+    </div>`
+
+  // ── CTA ── título grande centralizado + botão "Me chame no direct"
+  } else {
+    body = `
+    <div style="position:absolute;top:80px;left:80px;right:80px;bottom:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+      <div style="font-family:'${fn}',sans-serif;font-size:100px;font-weight:900;line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:32px;">${slide.titulo}</div>
+      ${slide.subtitulo ? `<div style="font-family:'${fn}',sans-serif;font-size:38px;font-weight:400;color:${sub};margin-bottom:52px;line-height:1.55;">${slide.subtitulo}</div>` : ''}
+      <div style="display:inline-flex;align-items:center;gap:16px;background:rgba(255,255,255,0.18);border:2px solid rgba(255,255,255,0.40);border-radius:999px;padding:22px 64px;">
+        ${ico('phone', 30, '#FFFFFF')}
+        <span style="font-family:'${fn}',sans-serif;font-size:34px;font-weight:700;color:#FFFFFF;letter-spacing:1px;">Me chame no direct</span>
       </div>
     </div>`
   }
-
-  const isCTA = slide.tipo === 'cta'
 
   return `<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
 <style>
 ${fontImport}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{width:1080px;height:1080px;overflow:hidden;font-family:'${fn}',sans-serif;}
+body{width:1080px;height:1080px;overflow:hidden;}
 </style>
 </head><body>
-<div style="width:1080px;height:1080px;position:relative;overflow:hidden;background:linear-gradient(140deg,${cor} 0%,${dk} 100%);">
-
-  <!-- Decorativos -->
-  <div style="position:absolute;top:-100px;right:-100px;width:420px;height:420px;border-radius:50%;background:${dark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.05)'}"></div>
-  <div style="position:absolute;bottom:-80px;left:-80px;width:280px;height:280px;border-radius:50%;background:${dark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)'}"></div>
-
-  <!-- Barra topo -->
-  <div style="position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,${drk(cor,0.6)},${cor},${drk(cor,0.6)})"></div>
-
-  <!-- Conteúdo principal -->
-  <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${1080-PAD-DOT_AREA}px;display:flex;flex-direction:column;${isCTA?'justify-content:center;align-items:center;text-align:center;':'justify-content:center;'}">
-    ${body}
-  </div>
-
-  <!-- Dots -->
-  <div style="position:absolute;bottom:40px;left:0;right:0;display:flex;justify-content:center;gap:10px;align-items:center;">
-    ${dots}
-  </div>
+<div style="width:1080px;height:1080px;position:relative;overflow:hidden;background:${cor};">
+  ${body}
+  ${logoHtml}
+  ${losango}
 </div>
 </body></html>`
 }

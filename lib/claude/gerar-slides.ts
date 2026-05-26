@@ -9,36 +9,34 @@ function limparJSON(texto: string): string {
   return match ? match[0] : s
 }
 
-export async function gerarSlides(prompt: string, qtdSlides: number) {
-  const instrucao = `Você cria carrosséis educativos para Instagram de profissionais (corretores, contadores, advogados, nutricionistas, etc).
+const ICONES_DISPONIVEIS = 'shield, heart, star, check-circle, zap, trending-up, users, clock, dollar-sign, award, lock, phone, target, bar-chart, briefcase, home, leaf, book, mail, info, stethoscope, piggy-bank, hospital, map, tag, activity'
 
-O usuário pediu: "${prompt}"
+export async function gerarSlides(prompt: string, qtdSlides: number) {
+  const instrucao = `Você cria carrosséis para Instagram de profissionais brasileiros (corretores, contadores, advogados, nutricionistas, farmacêuticos, etc).
+
+Pedido: "${prompt}"
 Crie ${qtdSlides} slides.
 
-TIPOS disponíveis:
-- "capa": slide 1 sempre. Título impactante + subtítulo curto.
-- "topico": um ponto por slide. Título + corpo com 2-4 linhas + icon_nome (nome de ícone para representar visualmente).
-- "lista": título + até 5 itens com ícone de check. Use para "N razões", "N dicas", etc.
-- "cta": último slide sempre. Título de ação + subtítulo de apoio.
-
-ICON_NOME deve ser um destes (escolha o mais adequado):
-shield, heart, star, check-circle, zap, trending-up, users, clock, dollar-sign, award,
-lock, globe, phone, mail, alert-circle, info, target, bar-chart, briefcase, home,
-leaf, sun, moon, camera, book, graduation-cap, handshake, piggy-bank, stethoscope, scale
+TIPOS:
+- "capa": SEMPRE o primeiro slide. Título impactante em maiúsculas + subtítulo curto.
+- "icones": Título em maiúsculas + 2 ou 3 itens com ícone SVG e label curta. Use para comparações, destaques visuais.
+- "lista": Título em maiúsculas + 3 a 5 itens de texto (sem ícone de item, só texto).
+- "cta": SEMPRE o último slide. Título de ação em maiúsculas + subtítulo de apoio curto.
 
 REGRAS:
-- Títulos curtos e impactantes (máx 6 palavras)
-- Corpo: frases diretas, linguagem simples
-- Último slide: título = chamada para ação (ex: "Fale Comigo Agora")
-- Tom profissional mas humano
-- Para listas: itens no campo "itens" (array de strings, máx 5)
+- Todos os títulos em MAIÚSCULAS
+- Textos curtos e diretos
+- Para "icones", o campo "itens" é um array de objetos: [{"icone": "nome_icone", "label": "texto curto"}]
+- Para "lista", o campo "itens" é um array de strings: ["item 1", "item 2"]
+- Ícones disponíveis: ${ICONES_DISPONIVEIS}
+- Escolha o ícone mais adequado ao contexto
 
-JSON puro, sem markdown:
+JSON puro sem markdown:
 [
-  {"tipo":"capa","titulo":"TÍTULO EM MAIÚSCULAS","subtitulo":"Subtítulo explicativo curto"},
-  {"tipo":"topico","titulo":"TÍTULO DO TÓPICO","corpo":"Explicação em 2-3 linhas diretas.","icon_nome":"shield"},
-  {"tipo":"lista","titulo":"O QUE ESTÁ INCLUSO","itens":["Item um","Item dois","Item três"],"icon_nome":"check-circle"},
-  {"tipo":"cta","titulo":"FALE COMIGO AGORA","subtitulo":"Resposta rápida e sem compromisso"}
+  {"tipo":"capa","titulo":"TÍTULO EM MAIÚSCULAS","subtitulo":"Subtítulo curto e direto"},
+  {"tipo":"icones","titulo":"CONFIRA OS DIFERENCIAIS","itens":[{"icone":"shield","label":"Proteção total"},{"icone":"dollar-sign","label":"Melhor preço"}]},
+  {"tipo":"lista","titulo":"O QUE ESTÁ INCLUSO","itens":["Consultas médicas","Exames laboratoriais","Internação coberta"]},
+  {"tipo":"cta","titulo":"FALE COMIGO AGORA","subtitulo":"Orçamento gratuito e sem compromisso"}
 ]`
 
   const response = await client.messages.create({
@@ -62,24 +60,22 @@ JSON puro, sem markdown:
 
 export async function gerarLegenda(prompt: string, slides: any[]): Promise<string> {
   const titulos = slides.map(s => s.titulo).join(', ')
-
   const response = await client.messages.create({
     model:      'claude-haiku-4-5-20251001',
     max_tokens: 400,
     messages: [{
       role: 'user',
       content: `Crie uma legenda para Instagram sobre: "${prompt}".
-Os slides abordam: ${titulos}.
+Slides: ${titulos}.
 
 Formato:
 - 3-4 linhas envolventes
-- CTA no final (ex: "Salve para não esquecer! 💾")
+- CTA no final (ex: "Me chame no direct! 📩" ou "Salve para não esquecer! 💾")
 - Linha em branco
-- Exatamente 5 hashtags relevantes
+- Exatamente 5 hashtags
 
-Responda apenas com a legenda pronta, sem explicações.`
+Só a legenda, sem explicações.`
     }],
   })
-
   return response.content[0].type === 'text' ? response.content[0].text.trim() : ''
 }
