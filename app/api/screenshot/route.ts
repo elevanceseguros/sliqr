@@ -51,16 +51,17 @@ export async function POST(request: NextRequest) {
         />
       `
 
-      if (htmlFinal.includes('</div>\n</body>')) {
-        htmlFinal = htmlFinal.replace('</div>\n</body>', `${logoTag}</div>\n</body>`)
-      } else {
-        htmlFinal = htmlFinal.replace('</body>', `${logoTag}</body>`)
-      }
+      htmlFinal = htmlFinal.includes('</body>')
+        ? htmlFinal.replace('</body>', `${logoTag}</body>`)
+        : `${htmlFinal}${logoTag}`
     }
+
+    const encodedHtml = Buffer.from(htmlFinal, 'utf8').toString('base64')
+    const dataUrl = `data:text/html;base64,${encodedHtml}`
 
     const params = new URLSearchParams({
       access_key: accessKey,
-      html: htmlFinal,
+      url: dataUrl,
       format: 'png',
       viewport_width: '1080',
       viewport_height: '1080',
