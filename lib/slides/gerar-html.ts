@@ -1,36 +1,27 @@
-// SVG icons outline estilo Feather/Lucide
 const ICONS: Record<string, string> = {
-  'shield':       '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
-  'heart':        '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
-  'star':         '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
-  'check-circle': '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
-  'zap':          '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
-  'trending-up':  '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
-  'users':        '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>',
-  'clock':        '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
-  'dollar-sign':  '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
-  'award':        '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>',
-  'lock':         '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-  'phone':        '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.6 19.79 19.79 0 0 1 1.61 5a2 2 0 0 1 1.99-2H6.6a2 2 0 0 1 2 1.72"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z"/>',
+  star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  check: '<path d="M20 6L9 17l-5-5"/>',
+  alert: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.65 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.48-1.22a2 2 0 0 1 2.11-.45c.83.32 1.7.53 2.6.65A2 2 0 0 1 22 16.92z"/>',
+  zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  chart: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
 }
 
-function ico(nome: string, sz: number, cor: string): string {
-  const p = ICONS[nome] ?? ICONS['star']
+function esc(v: any): string {
+  return String(v ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+}
 
-  return `
-  <svg
-    width="${sz}"
-    height="${sz}"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="${cor}"
-    stroke-width="1.8"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    style="display:block;"
-  >
-    ${p}
-  </svg>`
+function icon(name: string, size = 42, color = '#fff') {
+  const path = ICONS[name] ?? ICONS.star
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`
 }
 
 function lum(h: string) {
@@ -39,6 +30,11 @@ function lum(h: string) {
     parseInt(h.slice(3, 5) || '88', 16) * .587 +
     parseInt(h.slice(5, 7) || '88', 16) * .114
   ) / 255
+}
+
+function clampText(text: any, max: number) {
+  const t = esc(text)
+  return t.length > max ? `${t.slice(0, max - 1)}…` : t
 }
 
 export interface SlideCfg {
@@ -51,13 +47,13 @@ export interface SlideCfg {
 }
 
 export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg): string {
+  const cor = cfg.cor || '#0f172a'
+  const isLight = lum(cor) > 0.62
 
-  const cor = cfg.cor
-  const dark = lum(cor) < 0.55
-
-  const txt = '#FFFFFF'
-  const sub = 'rgba(255,255,255,0.78)'
-  const iconCor = dark ? '#FFFFFF' : '#0f172a'
+  const primary = isLight ? '#0f172a' : '#ffffff'
+  const muted = isLight ? 'rgba(15,23,42,.72)' : 'rgba(255,255,255,.76)'
+  const accent = isLight ? '#0f172a' : '#ffffff'
+  const hot = '#ffd43b'
 
   const FF: Record<string, string> = {
     inter: 'Inter',
@@ -69,421 +65,399 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg)
 
   const fontImport =
     cfg.fonte === 'playfair'
-      ? `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap');`
+      ? `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;900&display=swap');`
       : cfg.fonte === 'montserrat'
-      ? `@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');`
-      : `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');`
+      ? `@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');`
+      : `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap');`
 
-  const logoW = cfg.logoW ?? 190
-  const logoH = 70
-
-  const logoX = cfg.logoX != null
-    ? Math.round(cfg.logoX * 1080 - logoW / 2)
-    : Math.round(1080 / 2 - logoW / 2)
-
-  const logoY = cfg.logoY != null
-    ? Math.round(cfg.logoY * 1080 - logoH / 2)
-    : 920
+  const logoW = cfg.logoW ?? 210
+  const logoH = 86
+  const logoX = cfg.logoX != null ? Math.round(cfg.logoX * 1080 - logoW / 2) : Math.round(540 - logoW / 2)
+  const logoY = cfg.logoY != null ? Math.round(cfg.logoY * 1080 - logoH / 2) : 925
 
   const logoHtml = cfg.logoUrl
-    ? `
-      <img
-        src="${cfg.logoUrl}"
-        style="
-          position:absolute;
-          left:${logoX}px;
-          top:${logoY}px;
-          width:${logoW}px;
-          height:${logoH}px;
-          object-fit:contain;
-          z-index:50;
-          opacity:.96;
-        "
-      />
-    `
+    ? `<img src="${cfg.logoUrl}" style="position:absolute;left:${logoX}px;top:${logoY}px;width:${logoW}px;height:${logoH}px;object-fit:contain;z-index:30;" />`
     : ''
 
-  const deco = `
-    <div style="
-      position:absolute;
-      top:-180px;
-      right:-180px;
-      width:520px;
-      height:520px;
-      border-radius:999px;
-      background:rgba(255,255,255,0.10);
-      filter:blur(90px);
-    "></div>
-
-    <div style="
-      position:absolute;
-      bottom:-220px;
-      left:-120px;
-      width:420px;
-      height:420px;
-      border-radius:999px;
-      background:rgba(255,255,255,0.08);
-      filter:blur(100px);
-    "></div>
+  const progress = `
+    <div class="progress">
+      <span>${idx + 1}</span>
+      <div><i style="width:${Math.max(8, ((idx + 1) / Math.max(total, 1)) * 100)}%"></i></div>
+      <span>${total}</span>
+    </div>
   `
 
   let body = ''
 
-  // CAPA
   if (slide.tipo === 'capa') {
-
     body = `
-      <div style="
-        position:absolute;
-        top:90px;
-        left:84px;
-        right:84px;
-        bottom:180px;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-      ">
-
-        <div style="
-          font-family:'${fn}',sans-serif;
-          font-size:82px;
-          font-weight:900;
-          line-height:1.02;
-          letter-spacing:-3px;
-          color:${txt};
-          max-width:820px;
-          text-transform:uppercase;
-          text-shadow:
-          0 4px 30px rgba(255,255,255,0.12);
-        ">
-          ${slide.titulo}
-        </div>
-
-        ${
-          slide.subtitulo
-            ? `
-            <div style="
-              margin-top:30px;
-              max-width:720px;
-              font-family:'${fn}',sans-serif;
-              font-size:34px;
-              line-height:1.55;
-              font-weight:500;
-              color:${sub};
-            ">
-              ${slide.subtitulo}
-            </div>
-          `
-            : ''
-        }
-
-      </div>
+      <section class="center left">
+        <div class="badge">${icon('zap', 22, hot)} CONTEÚDO RÁPIDO</div>
+        <h1>${clampText(slide.titulo, 92)}</h1>
+        ${slide.subtitulo ? `<p>${clampText(slide.subtitulo, 150)}</p>` : ''}
+      </section>
     `
-  }
-
-  // ICONES
-  else if (slide.tipo === 'icones') {
-
+  } else if (slide.tipo === 'icones') {
     const itens = (slide.itens ?? []).slice(0, 3)
 
-    const cols = itens.map((item: any) => `
-      <div style="
-        width:280px;
-        min-height:280px;
-        border-radius:34px;
-        background:rgba(255,255,255,0.10);
-        backdrop-filter:blur(20px);
-        border:1px solid rgba(255,255,255,0.12);
-        box-shadow:
-        0 12px 40px rgba(0,0,0,0.18);
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        padding:34px;
-      ">
-
-        <div style="
-          width:96px;
-          height:96px;
-          border-radius:999px;
-          background:rgba(255,255,255,0.12);
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          margin-bottom:22px;
-        ">
-          ${ico(item.icone ?? 'star', 42, iconCor)}
-        </div>
-
-        <div style="
-          font-family:'${fn}',sans-serif;
-          font-size:30px;
-          line-height:1.35;
-          font-weight:700;
-          color:${txt};
-          text-align:center;
-        ">
-          ${item.label}
-        </div>
-
-      </div>
-    `).join('')
-
     body = `
-      <div style="
-        position:absolute;
-        top:90px;
-        left:84px;
-        right:84px;
-        bottom:180px;
-      ">
-
-        <div style="
-          font-family:'${fn}',sans-serif;
-          font-size:72px;
-          font-weight:900;
-          line-height:1.05;
-          letter-spacing:-3px;
-          color:${txt};
-          max-width:860px;
-          margin-bottom:56px;
-          text-transform:uppercase;
-        ">
-          ${slide.titulo}
+      <section class="top">
+        <div class="kicker">Pontos principais</div>
+        <h2>${clampText(slide.titulo, 76)}</h2>
+        <div class="cards">
+          ${itens.map((item: any, i: number) => `
+            <div class="card">
+              <div class="num">0${i + 1}</div>
+              <div class="icon">${icon(item.icone ?? 'star', 46, accent)}</div>
+              <strong>${clampText(item.label, 64)}</strong>
+            </div>
+          `).join('')}
         </div>
-
-        <div style="
-          display:flex;
-          justify-content:space-between;
-          gap:28px;
-        ">
-          ${cols}
-        </div>
-
-      </div>
+      </section>
     `
-  }
-
-  // LISTA
-  else if (slide.tipo === 'lista') {
-
+  } else if (slide.tipo === 'lista') {
     const itens = (slide.itens ?? []).slice(0, 5)
 
-    const rows = itens.map((it: string) => `
-      <div style="
-        display:flex;
-        align-items:flex-start;
-        gap:22px;
-        padding:24px 26px;
-        border-radius:24px;
-        margin-bottom:18px;
-        background:rgba(255,255,255,0.08);
-        backdrop-filter:blur(18px);
-        border:1px solid rgba(255,255,255,0.10);
-      ">
-
-        <div style="
-          min-width:52px;
-          width:52px;
-          height:52px;
-          border-radius:999px;
-          background:rgba(255,255,255,0.12);
-          display:flex;
-          align-items:center;
-          justify-content:center;
-        ">
-          ${ico('check-circle', 26, iconCor)}
-        </div>
-
-        <div style="
-          font-family:'${fn}',sans-serif;
-          font-size:32px;
-          line-height:1.45;
-          font-weight:600;
-          color:${txt};
-        ">
-          ${it}
-        </div>
-
-      </div>
-    `).join('')
-
     body = `
-      <div style="
-        position:absolute;
-        top:90px;
-        left:84px;
-        right:84px;
-        bottom:180px;
-      ">
-
-        <div style="
-          font-family:'${fn}',sans-serif;
-          font-size:72px;
-          font-weight:900;
-          line-height:1.05;
-          letter-spacing:-3px;
-          color:${txt};
-          margin-bottom:42px;
-          text-transform:uppercase;
-          max-width:860px;
-        ">
-          ${slide.titulo}
-        </div>
-
-        ${rows}
-
-      </div>
-    `
-  }
-
-  // CTA
-  else {
-
-    body = `
-      <div style="
-        position:absolute;
-        top:90px;
-        left:84px;
-        right:84px;
-        bottom:180px;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        text-align:center;
-      ">
-
-        <div style="
-          font-family:'${fn}',sans-serif;
-          font-size:84px;
-          font-weight:900;
-          line-height:1.02;
-          letter-spacing:-3px;
-          color:${txt};
-          max-width:860px;
-          margin-bottom:30px;
-          text-transform:uppercase;
-          text-shadow:
-          0 4px 30px rgba(255,255,255,0.10);
-        ">
-          ${slide.titulo}
-        </div>
-
-        ${
-          slide.subtitulo
-            ? `
-            <div style="
-              max-width:720px;
-              font-family:'${fn}',sans-serif;
-              font-size:34px;
-              line-height:1.55;
-              font-weight:500;
-              color:${sub};
-              margin-bottom:50px;
-            ">
-              ${slide.subtitulo}
+      <section class="top">
+        <div class="kicker">Checklist</div>
+        <h2>${clampText(slide.titulo, 74)}</h2>
+        <div class="list">
+          ${itens.map((it: string) => `
+            <div class="row">
+              <div class="check">${icon('check', 26, accent)}</div>
+              <span>${clampText(it, 86)}</span>
             </div>
-          `
-            : ''
-        }
-
-        <div style="
-          display:inline-flex;
-          align-items:center;
-          gap:18px;
-          background:rgba(255,255,255,0.12);
-          backdrop-filter:blur(18px);
-          border:1px solid rgba(255,255,255,0.22);
-          box-shadow:
-          0 10px 40px rgba(0,0,0,0.28),
-          inset 0 1px 0 rgba(255,255,255,0.12);
-          border-radius:999px;
-          padding:24px 56px;
-        ">
-
-          ${ico('phone', 30, '#FFFFFF')}
-
-          <span style="
-            font-family:'${fn}',sans-serif;
-            font-size:30px;
-            font-weight:800;
-            color:#FFFFFF;
-            letter-spacing:.5px;
-          ">
-            Me chame no direct
-          </span>
-
+          `).join('')}
         </div>
-
-      </div>
+      </section>
+    `
+  } else {
+    body = `
+      <section class="center">
+        <div class="bigIcon">${icon('phone', 64, accent)}</div>
+        <h1>${clampText(slide.titulo, 76)}</h1>
+        ${slide.subtitulo ? `<p>${clampText(slide.subtitulo, 140)}</p>` : ''}
+        <div class="button">${icon('phone', 28, '#0f172a')} Me chame no direct</div>
+      </section>
     `
   }
 
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="UTF-8" />
-
 <style>
-
 ${fontImport}
 
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
+*{box-sizing:border-box;margin:0;padding:0}
 
 body{
   width:1080px;
   height:1080px;
   overflow:hidden;
+  font-family:'${fn}',sans-serif;
 }
 
-</style>
-
-</head>
-
-<body>
-
-<div style="
+.stage{
   width:1080px;
   height:1080px;
   position:relative;
   overflow:hidden;
-
+  color:${primary};
   background:
-  radial-gradient(circle at top left, rgba(255,255,255,0.14), transparent 35%),
-  radial-gradient(circle at bottom right, rgba(255,255,255,0.10), transparent 30%),
-  linear-gradient(135deg, ${cor} 0%, #0f172a 140%);
-">
+    radial-gradient(circle at 15% 8%, rgba(255,255,255,.22), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(255,212,59,.18), transparent 26%),
+    radial-gradient(circle at 50% 105%, rgba(255,255,255,.14), transparent 34%),
+    linear-gradient(145deg, ${cor} 0%, #07111f 115%);
+}
 
-  <div style="
-    position:absolute;
-    inset:0;
-    backdrop-filter:blur(120px);
+.stage:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:.18;
+  background-image:
+    linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(to bottom, black, transparent 86%);
+}
 
-    background:
-    linear-gradient(
-    180deg,
-    rgba(255,255,255,0.04),
-    rgba(255,255,255,0)
-    );
-  "></div>
+.stage:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), transparent 32%),
+    linear-gradient(0deg, rgba(0,0,0,.38), transparent 44%);
+}
 
-  ${deco}
+.blob1,.blob2{
+  position:absolute;
+  border-radius:999px;
+  filter:blur(85px);
+  z-index:1;
+}
 
-  ${body}
+.blob1{
+  width:460px;
+  height:460px;
+  right:-180px;
+  top:180px;
+  background:rgba(255,212,59,.18);
+}
 
-  ${logoHtml}
+.blob2{
+  width:520px;
+  height:520px;
+  left:-220px;
+  bottom:-150px;
+  background:rgba(255,255,255,.12);
+}
 
-</div>
+.progress{
+  position:absolute;
+  top:48px;
+  left:64px;
+  right:64px;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  color:rgba(255,255,255,.72);
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:.04em;
+}
 
+.progress div{
+  flex:1;
+  height:6px;
+  border-radius:999px;
+  background:rgba(255,255,255,.16);
+  overflow:hidden;
+}
+
+.progress i{
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:${hot};
+}
+
+section{
+  position:absolute;
+  z-index:10;
+  left:74px;
+  right:74px;
+}
+
+.center{
+  top:120px;
+  bottom:175px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+
+.center.left{
+  align-items:flex-start;
+  text-align:left;
+}
+
+.top{
+  top:118px;
+  bottom:172px;
+}
+
+.badge,.kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  width:max-content;
+  max-width:850px;
+  padding:14px 20px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+  color:rgba(255,255,255,.86);
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:34px;
+}
+
+h1{
+  max-width:900px;
+  font-size:88px;
+  line-height:.98;
+  font-weight:900;
+  letter-spacing:-4px;
+  color:#fff;
+  text-transform:uppercase;
+  text-shadow:0 16px 55px rgba(0,0,0,.28);
+}
+
+h2{
+  max-width:900px;
+  font-size:72px;
+  line-height:1.02;
+  font-weight:900;
+  letter-spacing:-3px;
+  color:#fff;
+  text-transform:uppercase;
+  text-shadow:0 16px 50px rgba(0,0,0,.25);
+  margin-bottom:40px;
+}
+
+p{
+  max-width:790px;
+  margin-top:30px;
+  color:${muted};
+  font-size:35px;
+  line-height:1.36;
+  font-weight:650;
+}
+
+.cards{
+  display:flex;
+  gap:24px;
+  margin-top:22px;
+}
+
+.card{
+  flex:1;
+  min-height:360px;
+  border-radius:38px;
+  padding:28px;
+  background:rgba(255,255,255,.105);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 30px 80px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.16);
+  backdrop-filter:blur(22px);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+.card .num{
+  color:${hot};
+  font-size:24px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+
+.card .icon{
+  width:92px;
+  height:92px;
+  border-radius:28px;
+  background:rgba(255,255,255,.16);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.card strong{
+  display:block;
+  color:#fff;
+  font-size:31px;
+  line-height:1.18;
+  font-weight:850;
+}
+
+.list{
+  margin-top:22px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.row{
+  min-height:92px;
+  display:flex;
+  align-items:center;
+  gap:22px;
+  padding:20px 26px;
+  border-radius:28px;
+  background:rgba(255,255,255,.105);
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 18px 60px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.13);
+  backdrop-filter:blur(20px);
+}
+
+.check{
+  min-width:54px;
+  width:54px;
+  height:54px;
+  border-radius:999px;
+  background:${hot};
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.row span{
+  color:#fff;
+  font-size:32px;
+  line-height:1.23;
+  font-weight:750;
+}
+
+.bigIcon{
+  width:132px;
+  height:132px;
+  border-radius:42px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:34px;
+  box-shadow:0 30px 90px rgba(0,0,0,.24);
+}
+
+.button{
+  margin-top:48px;
+  display:inline-flex;
+  align-items:center;
+  gap:16px;
+  padding:24px 48px;
+  border-radius:999px;
+  background:${hot};
+  color:#0f172a;
+  font-size:30px;
+  font-weight:950;
+  box-shadow:0 28px 80px rgba(0,0,0,.30);
+}
+
+.footer{
+  position:absolute;
+  left:64px;
+  right:64px;
+  bottom:46px;
+  height:108px;
+  z-index:20;
+  border-radius:34px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.13);
+  backdrop-filter:blur(24px);
+}
+
+</style>
+</head>
+
+<body>
+  <div class="stage">
+    <div class="blob1"></div>
+    <div class="blob2"></div>
+    ${progress}
+    ${body}
+    <div class="footer"></div>
+    ${logoHtml}
+  </div>
 </body>
-</html>
-`
+</html>`
 }
