@@ -1,267 +1,205 @@
 const ICONS: Record<string, string> = {
-  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
-  heart: '<path d="M20.84 4.61a5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 0 0 1.06-8.84z"/>',
-  star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
-  check: '<path d="M20 6L9 17l-5-5"/>',
-  alert: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
-  phone: '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.65 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.48-1.22a2 2 0 0 1 2.11-.45c.83.32 1.7.53 2.6.65A2 2 0 0 1 22 16.92z"/>',
-  zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
-  lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-  chart: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  'shield':       '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  'heart':        '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  'star':         '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  'check-circle': '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  'check':        '<polyline points="20 6 9 17 4 12"/>',
+  'zap':          '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  'trending-up':  '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  'users':        '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  'clock':        '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  'dollar-sign':  '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  'award':        '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>',
+  'lock':         '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  'phone':        '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.6 19.79 19.79 0 0 1 1.61 5a2 2 0 0 1 1.99-2H6.6a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.6a16 16 0 0 0 6 6l.91-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  'target':       '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  'bar-chart':    '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+  'briefcase':    '<rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  'home':         '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  'leaf':         '<path d="M2 22l10-10"/><path d="M16 8c0 4.42-3.58 8-8 8a8 8 0 0 1 8-16c4.42 0 8 3.58 8 8z"/>',
+  'book':         '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  'mail':         '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+  'info':         '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+  'stethoscope':  '<path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/>',
+  'piggy-bank':   '<path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.8 1.7-1.8 2-3h2v-4h-2c0-1-.5-1.5-1-2h0z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/>',
+  'activity':     '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  'map-pin':      '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
 }
 
-function esc(v: any): string {
-  return String(v ?? '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-}
-
-function icon(name: string, size = 42, color = '#fff') {
-  const path = ICONS[name] ?? ICONS.star
-  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`
+function ico(n: string, sz: number, cor: string, sw = 1.6): string {
+  const p = ICONS[n] ?? ICONS['star']
+  return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${cor}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" style="display:block;flex-shrink:0;">${p}</svg>`
 }
 
 function lum(h: string) {
-  return (
-    parseInt(h.slice(1, 3) || '88', 16) * .299 +
-    parseInt(h.slice(3, 5) || '88', 16) * .587 +
-    parseInt(h.slice(5, 7) || '88', 16) * .114
-  ) / 255
+  return (parseInt(h.slice(1,3)||'88',16)*.299+parseInt(h.slice(3,5)||'88',16)*.587+parseInt(h.slice(5,7)||'88',16)*.114)/255
 }
-
-function clampText(text: any, max: number) {
-  const t = esc(text)
-  return t.length > max ? `${t.slice(0, max - 1)}…` : t
+function drk(h: string, f=0.4): string {
+  return '#'+[1,3,5].map(i=>Math.round(parseInt(h.slice(i,i+2)||'88',16)*f).toString(16).padStart(2,'0')).join('')
 }
+function trunc(s: string, max: number) { return s.length>max ? s.slice(0,max-1)+'…' : s }
 
 export interface SlideCfg {
   cor: string
   fonte: string
+  estilo: 'minimal' | 'modern'
   logoUrl?: string
   logoX?: number
   logoY?: number
   logoW?: number
-  imagemUrl?: string
 }
 
-export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg): string {
-  const cor = cfg.cor || '#0f172a'
-  const isLight = lum(cor) > 0.62
-  const muted = isLight ? 'rgba(15,23,42,.72)' : 'rgba(255,255,255,.76)'
-  const accent = '#ffffff'
-  const hot = '#ffd43b'
-  const imagemUrl = cfg.imagemUrl
+export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg, fotoUrl?: string): string {
+  const cor    = cfg.cor
+  const dark   = lum(cor) < 0.55
+  const txt    = '#FFFFFF'
+  const sub    = 'rgba(255,255,255,0.82)'
+  const icCor  = dark ? '#FFFFFF' : drk(cor, 0.28)
+  const isMin  = cfg.estilo === 'minimal'
 
-  const FF: Record<string, string> = {
-    inter: 'Inter',
-    montserrat: 'Montserrat',
-    playfair: 'Playfair Display',
+  const FF: Record<string,string> = { inter:'Inter', montserrat:'Montserrat', playfair:'Playfair Display' }
+  const fn = FF[cfg.fonte] ?? 'Inter'
+  const fw = cfg.fonte==='playfair' ? '700' : '900'
+
+  const fi = cfg.fonte==='playfair'
+    ? `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap');`
+    : cfg.fonte==='montserrat'
+    ? `@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');`
+    : `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');`
+
+  // Logo — não incluída aqui, será injetada pelo servidor no download
+  // (no preview é overlay do frontend)
+
+  const temFoto = !!fotoUrl && ['capa','cta'].includes(slide.tipo)
+  const bgStyle = temFoto
+    ? `background:${drk(cor,0.55)};`
+    : isMin
+    ? `background:${cor};`
+    : `background:linear-gradient(140deg,${cor} 0%,${drk(cor,0.42)} 100%);`
+
+  const fotoHtml = temFoto ? `
+    <img src="${fotoUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.32;z-index:0;" />
+    <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,0,0,0.82) 0%,rgba(0,0,0,0.32) 55%,rgba(0,0,0,0.78) 100%);z-index:1;"></div>` : ''
+
+  const decos = isMin && !temFoto
+    ? `<div style="position:absolute;bottom:44px;right:44px;width:26px;height:26px;background:rgba(255,255,255,0.18);transform:rotate(45deg);z-index:2;"></div>`
+    : !isMin ? `
+      <div style="position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.05);z-index:2;"></div>
+      <div style="position:absolute;bottom:-60px;left:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.04);z-index:2;"></div>
+      <div style="position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,${drk(cor,0.55)},${cor},${drk(cor,0.55)});z-index:3;"></div>` : ''
+
+  const tipo = slide.tipo
+  const PAD  = 80
+  const BOT  = 150
+  const H    = 1080 - PAD - BOT
+
+  let content = ''
+
+  // ── CAPA ──────────────────────────────────────────────────────────────────
+  if (tipo === 'capa') {
+    const tit = trunc(slide.titulo??'', 55)
+    const sub2 = trunc(slide.subtitulo??'', 110)
+    const fsT  = tit.length>30 ? 82 : tit.length>20 ? 94 : 104
+
+    content = `
+    <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${H}px;display:flex;flex-direction:column;justify-content:center;z-index:4;">
+      ${!isMin ? `<div style="display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.20);border-radius:8px;padding:10px 20px;align-self:flex-start;margin-bottom:28px;">
+        ${ico(slide.icon_nome??'star',18,'rgba(255,255,255,0.9)')}
+        <span style="font-family:'${fn}',sans-serif;font-size:16px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:2px;text-transform:uppercase;">${trunc((slide.subtitulo??'').split(' ').slice(0,3).join(' '),18)}</span>
+      </div>` : ''}
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;">${tit}</div>
+      ${sub2 ? `<div style="font-family:'${fn}',sans-serif;font-size:36px;font-weight:400;color:${sub};margin-top:24px;line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${sub2}</div>` : ''}
+    </div>`
   }
 
-  const fn = FF[cfg.fonte] ?? 'Inter'
+  // ── ÍCONES ────────────────────────────────────────────────────────────────
+  else if (tipo === 'icones') {
+    const itens = (slide.itens??[]).slice(0,3)
+    const qtd   = itens.length || 1
+    const colW  = Math.floor(860/qtd)
+    const cols  = itens.map((item: any) => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;width:${colW}px;text-align:center;">
+        <div style="width:108px;height:108px;border-radius:${isMin?'0':'20px'};background:rgba(255,255,255,${isMin?'0':'0.12'});display:flex;align-items:center;justify-content:center;">
+          ${ico(item.icone??'star',54,icCor,1.5)}
+        </div>
+        <div style="font-family:'${fn}',sans-serif;font-size:28px;font-weight:600;color:${txt};line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(item.label??'',28)}</div>
+      </div>`).join('')
 
-  const fontImport =
-    cfg.fonte === 'playfair'
-      ? `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;900&display=swap');`
-      : cfg.fonte === 'montserrat'
-      ? `@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap');`
-      : `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap');`
+    const fsT = (slide.titulo??'').length>25 ? 74 : 84
+    content = `
+    <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${H}px;display:flex;flex-direction:column;z-index:4;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:52px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(slide.titulo??'',48)}</div>
+      <div style="display:flex;justify-content:center;gap:0;flex:1;align-items:center;">${cols}</div>
+    </div>`
+  }
 
-  const progress = `
-    <div class="progress">
-      <span>${idx + 1}</span>
-      <div><i style="width:${Math.max(8, ((idx + 1) / Math.max(total, 1)) * 100)}%"></i></div>
-      <span>${total}</span>
-    </div>
-  `
+  // ── TÓPICO ────────────────────────────────────────────────────────────────
+  else if (tipo === 'topico') {
+    const tit   = trunc(slide.titulo??'',42)
+    const corpo = trunc(slide.corpo??'',190)
+    const fsT   = tit.length>24 ? 74 : tit.length>18 ? 82 : 88
+    const fsC   = corpo.length>100 ? 34 : 38
 
-  const visual = imagemUrl
-    ? `
-      <div class="aiVisualWrap">
-        <img class="aiVisual" src="${esc(imagemUrl)}" />
+    content = isMin ? `
+    <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${H}px;display:flex;flex-direction:column;justify-content:center;z-index:4;">
+      <div style="width:3px;height:68px;background:rgba(255,255,255,0.5);margin-bottom:28px;border-radius:2px;"></div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:22px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${tit}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;">${corpo}</div>
+    </div>` : `
+    <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${H}px;display:flex;flex-direction:column;justify-content:center;z-index:4;">
+      <div style="width:90px;height:90px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:30px;">
+        ${ico(slide.icon_nome??'star',46,icCor)}
       </div>
-    `
-    : ''
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:16px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${tit}</div>
+      <div style="width:50px;height:3px;background:rgba(255,255,255,0.35);border-radius:2px;margin-bottom:18px;"></div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;">${corpo}</div>
+    </div>`
+  }
 
-  let body = ''
+  // ── LISTA ─────────────────────────────────────────────────────────────────
+  else if (tipo === 'lista') {
+    const itens = (slide.itens??[]).slice(0,5)
+    const n     = itens.length
+    const fsT   = n>=5 ? 62 : 70
+    const fsI   = n>=5 ? 32 : 36
+    const padI  = n>=5 ? 14 : 17
 
-  if (slide.tipo === 'capa') {
-    body = `
-      <section class="center left hasVisual">
-        <div class="badge">${icon('zap', 22, hot)} CONTEÚDO RÁPIDO</div>
-        <h1>${clampText(slide.titulo, 92)}</h1>
-        ${slide.subtitulo ? `<p>${clampText(slide.subtitulo, 150)}</p>` : ''}
-      </section>
-    `
-  } else if (slide.tipo === 'icones') {
-    const itens = (slide.itens ?? []).slice(0, 3)
+    const rows = itens.map((it: string) => `
+      <div style="display:flex;align-items:center;gap:18px;padding:${padI}px 0;border-bottom:1px solid rgba(255,255,255,0.14);">
+        ${ico('check-circle',30,icCor,1.8)}
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.25;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${trunc(it,52)}</span>
+      </div>`).join('')
 
-    body = `
-      <section class="top">
-        <div class="kicker">Pontos principais</div>
-        <h2>${clampText(slide.titulo, 76)}</h2>
-        <div class="cards">
-          ${itens.map((item: any, i: number) => `
-            <div class="card">
-              <div class="num">0${i + 1}</div>
-              <div class="icon">${icon(item.icone ?? 'star', 46, accent)}</div>
-              <strong>${clampText(item.label, 64)}</strong>
-            </div>
-          `).join('')}
-        </div>
-      </section>
-    `
-  } else if (slide.tipo === 'lista') {
-    const itens = (slide.itens ?? []).slice(0, 5)
+    content = `
+    <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${H}px;display:flex;flex-direction:column;justify-content:center;z-index:4;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:26px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(slide.titulo??'',48)}</div>
+      ${rows}
+    </div>`
+  }
 
-    body = `
-      <section class="top">
-        <div class="kicker">Checklist</div>
-        <h2>${clampText(slide.titulo, 74)}</h2>
-        <div class="list ${imagemUrl ? 'withVisual' : ''}">
-          ${itens.map((it: string) => `
-            <div class="row">
-              <div class="check">${icon('check', 26, '#0f172a')}</div>
-              <span>${clampText(it, 86)}</span>
-            </div>
-          `).join('')}
-        </div>
-      </section>
-    `
-  } else {
-    body = `
-      <section class="center ${imagemUrl ? 'ctaWithVisual' : ''}">
-        <div class="bigIcon">${icon('phone', 64, accent)}</div>
-        <h1>${clampText(slide.titulo, 76)}</h1>
-        ${slide.subtitulo ? `<p>${clampText(slide.subtitulo, 140)}</p>` : ''}
-        <div class="button">${icon('phone', 28, '#0f172a')} Me chame no direct</div>
-      </section>
-    `
+  // ── CTA ───────────────────────────────────────────────────────────────────
+  else {
+    const tit  = trunc(slide.titulo??'',38)
+    const sub2 = trunc(slide.subtitulo??'',95)
+    const fsT  = tit.length>18 ? 82 : tit.length>12 ? 94 : 106
+
+    content = `
+    <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${H}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:4;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-3px;text-transform:uppercase;margin-bottom:26px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${tit}</div>
+      ${sub2 ? `<div style="font-family:'${fn}',sans-serif;font-size:34px;font-weight:400;color:${sub};margin-bottom:44px;line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${sub2}</div>` : ''}
+      <div style="display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.32);border-radius:999px;padding:20px 54px;">
+        ${ico('phone',26,'#FFFFFF',2)}
+        <span style="font-family:'${fn}',sans-serif;font-size:30px;font-weight:700;color:#FFFFFF;letter-spacing:1px;">Me chame no direct</span>
+      </div>
+    </div>`
   }
 
   return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8" />
-<style>
-${fontImport}
-*{box-sizing:border-box;margin:0;padding:0}
-body{width:1080px;height:1080px;overflow:hidden;font-family:'${fn}',sans-serif}
-.stage{
-  width:1080px;height:1080px;position:relative;overflow:hidden;color:#fff;
-  background:
-    radial-gradient(circle at 15% 8%, rgba(255,255,255,.22), transparent 28%),
-    radial-gradient(circle at 88% 18%, rgba(255,212,59,.18), transparent 26%),
-    radial-gradient(circle at 50% 105%, rgba(255,255,255,.14), transparent 34%),
-    linear-gradient(145deg, ${cor} 0%, #07111f 115%);
-}
-.stage:before{
-  content:"";position:absolute;inset:0;opacity:.15;
-  background-image:linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
-  background-size:42px 42px;mask-image:linear-gradient(to bottom, black, transparent 86%);
-}
-.stage:after{
-  content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
-  background:
-    linear-gradient(90deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.24) 48%, rgba(0,0,0,.62) 100%),
-    linear-gradient(0deg, rgba(0,0,0,.44), transparent 44%);
-}
-.blob1,.blob2{position:absolute;border-radius:999px;filter:blur(85px);z-index:1}
-.blob1{width:460px;height:460px;right:-180px;top:180px;background:rgba(255,212,59,.18)}
-.blob2{width:520px;height:520px;left:-220px;bottom:-150px;background:rgba(255,255,255,.12)}
-.aiVisualWrap{
-  position:absolute;
-  right:-75px;
-  bottom:20px;
-  width:610px;
-  height:610px;
-  z-index:3;
-  border-radius:48px;
-  overflow:hidden;
-  opacity:.92;
-  transform:rotate(-2deg);
-  filter:drop-shadow(0 44px 90px rgba(0,0,0,.45));
-  mask-image:linear-gradient(90deg, transparent 0%, black 18%, black 82%, transparent 100%);
-}
-.aiVisualWrap:after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at 50% 50%, transparent 34%, rgba(7,17,31,.40) 78%),
-    linear-gradient(90deg, rgba(7,17,31,.55), transparent 35%);
-}
-.aiVisual{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  transform:scale(1.08);
-}
-.progress{
-  position:absolute;top:48px;left:64px;right:64px;z-index:20;display:flex;align-items:center;gap:14px;
-  color:rgba(255,255,255,.72);font-size:20px;font-weight:800;letter-spacing:.04em;
-}
-.progress div{flex:1;height:6px;border-radius:999px;background:rgba(255,255,255,.16);overflow:hidden}
-.progress i{display:block;height:100%;border-radius:999px;background:${hot}}
-section{position:absolute;z-index:10;left:74px;right:74px}
-.center{top:120px;bottom:145px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-.center.left{align-items:flex-start;text-align:left}
-.top{top:118px;bottom:120px}
-.badge,.kicker{
-  display:inline-flex;align-items:center;gap:10px;width:max-content;max-width:850px;padding:14px 20px;border-radius:999px;
-  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.86);
-  font-size:20px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-bottom:34px;
-}
-h1{
-  max-width:${imagemUrl ? '690px' : '900px'};
-  font-size:${imagemUrl ? '78px' : '88px'};
-  line-height:.98;font-weight:900;letter-spacing:-4px;color:#fff;text-transform:uppercase;
-  text-shadow:0 16px 55px rgba(0,0,0,.34);
-}
-h2{
-  max-width:${imagemUrl ? '720px' : '900px'};
-  font-size:72px;line-height:1.02;font-weight:900;letter-spacing:-3px;color:#fff;text-transform:uppercase;
-  text-shadow:0 16px 50px rgba(0,0,0,.25);margin-bottom:40px;
-}
-p{max-width:${imagemUrl ? '620px' : '790px'};margin-top:30px;color:${muted};font-size:35px;line-height:1.36;font-weight:650}
-.cards{display:flex;gap:24px;margin-top:22px}
-.card{
-  flex:1;min-height:360px;border-radius:38px;padding:28px;background:rgba(255,255,255,.105);
-  border:1px solid rgba(255,255,255,.18);box-shadow:0 30px 80px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.16);
-  backdrop-filter:blur(22px);display:flex;flex-direction:column;justify-content:space-between;
-}
-.card .num{color:${hot};font-size:24px;font-weight:900;letter-spacing:.08em}
-.card .icon{width:92px;height:92px;border-radius:28px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center}
-.card strong{display:block;color:#fff;font-size:31px;line-height:1.18;font-weight:850}
-.list{margin-top:22px;display:flex;flex-direction:column;gap:18px;max-width:${imagemUrl ? '610px' : '100%'}}
-.row{
-  min-height:92px;display:flex;align-items:center;gap:22px;padding:20px 26px;border-radius:28px;
-  background:rgba(255,255,255,.105);border:1px solid rgba(255,255,255,.16);
-  box-shadow:0 18px 60px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.13);backdrop-filter:blur(20px);
-}
-.check{min-width:54px;width:54px;height:54px;border-radius:999px;background:${hot};display:flex;align-items:center;justify-content:center}
-.row span{color:#fff;font-size:32px;line-height:1.23;font-weight:750}
-.bigIcon{
-  width:132px;height:132px;border-radius:42px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);
-  display:flex;align-items:center;justify-content:center;margin-bottom:34px;box-shadow:0 30px 90px rgba(0,0,0,.24);
-}
-.button{
-  margin-top:48px;display:inline-flex;align-items:center;gap:16px;padding:24px 48px;border-radius:999px;background:${hot};
-  color:#0f172a;font-size:30px;font-weight:950;box-shadow:0 28px 80px rgba(0,0,0,.30);
-}
-</style>
-</head>
-<body>
-  <div class="stage">
-    <div class="blob1"></div>
-    <div class="blob2"></div>
-    ${visual}
-    ${progress}
-    ${body}
-  </div>
-</body>
-</html>`
+<html><head><meta charset="UTF-8">
+<style>${fi}*{box-sizing:border-box;margin:0;padding:0;}body{width:1080px;height:1080px;overflow:hidden;}</style>
+</head><body>
+<div style="width:1080px;height:1080px;position:relative;overflow:hidden;${bgStyle}">
+  ${fotoHtml}${decos}${content}
+</div>
+</body></html>`
 }
