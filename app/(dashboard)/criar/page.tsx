@@ -58,9 +58,11 @@ function CriarInner() {
     return new Promise((r,j)=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result as string); fr.onerror=j; fr.readAsDataURL(file) })
   }
 
-  async function gerarScreenshot(html: string, comLogo = true): Promise<string> {
+  // Preview: SEM logo (usuário posiciona pelo overlay)
+  // Download: COM logo na posição definida
+  async function gerarScreenshot(html: string, incluirLogo = false): Promise<string> {
     const body: any = { html }
-    if (comLogo && cfg.logoUrl) {
+    if (incluirLogo && cfg.logoUrl) {
       body.logoUrl = cfg.logoUrl
       body.logoX   = cfg.logoX ?? 0.5
       body.logoY   = cfg.logoY ?? 0.90
@@ -168,8 +170,10 @@ function CriarInner() {
     setBaixando(true)
     try {
       const zip = new JSZip()
-      for (let i=0; i<imgs.length; i++) {
-        const b64 = imgs[i].split(',')[1]
+      for (let i=0; i<slides.length; i++) {
+        const html = gerarHTML(slides[i], slides.length, i, cfg)
+        const imgComLogo = await gerarScreenshot(html, true)
+        const b64 = imgComLogo.split(',')[1]
         zip.file(`slide_${String(i+1).padStart(2,'0')}.png`, b64, {base64:true})
       }
       const blob = await zip.generateAsync({type:'blob'})
