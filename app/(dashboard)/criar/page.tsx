@@ -6,6 +6,7 @@ import { Zap, Download, ChevronUp, ChevronDown, Loader2, Upload, Image as ImageI
 import { Tom, TOM_LABELS, Slide } from '@/types'
 import { createClient } from '@/lib/supabase/client'
 import JSZip from 'jszip'
+import { gerarHTML } from '@/lib/slides/gerar-html'
 
 const TONS: Tom[] = ['vender', 'ensinar', 'urgencia', 'inspirar']
 const FONTES = [
@@ -345,6 +346,7 @@ function CriarInner() {
   const [session, setSession]   = useState<any>(null)
   const [fotos, setFotos]       = useState<string[]>([])
   const [slideAtivo, setSlideAtivo] = useState(0)
+  const [slidesImg, setSlidesImg] = useState<string[]>([])
   const [trocando, setTrocando] = useState(false)
   const [cfg, setCfg] = useState<Cfg>({
     cor: '#2D6FFF', corSecundaria: '#00D4FF',
@@ -367,17 +369,29 @@ function CriarInner() {
     return new Promise((r,j) => { const f = new FileReader(); f.onload = () => r(f.result as string); f.onerror = j; f.readAsDataURL(file) })
   }
 
-  async function gerarFotoIA(idx: number): Promise<string> {
-    try {
-      const res  = await fetch('/api/gerar-imagem', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ tema, idx }) })
-      const data = await res.json()
-      return data.url ?? ''
-    } catch { return '' }
+  async function gerarSlidesHTML(slidesData: any[]): Promise<string[]> {
+    const imgs: string[] = []
+    for (const slide of slidesData) {
+      try {
+        const logoUrl = cfg.logo.url || undefined
+        const html = gerarHTML(slide, slidesData.length, { cor: cfg.cor, fonteId: cfg.fonteId, logoUrl })
+        const res  = await fetch('/api/screenshot', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ html })
+        })
+        const data = await res.json()
+        imgs.push(data.url ?? '')
+      } catch (e: any) {
+        console.error('[gerarSlides]', e.message)
+        imgs.push('')
+      }
+    }
+    return imgs
   }
 
   async function gerar() {
     if (!tema.trim()) { setErro('Digite o tema.'); return }
-    setErro(''); setGerando(true); setSlides([]); setFotos([]); setSlideAtivo(0)
+    setErro(''); setGerando(true); setSlides([]); setSlidesImg([]); setSlideAtivo(0)
     try {
       const res  = await fetch('/api/gerar', {
         method:'POST', headers:{'Content-Type':'application/json'},
@@ -388,23 +402,23 @@ function CriarInner() {
       setSlides(data.slides)
       setGerando(false)
 
-      // Só busca foto se fundo = foto-ia
-      if (cfg.fundoId === 'foto-ia') {
-        setGerandoFotos(true)
-        const urls: string[] = []
-        for (let i = 0; i < qtd; i++) { urls.push(await gerarFotoIA(i)) }
-        setFotos(urls)
-        setGerandoFotos(false)
-      }
+      // Gera imagens via Puppeteer
+      setGerandoFotos(true)
+      const imgs = await gerarSlidesHTML(data.slides)
+      setSlidesImg(imgs)
+      setGerandoFotos(false)
     } catch(e: any) { setErro(e.message); setGerando(false); setGerandoFotos(false) }
   }
 
   async function trocarFoto() {
-    if (cfg.fundoId !== 'foto-ia') return
+    if (!slides[slideAtivo]) return
     setTrocando(true)
-    const url = await gerarFotoIA(slideAtivo + 10 + Math.floor(Math.random()*10))
-    if (url) setFotos(p => { const n=[...p]; n[slideAtivo]=url; return n })
-    setTrocando(false)
+    try {
+      const html = gerarHTML(slides[slideAtivo] as any, slides.length, { cor: cfg.cor, fonteId: cfg.fonteId, logoUrl: cfg.logo.url || undefined })
+      const res  = await fetch('/api/screenshot', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ html }) })
+      const data = await res.json()
+      if (data.url) setSlidesImg(p => { const n=[...p]; n[slideAtivo]=data.url; return n })
+    } finally { setTrocando(false) }
   }
 
   function editarSlide(id: string, campo: 'titulo'|'corpo', v: string) {
@@ -419,9 +433,10 @@ function CriarInner() {
   }
 
   async function baixarUm(slide: Slide) {
-    const blob = await renderSlide(slide, slides.length, fotos[slide.ordem-1]??'', cfg)
-    const url  = URL.createObjectURL(blob); const a = document.createElement('a')
-    a.href=url; a.download=`slide_${String(slide.ordem).padStart(2,'0')}.png`; a.click(); URL.revokeObjectURL(url)
+    const img = slidesImg[slide.ordem-1]
+    if (!img) return
+    const a = document.createElement('a')
+    a.href=img; a.download=`slide_${String(slide.ordem).padStart(2,'0')}.png`; a.click()
   }
 
   async function baixarTudo() {
@@ -429,8 +444,10 @@ function CriarInner() {
     try {
       const zip = new JSZip()
       for (const s of slides) {
-        const blob = await renderSlide(s, slides.length, fotos[s.ordem-1]??'', cfg)
-        zip.file(`slide_${String(s.ordem).padStart(2,'0')}.png`, blob)
+        const img = slidesImg[s.ordem-1]
+        if (!img) continue
+        const base64 = img.split(',')[1]
+        zip.file(`slide_${String(s.ordem).padStart(2,'0')}.png`, base64, { base64: true })
       }
       const blob = await zip.generateAsync({type:'blob'}); const url = URL.createObjectURL(blob)
       const a = document.createElement('a'); a.href=url; a.download=`sliqr_${tema.slice(0,20).replace(/\s/g,'_')}.zip`; a.click(); URL.revokeObjectURL(url)
@@ -438,7 +455,7 @@ function CriarInner() {
   }
 
   const cor = cfg.cor
-  const fotoAtiva = fotos[slideAtivo] ?? ''
+  const imgAtiva = slidesImg[slideAtivo] ?? ''
 
   const CORES_PRESET = ['#2D6FFF','#7C3AED','#059669','#DC2626','#D97706','#DB2777','#0891B2','#111827']
 
@@ -583,12 +600,13 @@ function CriarInner() {
                   <p style={{ color:'#8B95A8', fontSize:'0.82rem', margin:0 }}>Gerando imagens...</p>
                 </div>
               ) : (
-                slides[slideAtivo] && (
-                  <SlideCanvas
-                    key={`${slideAtivo}-${fotoAtiva.slice(-20)}-${cor}-${cfg.fonteId}-${cfg.layoutId}-${cfg.fundoId}-${cfg.logo.size}`}
-                    slide={slides[slideAtivo]} total={slides.length} fotoUrl={fotoAtiva} cfg={cfg}
-                    onLogoMove={(x,y) => setCfg(p=>({...p,logo:{...p.logo,x:Math.round(x),y:Math.round(y)}}))}/>
-                )
+                imgAtiva && (
+                <img src={imgAtiva} style={{ width:'100%', height:'auto', borderRadius:'12px', display:'block' }} />
+              )}
+              {!gerandoFotos && !imgAtiva && slides[slideAtivo] && (
+                <div style={{ aspectRatio:'1', background:'#111827', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  <p style={{ color:'#4A5568', fontSize:'0.8rem' }}>Gerando...</p>
+                </div>                )
               )}
 
               {/* Ações de foto — só se fundo = foto-ia */}
