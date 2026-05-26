@@ -46,43 +46,46 @@ function buildPrompt(tema: string, idx: number): string {
 
 export async function POST(request: NextRequest) {
   const key = process.env.FAL_API_KEY
-  if (!key) {
-    console.error('[gerar-imagem] FAL_API_KEY não configurada')
-    return NextResponse.json({ url: '', erro: 'FAL_API_KEY não configurada' })
-  }
+  if (!key) return NextResponse.json({ url: '', erro: 'FAL_API_KEY não configurada' })
 
   try {
     const { tema, idx = 0 } = await request.json()
     const prompt = buildPrompt(tema, idx)
 
-    console.log('[gerar-imagem] gerando para tema:', tema, 'idx:', idx)
-
-    const res = await fetch('https://fal.run/fal-ai/flux/schnell', {
+    // 1. Gerar imagem no fal.ai
+    const falRes = await fetch('https://fal.run/fal-ai/flux/schnell', {
       method: 'POST',
-      headers: {
-        'Authorization': `Key ${key}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Authorization': `Key ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt,
-        image_size:            'square_hd',
-        num_inference_steps:   4,
-        num_images:            1,
+        image_size: 'square_hd',
+        num_inference_steps: 4,
+        num_images: 1,
         enable_safety_checker: false,
       }),
     })
 
-    const texto = await res.text()
-    console.log('[gerar-imagem] status:', res.status, 'body:', texto.slice(0, 200))
-
-    if (!res.ok) {
-      return NextResponse.json({ url: '', erro: `fal.ai ${res.status}: ${texto.slice(0,100)}` })
+    if (!falRes.ok) {
+      const err = await falRes.text()
+      console.error('[gerar-imagem] fal.ai erro:', falRes.status, err.slice(0, 100))
+      return NextResponse.json({ url: '', erro: `fal.ai ${falRes.status}` })
     }
 
-    const data = JSON.parse(texto)
-    const url  = data.images?.[0]?.url ?? ''
-    console.log('[gerar-imagem] url gerada:', url.slice(0, 80))
-    return NextResponse.json({ url })
+    const falData = await falRes.json()
+    const imgUrl = falData.images?.[0]?.url ?? ''
+    if (!imgUrl) return NextResponse.json({ url: '', erro: 'fal.ai sem URL' })
+
+    // 2. Baixar imagem e converter para base64 (resolve CORS no canvas)
+    const imgRes = await fetch(imgUrl)
+    if (!imgRes.ok) return NextResponse.json({ url: '', erro: 'download falhou' })
+
+    const buffer     = await imgRes.arrayBuffer()
+    const base64     = Buffer.from(buffer).toString('base64')
+    const contentType = imgRes.headers.get('content-type') ?? 'image/jpeg'
+    const dataUrl    = `data:${contentType};base64,${base64}`
+
+    console.log('[gerar-imagem] ok, base64 size:', base64.length)
+    return NextResponse.json({ url: dataUrl })
 
   } catch (err: any) {
     console.error('[gerar-imagem] erro:', err.message)
