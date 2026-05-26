@@ -31,8 +31,12 @@ interface Cfg { cor: string; fonteId: string; logo: LogoCfg }
 
 function carregarImg(src: string): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
-    const img = new Image(); img.crossOrigin = 'anonymous'
-    img.onload = () => res(img); img.onerror = rej; img.src = src
+    const img = new Image()
+    // crossOrigin só para URLs externas, não para base64
+    if (!src.startsWith('data:')) img.crossOrigin = 'anonymous'
+    img.onload = () => res(img)
+    img.onerror = (e) => { console.error('[carregarImg] erro:', src.slice(0,50), e); rej(e) }
+    img.src = src
   })
 }
 
@@ -56,10 +60,12 @@ async function renderSlide(slide: Slide, total: number, fotoUrl: string, cfg: Cf
   if (fotoUrl) {
     try {
       const src = fotoUrl.startsWith('data:') ? fotoUrl : `/api/proxy-img?src=${encodeURIComponent(fotoUrl)}`
+      console.log('[renderSlide] carregando foto, tipo:', fotoUrl.startsWith('data:') ? 'base64' : 'url', 'size:', fotoUrl.length)
       const img = await carregarImg(src)
+      console.log('[renderSlide] foto carregada:', img.width, 'x', img.height)
       const sc  = Math.max(SIZE / img.width, SIZE / img.height)
       ctx.drawImage(img, (SIZE - img.width*sc)/2, (SIZE - img.height*sc)/2, img.width*sc, img.height*sc)
-    } catch {}
+    } catch(e) { console.error('[renderSlide] erro foto:', e) }
   }
 
   const grad = ctx.createLinearGradient(0,0,0,SIZE)
@@ -118,6 +124,7 @@ function SlideCanvas({ slide, total, fotoUrl, cfg, onLogoMove }: {
   const ref=useRef<HTMLCanvasElement>(null); const drag=useRef(false)
   useEffect(() => {
     if (!ref.current||!slide) return
+    console.log('[SlideCanvas] renderizando slide', slide.ordem, 'foto:', fotoUrl ? fotoUrl.slice(0,30) : 'vazia')
     renderSlide(slide,total,fotoUrl,cfg,true).then(blob=>{
       const url=URL.createObjectURL(blob); const img=new Image()
       img.onload=()=>{ if(!ref.current) return; ref.current.width=ref.current.height=340; ref.current.getContext('2d')!.drawImage(img,0,0,340,340); URL.revokeObjectURL(url) }
