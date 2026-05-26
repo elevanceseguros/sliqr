@@ -395,7 +395,10 @@ function CriarInner() {
                 </div>
               ):(
                 slides[slideAtivo]&&(
-                  <SlideCanvas slide={slides[slideAtivo]} total={slides.length} fotoUrl={fotos[slideAtivo]??''} cfg={cfg}
+                  <SlideCanvas
+                    key={`s${slideAtivo}-${(fotos[slideAtivo]??'').slice(-20)}-${cfg.cor}-${cfg.fonteId}-${cfg.logo.size}`}
+                    slide={slides[slideAtivo]} total={slides.length}
+                    fotoUrl={fotos[slideAtivo]??''} cfg={cfg}
                     onLogoMove={(x,y)=>setCfg(p=>({...p,logo:{...p.logo,x:Math.round(x),y:Math.round(y)}}))}/>
                 )
               )}
