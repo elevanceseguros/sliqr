@@ -13,18 +13,6 @@ const FONTES = [
   { id: 'classic', label: 'Clássica', css: 'Georgia, "Times New Roman", serif',           peso: '700' },
   { id: 'bold',    label: 'Bold',     css: '"Arial Black", "Helvetica Neue", sans-serif', peso: '900' },
 ]
-const TEMA_EN: Record<string,string> = {
-  'seguro auto':'car road safety insurance','seguro carro':'car road protection',
-  'plano de saude':'healthcare doctor hospital','plano de saúde':'healthcare doctor hospital',
-  'emagrecimento':'fitness healthy body weight loss','marmita':'healthy meal food preparation',
-  'farmacia':'pharmacy medicine pills','farmácia':'pharmacy medicine pills',
-  'remedio':'medicine healthcare clinic','remédio':'medicine healthcare clinic',
-  'imovel':'real estate house building','imóvel':'real estate house building',
-  'consorcio':'investment finance planning','consórcio':'investment finance planning',
-  'moto':'motorcycle road freedom','academia':'gym workout fitness training',
-  'dentista':'dental smile teeth clinic','nutrição':'nutrition healthy food',
-  'seguro vida':'family life protection insurance','financeiro':'finance money business',
-}
 
 interface LogoCfg { url: string; x: number; y: number; size: number }
 interface Cfg { cor: string; fonteId: string; logo: LogoCfg }
@@ -121,22 +109,43 @@ function SlideCanvas({ slide, total, fotoUrl, cfg, onLogoMove }: {
   slide: Slide; total: number; fotoUrl: string; cfg: Cfg
   onLogoMove?: (x: number, y: number) => void
 }) {
-  const ref=useRef<HTMLCanvasElement>(null); const drag=useRef(false)
+  const ref  = useRef<HTMLCanvasElement>(null)
+  const drag = useRef(false)
+  const busy = useRef(false)
+
   useEffect(() => {
-    if (!ref.current||!slide) return
-    console.log('[SlideCanvas] renderizando slide', slide.ordem, 'foto:', fotoUrl ? fotoUrl.slice(0,30) : 'vazia')
-    renderSlide(slide,total,fotoUrl,cfg,true).then(blob=>{
-      const url=URL.createObjectURL(blob); const img=new Image()
-      img.onload=()=>{ if(!ref.current) return; ref.current.width=ref.current.height=340; ref.current.getContext('2d')!.drawImage(img,0,0,340,340); URL.revokeObjectURL(url) }
-      img.src=url
-    })
-  },[slide,total,fotoUrl,cfg])
+    if (!ref.current || !slide || busy.current) return
+    busy.current = true
+    const canvas = ref.current
+    renderSlide(slide, total, fotoUrl, cfg, true)
+      .then(blob => {
+        const url = URL.createObjectURL(blob)
+        const img = new Image()
+        img.onload = () => {
+          if (canvas) {
+            canvas.width = canvas.height = 340
+            canvas.getContext('2d')!.drawImage(img, 0, 0, 340, 340)
+          }
+          URL.revokeObjectURL(url)
+          busy.current = false
+        }
+        img.onerror = () => { busy.current = false }
+        img.src = url
+      })
+      .catch(() => { busy.current = false })
+  }, [slide, total, fotoUrl, cfg])
+
   return (
     <canvas ref={ref} width={340} height={340}
-      style={{width:'100%',height:'auto',borderRadius:'12px',display:'block',cursor:cfg.logo.url&&onLogoMove?'crosshair':'default'}}
-      onMouseDown={()=>{if(cfg.logo.url)drag.current=true}}
-      onMouseMove={e=>{if(!drag.current||!onLogoMove||!ref.current)return;const r=ref.current.getBoundingClientRect();onLogoMove((e.clientX-r.left)*(1080/r.width),(e.clientY-r.top)*(1080/r.height))}}
-      onMouseUp={()=>{drag.current=false}} onMouseLeave={()=>{drag.current=false}}
+      style={{ width:'100%', height:'auto', borderRadius:'12px', display:'block', cursor: cfg.logo.url && onLogoMove ? 'crosshair' : 'default' }}
+      onMouseDown={() => { if (cfg.logo.url) drag.current = true }}
+      onMouseMove={e => {
+        if (!drag.current || !onLogoMove || !ref.current) return
+        const r = ref.current.getBoundingClientRect()
+        onLogoMove((e.clientX - r.left) * (1080 / r.width), (e.clientY - r.top) * (1080 / r.height))
+      }}
+      onMouseUp={() => { drag.current = false }}
+      onMouseLeave={() => { drag.current = false }}
     />
   )
 }
@@ -183,16 +192,6 @@ function CriarInner() {
       }catch(e:any){console.error('[fal.ai]',e.message);urls.push('')}
     }
     return urls
-  }
-
-  async function buscarFotosUnsplash(tema:string,qtd:number):Promise<string[]>{
-    try{
-      let q=tema+' professional'
-      for(const[pt,en]of Object.entries(TEMA_EN)){if(tema.toLowerCase().includes(pt)){q=en;break}}
-      const res=await fetch(`/api/foto?tema=${encodeURIComponent(q)}&qtd=${qtd*2}`)
-      const data=await res.json()
-      return(data.urls??[]).slice(0,qtd)
-    }catch{return[]}
   }
 
   async function gerar(){
