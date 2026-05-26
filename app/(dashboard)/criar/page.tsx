@@ -206,6 +206,10 @@ function CriarInner() {
       setGerandoFotos(true)
       console.log('[gerar] usarIA ref:', usarIARef.current)
       const urls=usarIARef.current?await gerarFotosIA(tema,qtd):await buscarFotosUnsplash(tema,qtd)
+      console.log('[gerar] urls geradas:', urls.length, 'vazias:', urls.filter(u=>!u).length)
+      if(usarIARef.current && urls.every(u=>!u)){
+        setErroIA('fal.ai retornou vazio — verifique os logs da Vercel')
+      }
       setFotos(urls)
       setGerandoFotos(false)
     }catch(e:any){setErro(e.message);setGerando(false);setGerandoFotos(false)}
