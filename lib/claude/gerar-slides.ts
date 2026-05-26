@@ -4,51 +4,52 @@ import { Slide, Tom } from '@/types'
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const TOM_INSTRUCOES: Record<Tom, string> = {
-  vender:   'Linguagem persuasiva, focada em benefícios e conversão. Objetivo: fazer o leitor querer comprar ou contratar.',
-  ensinar:  'Linguagem educativa e clara. Explique como se estivesse ensinando alguém que não conhece o assunto.',
-  urgencia: 'Senso de urgência real. Use dados, prazos e consequências de não agir. Direto e impactante.',
-  inspirar: 'Tom motivacional e humano. Conecte emocionalmente. Deixe o leitor esperançoso.',
+  vender:   'Persuasivo e direto. Foco em benefício claro. CTA no último slide.',
+  ensinar:  'Educativo e simples. Ensine um conceito por slide.',
+  urgencia: 'Urgente e impactante. Use dados e consequências reais.',
+  inspirar: 'Motivacional e humano. Conecte emocionalmente.',
 }
 
 function limparJSON(texto: string): string {
   let s = texto.trim()
-  // Remove blocos markdown ```json ... ``` ou ``` ... ```
   s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
-  // Extrai o array JSON
   const match = s.match(/\[[\s\S]*\]/)
-  if (match) return match[0]
-  return s
+  return match ? match[0] : s
 }
 
 export async function gerarSlides(tema: string, tom: Tom, qtdSlides: number): Promise<Slide[]> {
-  const prompt = `Você é um especialista em conteúdo para Instagram. Crie ${qtdSlides} slide(s) sobre: "${tema}".
+  const prompt = `Crie ${qtdSlides} slide(s) de carrossel Instagram sobre: "${tema}".
+Tom: ${TOM_INSTRUCOES[tom]}
 
-Estilo: ${TOM_INSTRUCOES[tom]}
+REGRAS CRÍTICAS DE FORMATO:
+- "destaque": APENAS no slide 1. Máximo 3 palavras. Ex: "Saiba agora", "Atenção aqui", "Isso muda tudo"
+- "titulo": Máximo 6 palavras. Direto e impactante.
+- "corpo": Máximo 2 linhas curtas separadas por \\n. Cada linha máximo 5 palavras. SEM emojis. SEM pontuação excessiva.
+- Último slide: CTA curto. Ex: título "Fale com a gente" + corpo "Link na bio\\nResposta em minutos"
 
-Regras:
-- Slide 1: título curto e impactante (máximo 8 palavras) + campo "destaque" com 2-4 palavras de gancho
-- Demais slides: apenas "ordem", "titulo", "corpo" — SEM o campo "destaque"
-- Corpo: máximo 3 linhas curtas separadas por \\n
-- Último slide: convite à ação direto
-- Linguagem simples e direta
+EXEMPLOS DE CORPO BOM:
+"Cobre roubo e colisão\\nSem burocracia"
+"Consultas e exames\\nTudo incluído"
 
-Responda SOMENTE com o JSON puro, sem explicações:
-[{"ordem":1,"titulo":"...","corpo":"linha1\\nlinha2","destaque":"frase curta"},{"ordem":2,"titulo":"...","corpo":"linha1\\nlinha2"}]`
+EXEMPLOS DE CORPO RUIM (muito longo):
+"Consultas, exames e internações cobertos. Acesso a melhor rede de hospitais e clínicas."
+
+Responda SOMENTE com JSON puro:
+[{"ordem":1,"titulo":"...","corpo":"linha1\\nlinha2","destaque":"2 palavras"},{"ordem":2,"titulo":"...","corpo":"linha1\\nlinha2"}]`
 
   const response = await client.messages.create({
     model:      'claude-haiku-4-5-20251001',
-    max_tokens: 2000,
+    max_tokens: 1500,
     messages:   [{ role: 'user', content: prompt }],
   })
 
-  const texto = response.content[0].type === 'text' ? response.content[0].text : ''
+  const texto   = response.content[0].type === 'text' ? response.content[0].text : ''
   const jsonStr = limparJSON(texto)
 
   let dados: Omit<Slide, 'id'>[]
-  try {
-    dados = JSON.parse(jsonStr)
-  } catch {
-    console.error('[gerar-slides] parse error. Raw:', texto.slice(0, 400))
+  try { dados = JSON.parse(jsonStr) }
+  catch {
+    console.error('[gerar-slides] parse error:', texto.slice(0, 200))
     throw new Error('Erro ao processar resposta da IA. Tente novamente.')
   }
 

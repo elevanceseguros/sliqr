@@ -38,71 +38,142 @@ function quebrar(ctx: CanvasRenderingContext2D, texto: string, maxW: number): st
 }
 
 async function renderSlide(slide: Slide, total: number, fotoUrl: string, cfg: Cfg, preview = false): Promise<Blob> {
-  const SIZE = preview ? 680 : 1080; const S = SIZE / 1080
+  const SIZE = preview ? 680 : 1080
+  const S    = SIZE / 1080
   const fonte = FONTES.find(f => f.id === cfg.fonteId) ?? FONTES[0]
   const cor   = cfg.cor
-  const cv = document.createElement('canvas'); cv.width = cv.height = SIZE
+  const cv    = document.createElement('canvas')
+  cv.width = cv.height = SIZE
   const ctx = cv.getContext('2d')!
 
-  ctx.fillStyle = '#080B12'; ctx.fillRect(0, 0, SIZE, SIZE)
+  // Fundo
+  ctx.fillStyle = '#060810'
+  ctx.fillRect(0, 0, SIZE, SIZE)
+
+  // Foto de fundo
   if (fotoUrl) {
     try {
       const src = fotoUrl.startsWith('data:') ? fotoUrl : `/api/proxy-img?src=${encodeURIComponent(fotoUrl)}`
-      console.log('[renderSlide] carregando foto, tipo:', fotoUrl.startsWith('data:') ? 'base64' : 'url', 'size:', fotoUrl.length)
       const img = await carregarImg(src)
-      console.log('[renderSlide] foto carregada:', img.width, 'x', img.height)
       const sc  = Math.max(SIZE / img.width, SIZE / img.height)
-      ctx.drawImage(img, (SIZE - img.width*sc)/2, (SIZE - img.height*sc)/2, img.width*sc, img.height*sc)
-    } catch(e) { console.error('[renderSlide] erro foto:', e) }
-  }
-
-  const grad = ctx.createLinearGradient(0,0,0,SIZE)
-  grad.addColorStop(0,'rgba(4,6,14,0.84)'); grad.addColorStop(0.42,'rgba(4,6,14,0.50)'); grad.addColorStop(1,'rgba(4,6,14,0.95)')
-  ctx.fillStyle = grad; ctx.fillRect(0,0,SIZE,SIZE)
-  ctx.fillStyle = cor; ctx.fillRect(0,0,SIZE,7*S)
-  ctx.fillStyle = cor; ctx.globalAlpha=0.55; ctx.fillRect(0,0,5*S,SIZE); ctx.globalAlpha=1
-
-  const PAD=88*S; const LRG=SIZE-PAD*2; let curY=SIZE*0.27
-
-  if (slide.ordem===1 && slide.destaque) {
-    ctx.font=`${fonte.peso} ${86*S}px ${fonte.css}`
-    const lD=quebrar(ctx,slide.destaque,LRG)
-    ctx.fillStyle=cor; ctx.globalAlpha=0.14
-    ctx.beginPath(); ctx.roundRect(PAD-14*S,curY-72*S,LRG+28*S,lD.length*98*S+16*S,10*S); ctx.fill(); ctx.globalAlpha=1
-    ctx.fillStyle=cor
-    for (const l of lD) { ctx.fillText(l,PAD,curY); curY+=98*S }
-    curY+=16*S
-  }
-
-  const fsTit=(slide.ordem===1?62:72)*S
-  ctx.font=`${fonte.peso} ${fsTit}px ${fonte.css}`; ctx.fillStyle='#FFFFFF'
-  for (const l of quebrar(ctx,slide.titulo,LRG)) { ctx.fillText(l,PAD,curY); curY+=fsTit*1.28 }
-  curY+=18*S
-
-  ctx.fillStyle=cor; ctx.globalAlpha=0.5; ctx.fillRect(PAD,curY-12*S,56*S,3*S); ctx.globalAlpha=1; curY+=16*S
-
-  ctx.font=`400 ${38*S}px ${fonte.css}`; ctx.fillStyle='rgba(205,215,255,0.82)'
-  for (const linha of slide.corpo.split('\n').filter(Boolean)) {
-    for (const parte of quebrar(ctx,linha,LRG)) { ctx.fillText(parte,PAD,curY); curY+=50*S }
-    curY+=4*S
-  }
-
-  if (cfg.logo.url) {
-    try {
-      const logo=await carregarImg(cfg.logo.url)
-      const lH=cfg.logo.size*S; const lW=(logo.width/logo.height)*lH
-      ctx.drawImage(logo,cfg.logo.x*S,cfg.logo.y*S,lW,lH)
+      ctx.drawImage(img, (SIZE - img.width * sc) / 2, (SIZE - img.height * sc) / 2, img.width * sc, img.height * sc)
     } catch {}
   }
 
-  const dotY=SIZE-48*S; let dotX=PAD
-  for (let i=0;i<total;i++) {
-    const a=i===slide.ordem-1; const dW=a?30*S:7*S
-    ctx.beginPath(); ctx.roundRect(dotX,dotY,dW,7*S,3.5*S)
-    ctx.fillStyle=a?cor:'rgba(255,255,255,0.18)'; ctx.fill()
-    dotX+=dW+10*S
+  // Overlay em 3 camadas para profundidade
+  // Camada 1: gradiente geral
+  const g1 = ctx.createLinearGradient(0, 0, 0, SIZE)
+  g1.addColorStop(0,    'rgba(4,6,16,0.72)')
+  g1.addColorStop(0.35, 'rgba(4,6,16,0.35)')
+  g1.addColorStop(0.65, 'rgba(4,6,16,0.45)')
+  g1.addColorStop(1,    'rgba(4,6,16,0.90)')
+  ctx.fillStyle = g1; ctx.fillRect(0, 0, SIZE, SIZE)
+
+  // Camada 2: vinheta lateral esquerda (onde fica o texto)
+  const g2 = ctx.createLinearGradient(0, 0, SIZE * 0.7, 0)
+  g2.addColorStop(0,   'rgba(4,6,16,0.55)')
+  g2.addColorStop(1,   'rgba(4,6,16,0)')
+  ctx.fillStyle = g2; ctx.fillRect(0, 0, SIZE, SIZE)
+
+  // Linha colorida topo
+  ctx.fillStyle = cor
+  ctx.fillRect(0, 0, SIZE, 6 * S)
+
+  // Barra lateral esquerda
+  const barGrad = ctx.createLinearGradient(0, 0, 0, SIZE)
+  barGrad.addColorStop(0,   cor)
+  barGrad.addColorStop(0.6, cor + 'AA')
+  barGrad.addColorStop(1,   cor + '00')
+  ctx.fillStyle = barGrad
+  ctx.fillRect(0, 0, 5 * S, SIZE)
+
+  const PAD = 90 * S
+  const LRG = SIZE * 0.72 // usa 72% da largura para o texto
+
+  // ── CONTEÚDO ──
+  // Posição vertical: começa em 30% da altura
+  let curY = SIZE * 0.30
+
+  // DESTAQUE (só slide 1) — tag colorida pequena
+  if (slide.ordem === 1 && slide.destaque) {
+    const fs = 34 * S
+    ctx.font = `700 ${fs}px ${fonte.css}`
+    const txt = slide.destaque.toUpperCase()
+    const tw  = ctx.measureText(txt).width
+    // Pill colorida
+    ctx.fillStyle = cor
+    ctx.globalAlpha = 0.20
+    ctx.beginPath()
+    ctx.roundRect(PAD - 10 * S, curY - fs * 0.85, tw + 20 * S, fs * 1.15, 4 * S)
+    ctx.fill()
+    ctx.globalAlpha = 1
+    ctx.fillStyle = cor
+    ctx.fillText(txt, PAD, curY)
+    curY += fs * 1.6
   }
-  return new Promise(r=>cv.toBlob(b=>r(b!),'image/png',0.95))
+
+  // TÍTULO — grande, bold, branco
+  const fsTit = (slide.ordem === 1 ? 76 : 82) * S
+  ctx.font = `${fonte.peso} ${fsTit}px ${fonte.css}`
+  ctx.fillStyle = '#FFFFFF'
+  // Sombra no texto para legibilidade
+  ctx.shadowColor   = 'rgba(0,0,0,0.6)'
+  ctx.shadowBlur    = 12 * S
+  ctx.shadowOffsetX = 2 * S
+  ctx.shadowOffsetY = 2 * S
+  const linhasTit = quebrar(ctx, slide.titulo, LRG)
+  for (const l of linhasTit) {
+    ctx.fillText(l, PAD, curY)
+    curY += fsTit * 1.22
+  }
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0
+
+  // Linha decorativa
+  curY += 16 * S
+  ctx.fillStyle   = cor
+  ctx.globalAlpha = 0.7
+  ctx.fillRect(PAD, curY, 48 * S, 3 * S)
+  ctx.globalAlpha = 1
+  curY += 24 * S
+
+  // CORPO — linhas curtas, cinza claro
+  const fsCorpo = 42 * S
+  ctx.font      = `400 ${fsCorpo}px ${fonte.css}`
+  ctx.fillStyle = 'rgba(220,228,255,0.85)'
+  ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8 * S
+  const linhasCorpo = slide.corpo.split('\n').filter(Boolean).slice(0, 3) // máx 3 linhas
+  for (const linha of linhasCorpo) {
+    ctx.fillText(linha, PAD, curY)
+    curY += fsCorpo * 1.5
+  }
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0
+
+  // LOGO — canto superior direito
+  if (cfg.logo.url) {
+    try {
+      const logo = await carregarImg(cfg.logo.url)
+      const lH   = cfg.logo.size * S
+      const lW   = (logo.width / logo.height) * lH
+      ctx.globalAlpha = 0.92
+      ctx.drawImage(logo, cfg.logo.x * S, cfg.logo.y * S, lW, lH)
+      ctx.globalAlpha = 1
+    } catch {}
+  }
+
+  // DOTS — canto inferior esquerdo
+  const dotY = SIZE - 52 * S
+  let   dotX = PAD
+  for (let i = 0; i < total; i++) {
+    const ativo = i === slide.ordem - 1
+    const dW    = ativo ? 32 * S : 8 * S
+    ctx.beginPath()
+    ctx.roundRect(dotX, dotY, dW, 8 * S, 4 * S)
+    ctx.fillStyle = ativo ? cor : 'rgba(255,255,255,0.25)'
+    ctx.fill()
+    dotX += dW + 10 * S
+  }
+
+  return new Promise(r => cv.toBlob(b => r(b!), 'image/png', 0.95))
 }
 
 function SlideCanvas({ slide, total, fotoUrl, cfg, onLogoMove }: {
