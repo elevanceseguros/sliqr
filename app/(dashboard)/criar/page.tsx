@@ -190,7 +190,7 @@ function CriarInner() {
 
   async function gerar(){
     if(!tema.trim()){setErro('Digite o tema.');return}
-    setErro('');setErroIA('');setGerando(true);setSlides([]);setFotos([]);setSlideAtivo(0)
+    setErro('');setGerando(true);setSlides([]);setFotos([]);setSlideAtivo(0)
     try{
       const res=await fetch('/api/gerar',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({tema,tom,qtdSlides:qtd,accessToken:session?.access_token,refreshToken:session?.refresh_token})})
