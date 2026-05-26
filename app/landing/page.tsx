@@ -19,7 +19,6 @@ export default function LandingPage() {
 
         @media (max-width: 768px) {
           .nav-links { display: none !important; }
-          .nav-cta-text { display: none !important; }
           .hero-section { padding: 100px 5% 60px !important; }
           .section-pad { padding: 4rem 5% !important; }
           .cta-box { padding: 3rem 1.5rem !important; }
@@ -44,7 +43,7 @@ export default function LandingPage() {
           ))}
         </div>
         <div style={{display:'flex',gap:'10px',alignItems:'center'}}>
-          <Link href="/login" className="nav-cta-text" style={{color:'#8B95A8',textDecoration:'none',fontSize:'0.85rem',fontWeight:500,padding:'0.5rem 1rem'}}>Entrar</Link>
+          <Link href="/login" style={{color:'#8B95A8',textDecoration:'none',fontSize:'0.85rem',fontWeight:500,padding:'0.5rem 1rem'}}>Entrar</Link>
           <Link href="/cadastro" style={{background:'#2D6FFF',color:'#fff',textDecoration:'none',borderRadius:'8px',padding:'0.55rem 1.25rem',fontSize:'0.85rem',fontWeight:600}}>Criar grátis</Link>
         </div>
       </nav>
