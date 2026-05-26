@@ -58,8 +58,15 @@ function CriarInner() {
     return new Promise((r,j)=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result as string); fr.onerror=j; fr.readAsDataURL(file) })
   }
 
-  async function gerarScreenshot(html: string): Promise<string> {
-    const res  = await fetch('/api/screenshot', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({html}) })
+  async function gerarScreenshot(html: string, comLogo = true): Promise<string> {
+    const body: any = { html }
+    if (comLogo && cfg.logoUrl) {
+      body.logoUrl = cfg.logoUrl
+      body.logoX   = cfg.logoX ?? 0.5
+      body.logoY   = cfg.logoY ?? 0.90
+      body.logoW   = cfg.logoW ?? 160
+    }
+    const res  = await fetch('/api/screenshot', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) })
     const data = await res.json()
     if (data.erro) throw new Error(data.erro)
     return data.url
@@ -321,25 +328,13 @@ function CriarInner() {
 
               {imgAtiva && <img src={imgAtiva} style={{width:'100%', height:'auto', borderRadius:'12px', display:'block'}}/>}
 
-              {/* Overlay da logo arrastável */}
-              {cfg.logoUrl && imgs.length > 0 && (
+              {/* Logo overlay para reposicionamento */}
+              {cfg.logoUrl && (
                 <div
-                  style={{
-                    position:'absolute',
-                    left:`${(cfg.logoX??0.5)*100}%`,
-                    top:`${(cfg.logoY??0.9)*100}%`,
-                    transform:'translate(-50%,-50%)',
-                    cursor:'move',
-                    border:`2px dashed ${cor}`,
-                    borderRadius:'8px',
-                    padding:'4px',
-                    background:'rgba(0,0,0,0.3)',
-                  }}
+                  style={{position:'absolute', left:`${(cfg.logoX??0.5)*100}%`, top:`${(cfg.logoY??0.90)*100}%`, transform:'translate(-50%,-50%)', cursor:'move', border:`2px dashed ${cor}88`, borderRadius:'8px', padding:'3px', backdropFilter:'blur(2px)'}}
                   onMouseDown={e=>onLogoMouseDown(e,'drag')}>
-                  <img src={cfg.logoUrl} style={{display:'block', width:`${(cfg.logoW??160) * (previewRef.current?.getBoundingClientRect().width ?? 400) / 1080}px`, height:'auto', objectFit:'contain', pointerEvents:'none'}}/>
-                  {/* Handle de resize */}
-                  <div
-                    style={{position:'absolute', bottom:'-6px', right:'-6px', width:'14px', height:'14px', background:cor, borderRadius:'50%', cursor:'se-resize'}}
+                  <img src={cfg.logoUrl} style={{display:'block', width:`${(cfg.logoW??160)*(previewRef.current?.getBoundingClientRect().width??380)/1080}px`, height:'auto', objectFit:'contain', pointerEvents:'none', opacity:0.85}}/>
+                  <div style={{position:'absolute', bottom:'-7px', right:'-7px', width:'16px', height:'16px', background:cor, borderRadius:'50%', cursor:'se-resize', border:'2px solid #fff'}}
                     onMouseDown={e=>onLogoMouseDown(e,'resize')}/>
                 </div>
               )}
@@ -352,12 +347,22 @@ function CriarInner() {
               </button>
             )}
 
-            {/* Dots */}
-            <div style={{display:'flex', gap:'7px', marginTop:'12px', justifyContent:'center'}}>
-              {imgs.map((_,i)=>(
-                <button key={i} onClick={()=>setSlideAtivo(i)}
-                  style={{width:i===slideAtivo?'24px':'8px', height:'8px', borderRadius:'4px', border:'none', background:i===slideAtivo?cor:'rgba(255,255,255,0.15)', cursor:'pointer', padding:0, transition:'all 0.2s'}}/>
-              ))}
+            {/* Navegação: setas + dots */}
+            <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'12px', marginTop:'12px'}}>
+              <button onClick={()=>setSlideAtivo(p=>Math.max(0,p-1))} disabled={slideAtivo===0}
+                style={{width:'32px', height:'32px', borderRadius:'50%', border:'1px solid rgba(255,255,255,0.15)', background:'rgba(255,255,255,0.06)', color: slideAtivo===0?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.7)', cursor:slideAtivo===0?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0}}>
+                ‹
+              </button>
+              <div style={{display:'flex', gap:'6px', alignItems:'center'}}>
+                {imgs.map((_,i)=>(
+                  <button key={i} onClick={()=>setSlideAtivo(i)}
+                    style={{width:i===slideAtivo?'22px':'7px', height:'7px', borderRadius:'4px', border:'none', background:i===slideAtivo?cor:'rgba(255,255,255,0.2)', cursor:'pointer', padding:0, transition:'all 0.2s'}}/>
+                ))}
+              </div>
+              <button onClick={()=>setSlideAtivo(p=>Math.min(imgs.length-1,p+1))} disabled={slideAtivo===imgs.length-1}
+                style={{width:'32px', height:'32px', borderRadius:'50%', border:'1px solid rgba(255,255,255,0.15)', background:'rgba(255,255,255,0.06)', color: slideAtivo===imgs.length-1?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.7)', cursor:slideAtivo===imgs.length-1?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0}}>
+                ›
+              </button>
             </div>
 
             {/* Botões download */}

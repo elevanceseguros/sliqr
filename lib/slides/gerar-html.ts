@@ -82,9 +82,8 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg)
   const lH = 70
   const lX = Math.round((cfg.logoX ?? 0.5) * 1080 - lW/2)
   const lY = Math.round((cfg.logoY ?? 0.90) * 1080 - lH/2)
-  const logoHtml = cfg.logoUrl
-    ? `<img src="${cfg.logoUrl}" style="position:absolute;left:${lX}px;top:${lY}px;width:${lW}px;height:${lH}px;object-fit:contain;" />`
-    : ''
+  // Logo não é renderizada no HTML base — é composta no download final
+  const logoHtml = ''
 
   let body = ''
 
