@@ -141,12 +141,9 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   const footer = `
     <div style="position:absolute;bottom:0;left:0;right:0;height:${FOOTER}px;z-index:4;">
       <div style="position:absolute;top:0;left:${PAD}px;right:${PAD}px;height:1px;background:rgba(255,255,255,0.16);"></div>
-      ${cfg.logoUrl
-        ? `<img src="${cfg.logoUrl}" style="position:absolute;top:28px;left:50%;transform:translateX(-50%);height:${lH}px;max-width:${lW}px;object-fit:contain;"/>`
-        : `<div style="position:absolute;top:28px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;">
-            ${Array.from({length:total},(_,i)=>`<div style="width:${i===idx?'28px':'7px'};height:7px;border-radius:4px;background:${i===idx?'rgba(255,255,255,0.85)':'rgba(255,255,255,0.22)'};transition:all 0.2s;"></div>`).join('')}
-           </div>`
-      }
+      <div style="position:absolute;top:28px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;">
+        ${Array.from({length:total},(_,i)=>`<div style="width:${i===idx?'28px':'7px'};height:7px;border-radius:4px;background:${i===idx?'rgba(255,255,255,0.85)':'rgba(255,255,255,0.22)'}"></div>`).join('')}
+      </div>
     </div>`
 
   // ── ZONA DE CONTEÚDO (igual em todos os tipos) ────────────────────────────
@@ -176,24 +173,20 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const fsT    = fsTitulo(titulo, 88)
     const itens  = (slide.itens ?? []).slice(0, 3)
     const n      = itens.length || 1
+    const cardH  = Math.floor((cH - 120) / n)
 
-    // Layout: cards verticais empilhados — cada card = ícone + texto lado a lado
-    // Isso preenche melhor o espaço e fica mais elegante
-    const cardH = Math.floor((cH - 60) / n)  // altura de cada card
-    const cards = itens.map((item: any) => `
-      <div style="display:flex;align-items:center;gap:32px;height:${cardH}px;padding:0 8px;border-bottom:1px solid rgba(255,255,255,0.10);">
-        <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          ${ico(item.icone ?? 'star', 40, icCor, 1.6)}
+    const cards = itens.map((item: any, i: number) => `
+      <div style="display:flex;align-items:center;gap:28px;height:${cardH}px;border-bottom:${i < itens.length-1 ? '1px solid rgba(255,255,255,0.10)' : 'none'};">
+        <div style="width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          ${ico(item.icone ?? 'star', 36, icCor, 1.6)}
         </div>
-        <div style="flex:1;">
-          <div style="font-family:'${fn}',sans-serif;font-size:36px;font-weight:700;color:${txt};line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(item.label ?? '', 28)}</div>
-        </div>
-        <div style="font-family:'${fn}',sans-serif;font-size:22px;font-weight:600;color:rgba(255,255,255,0.25);flex-shrink:0;">${String(itens.indexOf(item)+1).padStart(2,'0')}</div>
+        <span style="font-family:'${fn}',sans-serif;font-size:34px;font-weight:700;color:${txt};line-height:1.2;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(item.label ?? '', 30)}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:600;color:rgba(255,255,255,0.22);flex-shrink:0;min-width:28px;text-align:right;">${String(i+1).padStart(2,'0')}</span>
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;padding-top:20px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:32px;">${titulo}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">${cards}</div>
     </div>`
   }
@@ -239,8 +232,8 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;padding-top:20px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:28px;">${titulo}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:32px;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">${rows}</div>
     </div>`
   }
