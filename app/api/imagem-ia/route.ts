@@ -21,14 +21,15 @@ Crie um prompt de imagem fotográfica profissional para ser usado como FUNDO ou 
 
 REGRAS OBRIGATÓRIAS:
 - A imagem deve representar o TEMA visualmente, não o texto
-- NUNCA incluir texto, letras, números, logotipos, marcas d'água
-- Estilo: fotografia profissional comercial, iluminação suave
-- Imagem de OBJETO, AMBIENTE ou CENA — nunca rosto principal
-- Para capa: composição impactante, foco no produto/objeto principal
-- Para cta: ambiente acolhedor, convidativo, warmth
-- Para outros slides: objeto de apoio sutil, não distrai do texto
+- OBRIGATÓRIO: ZERO texto, ZERO letras, ZERO palavras, ZERO números na imagem
+- Apenas elementos visuais puros: objetos, natureza, ambiente, texturas, luz
+- Estilo fotográfico profissional, bokeh, iluminação suave
+- NUNCA documentos, papéis com texto, telas, placas
+- Para capa: objeto central impactante em fundo limpo
+- Para cta: luz dourada, ambiente acolhedor, profundidade de campo
+- Para outros slides: textura ou objeto sutil lateral
 
-Responda APENAS com o prompt em inglês, sem explicações, máximo 30 palavras.`
+Responda APENAS com o prompt em inglês. Máximo 20 palavras. Inclua sempre: "no text, no words, no letters, no documents".`
     }]
   })
   const prompt = res.content[0].type === 'text' ? res.content[0].text.trim() : ''

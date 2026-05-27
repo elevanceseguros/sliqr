@@ -188,9 +188,9 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;padding-top:32px;">${titulo}</div>
-      <div style="flex:1;display:flex;align-items:center;justify-content:center;">${cols}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;padding-top:32px;z-index:4;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${titulo}</div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;padding-bottom:16px;">${cols}</div>
     </div>`
   }
 
