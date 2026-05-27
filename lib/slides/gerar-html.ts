@@ -48,13 +48,18 @@ function trunc(s: string, max: number) {
   return s.length > max ? s.slice(0, max-1) + '…' : s
 }
 
-// Font-size adaptativo por tamanho do título
-function fsTitulo(titulo: string, base: number): number {
+// Font-size adaptativo considerando largura disponível e comprimento do título
+// larguraDisp: largura em px onde o texto vai renderizar
+function fsTitulo(titulo: string, base: number, larguraDisp = 936): number {
   const len = titulo.length
-  if (len > 35) return Math.round(base * 0.65)
-  if (len > 25) return Math.round(base * 0.78)
-  if (len > 18) return Math.round(base * 0.88)
-  return base
+  // Estimativa: cada char bold Inter ocupa ~0.58 * fontSize em largura
+  // Queremos que o título caiba em 2 linhas no máximo
+  // Chars por linha = larguraDisp / (fontSize * 0.58)
+  // 2 linhas => charsMax = 2 * larguraDisp / (fontSize * 0.58)
+  // Resolvendo: fontSize = 2 * larguraDisp / (len * 0.58)
+  const fsIdeal = Math.round((2 * larguraDisp) / (len * 0.60))
+  // Limitar entre 48 e base
+  return Math.max(48, Math.min(base, fsIdeal))
 }
 
 export interface SlideCfg {
@@ -170,7 +175,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   // ── ÍCONES ────────────────────────────────────────────────────────────────
   else if (tipo === 'icones') {
     const titulo = trunc(slide.titulo ?? '', 45)
-    const fsT    = fsTitulo(titulo, 88)
+    const fsT    = fsTitulo(titulo, 88, 530)
     const itens  = (slide.itens ?? []).slice(0, 3)
     const n      = itens.length || 1
     const cardH  = Math.floor((cH - 120) / n)
@@ -180,7 +185,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
         <div style="width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${ico(item.icone ?? 'star', 36, icCor, 1.6)}
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:34px;font-weight:700;color:${txt};line-height:1.2;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(item.label ?? '', 30)}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:34px;font-weight:700;color:${txt};line-height:1.2;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;white-space:normal;">${trunc(item.label ?? '', 22)}</span>
         <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:600;color:rgba(255,255,255,0.22);flex-shrink:0;min-width:28px;text-align:right;">${String(i+1).padStart(2,'0')}</span>
       </div>`).join('')
 
@@ -195,14 +200,14 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   else if (tipo === 'topico') {
     const titulo = trunc(slide.titulo ?? '', 40)
     const corpo  = trunc(slide.corpo ?? '', 180)
-    const fsT    = fsTitulo(titulo, 88)
-    const fsC    = corpo.length > 100 ? 36 : 40
+    const fsT    = fsTitulo(titulo, 88, 530)
+    const fsC    = corpo.length > 100 ? 34 : 38
 
     body = isMin ? `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:32px;z-index:4;">
       <div style="width:4px;height:60px;background:rgba(255,255,255,0.45);border-radius:2px;"></div>
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${titulo}</div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;">${corpo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;word-break:break-word;overflow-wrap:break-word;">${corpo}</div>
     </div>` : `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;width:56%;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:24px;z-index:4;overflow:hidden;">
       <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;">
@@ -210,14 +215,14 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${titulo}</div>
       <div style="width:48px;height:3px;background:rgba(255,255,255,0.35);border-radius:2px;"></div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;">${corpo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;word-break:break-word;overflow-wrap:break-word;">${corpo}</div>
     </div>`
   }
 
   // ── LISTA ─────────────────────────────────────────────────────────────────
   else if (tipo === 'lista') {
     const titulo = trunc(slide.titulo ?? '', 40)
-    const fsT    = fsTitulo(titulo, 80)
+    const fsT    = fsTitulo(titulo, 80, 530)
     const itens  = (slide.itens ?? []).slice(0, 5)
     const n      = itens.length
     const cardH  = Math.floor((cH - 80) / n)
@@ -228,7 +233,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
         <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.90);">${i + 1}</span>
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;flex:1;">${trunc(it, 38)}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;flex:1;white-space:normal;">${trunc(it, 30)}</span>
       </div>`).join('')
 
     body = `
