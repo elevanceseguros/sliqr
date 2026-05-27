@@ -99,16 +99,25 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   const W       = 1080 - PAD * 2          // = 936px de largura útil
 
   // ── FUNDO ────────────────────────────────────────────────────────────────
-  const temFoto = !!fotoUrl && ['capa','cta'].includes(slide.tipo)
+  const temFoto = !!fotoUrl
   const bgStyle = temFoto
     ? `background:${drk(cor, 0.50)};`
     : isMin
     ? `background:${cor};`
     : `background:linear-gradient(145deg,${cor} 0%,${drk(cor,0.40)} 100%);`
 
-  const fotoHtml = temFoto ? `
-    <img src="${fotoUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.28;z-index:0;"/>
-    <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,0,0,0.78) 0%,rgba(0,0,0,0.28) 50%,rgba(0,0,0,0.70) 100%);z-index:1;"></div>` : ''
+  const isFotoFull = temFoto && ['capa','cta'].includes(slide.tipo)
+  const isFotoLateral = temFoto && !['capa','cta'].includes(slide.tipo)
+
+  // Capa/CTA: foto full background com overlay escuro
+  // Outros slides: foto no lado direito (40% da largura) com gradiente de fusão
+  const fotoHtml = isFotoFull ? `
+    <img src="${fotoUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.30;z-index:0;"/>
+    <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,0,0,0.80) 0%,rgba(0,0,0,0.28) 55%,rgba(0,0,0,0.72) 100%);z-index:1;"></div>`
+  : isFotoLateral ? `
+    <img src="${fotoUrl}" style="position:absolute;top:0;right:0;width:42%;height:100%;object-fit:cover;opacity:0.40;z-index:0;"/>
+    <div style="position:absolute;top:0;right:0;width:42%;height:100%;background:linear-gradient(90deg,${bgStyle.includes(cor)?cor:'rgba(0,0,0,0)'} 0%,transparent 40%);z-index:1;"></div>`
+  : ''
 
   // ── DECORATIVOS (consistentes em todos os slides) ─────────────────────────
   const decos = isMin

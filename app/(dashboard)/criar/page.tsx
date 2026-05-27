@@ -16,12 +16,7 @@ const FONTES = [
 const QTD_OPTS = [1,2,3,4,5,6,7,8,9,10]
 
 function deveUsarImagemIA(i: number, total: number) {
-  if (total <= 1) return true
-  if (i === 0) return true
-  if (i === total - 1) return true
-  if (total >= 4 && i === Math.floor(total / 2)) return true
-  if (total >= 8 && i === 2) return true
-  return false
+  return true // Todos os slides recebem imagem de composição
 }
 
 function CriarInner() {
