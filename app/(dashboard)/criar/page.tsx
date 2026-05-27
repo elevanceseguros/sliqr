@@ -566,6 +566,22 @@ function CriarInner() {
               onMouseMove={onMouseMove}
               onMouseUp={onMouseUp}
               onMouseLeave={onMouseUp}
+              onTouchMove={e => {
+                const t = e.touches[0]
+                const rect = previewRef.current?.getBoundingClientRect()
+                if (!rect) return
+                if (dragging.current) {
+                  const dx = (t.clientX - dragStart.current.x) / rect.width
+                  const dy = (t.clientY - dragStart.current.y) / rect.height
+                  setCfg(p => ({...p, logoX:Math.max(0.05,Math.min(0.95,dragStart.current.lx+dx)), logoY:Math.max(0.05,Math.min(0.97,dragStart.current.ly+dy))}))
+                }
+                if (resizing.current) {
+                  const dx = t.clientX - resizeStart.current.x
+                  const scale = 1080 / rect.width
+                  setCfg(p => ({...p, logoW:Math.max(60,Math.min(400,resizeStart.current.w+dx*scale))}))
+                }
+              }}
+              onTouchEnd={() => { dragging.current = false; resizing.current = false }}
             >
               {imgAtiva && (
                 <img src={imgAtiva} style={{ width:'100%', height:'auto', borderRadius:'12px', display:'block' }} />
@@ -575,6 +591,7 @@ function CriarInner() {
                 <div
                   style={{ position:'absolute', left:`${(cfg.logoX ?? 0.5) * 100}%`, top:`${(cfg.logoY ?? 0.91) * 100}%`, transform:'translate(-50%,-50%)', cursor:'move', border:`2px dashed ${cor}88`, borderRadius:'8px', padding:'3px', backdropFilter:'blur(2px)' }}
                   onMouseDown={e => onLogoMouseDown(e, 'drag')}
+                  onTouchStart={e => { e.preventDefault(); const t=e.touches[0]; dragging.current=true; dragStart.current={x:t.clientX,y:t.clientY,lx:cfg.logoX??0.5,ly:cfg.logoY??0.91} }}
                 >
                   <img
                     src={cfg.logoUrl}
@@ -582,8 +599,9 @@ function CriarInner() {
                   />
 
                   <div
-                    style={{ position:'absolute', bottom:'-7px', right:'-7px', width:'16px', height:'16px', background:cor, borderRadius:'50%', cursor:'se-resize', border:'2px solid #fff' }}
+                    style={{ position:'absolute', bottom:'-7px', right:'-7px', width:'22px', height:'22px', background:cor, borderRadius:'50%', cursor:'se-resize', border:'2px solid #fff', touchAction:'none' }}
                     onMouseDown={e => onLogoMouseDown(e, 'resize')}
+                    onTouchStart={e => { e.preventDefault(); const t=e.touches[0]; resizing.current=true; resizeStart.current={x:t.clientX,w:cfg.logoW??210} }}
                   />
                 </div>
               )}

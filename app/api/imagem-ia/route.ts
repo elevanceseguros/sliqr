@@ -57,7 +57,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ url: '' })
     }
 
-    const prompt = buildPrompt(tema ?? '', tipo ?? 'capa')
+    const tipoReal = tipo ?? 'capa'
+    // CTA usa prompt diferente da capa para variar a imagem
+    const promptBase = buildPrompt(tema ?? '', tipoReal)
+    const prompt = tipoReal === 'cta'
+      ? promptBase + ', different angle, warm tones, golden hour'
+      : promptBase
 
     const res = await fetch('https://fal.run/fal-ai/flux/schnell', {
       method:  'POST',

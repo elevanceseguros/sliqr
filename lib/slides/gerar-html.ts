@@ -178,12 +178,10 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
         <div style="font-family:'${fn}',sans-serif;font-size:28px;font-weight:600;color:${txt};line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(item.label ?? '', 24)}</div>
       </div>`).join('')
 
-    // Altura do bloco: título + espaço + ícones
-    // Deixa o restante distribuído entre topo/baixo
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:60px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${titulo}</div>
-      <div style="display:flex;align-items:flex-start;justify-content:center;">${cols}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;z-index:4;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;padding-top:32px;">${titulo}</div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;">${cols}</div>
     </div>`
   }
 
