@@ -25,6 +25,7 @@ function CriarInner() {
 
   const [session, setSession] = useState<any>(null)
   const [prompt, setPrompt] = useState('')
+  const [nomeEmpresa, setNomeEmpresa] = useState('')
   const [qtd, setQtd] = useState(5)
   const [cor, setCor] = useState('#2D6FFF')
   const [fonte, setFonte] = useState('inter')
@@ -136,6 +137,7 @@ function CriarInner() {
         headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({
           tema: prompt,
+          nomeEmpresa: nomeEmpresa || undefined,
           titulo: slide?.titulo ?? '',
           slideIndex: i,
           cor,
@@ -173,6 +175,7 @@ function CriarInner() {
         headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({
           tema: prompt,
+          nomeEmpresa: nomeEmpresa || undefined,
           tom: 'vender',
           qtdSlides: qtd,
           accessToken: session?.access_token,
@@ -396,6 +399,17 @@ function CriarInner() {
             placeholder="Ex: 5 benefícios da proteção veicular&#10;Ex: Por que fazer manipulados na Pharmapenha&#10;Ex: Como escolher o plano de saúde ideal"
             rows={3}
             style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'12px', padding:'1rem', color:'#F0F4FF', fontSize:'0.95rem', outline:'none', resize:'vertical', lineHeight:1.6, boxSizing:'border-box', fontFamily:'inherit' }}
+          />
+        </div>
+
+        {/* Nome da empresa ou produto */}
+        <div style={{ marginBottom:'1.25rem' }}>
+          <label style={{ display:'block', fontSize:'0.7rem', color:'#4A5568', fontWeight:600, marginBottom:'8px', letterSpacing:'0.08em', textTransform:'uppercase' }}>Nome da empresa ou produto (opcional)</label>
+          <input
+            value={nomeEmpresa}
+            onChange={e => setNomeEmpresa(e.target.value)}
+            placeholder="Ex: Bendito Hortelã, Elevance Seguros, Dr. Carlos..."
+            style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'12px', padding:'0.8rem 1rem', color:'#F0F4FF', fontSize:'0.9rem', outline:'none', boxSizing:'border-box' as const, fontFamily:'inherit' }}
           />
         </div>
 

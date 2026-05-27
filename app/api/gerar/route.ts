@@ -4,7 +4,7 @@ import { gerarSlides } from '@/lib/claude/gerar-slides'
 
 export async function POST(request: NextRequest) {
   try {
-    const { tema, tom, qtdSlides, accessToken, refreshToken } = await request.json()
+    const { tema, tom, qtdSlides, nomeEmpresa, accessToken, refreshToken } = await request.json()
     if (!tema) return NextResponse.json({ erro: 'Tema obrigatório' }, { status: 400 })
 
     // Auth opcional
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const slides = await gerarSlides(tema, qtdSlides ?? 5)
+    const slides = await gerarSlides(tema, qtdSlides ?? 5, nomeEmpresa)
     return NextResponse.json({ slides })
 
   } catch (err: any) {

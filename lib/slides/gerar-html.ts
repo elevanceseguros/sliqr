@@ -185,7 +185,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;width:56%;height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;overflow:hidden;">
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">${cards}</div>
     </div>`
@@ -204,8 +204,8 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${titulo}</div>
       <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;">${corpo}</div>
     </div>` : `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
-      <div style="width:88px;height:88px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;width:56%;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:24px;z-index:4;overflow:hidden;">
+      <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;">
         ${ico(slide.icon_nome ?? 'star', 44, icCor)}
       </div>
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${titulo}</div>
@@ -232,7 +232,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;width:56%;height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;overflow:hidden;">
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:32px;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">${rows}</div>
     </div>`
