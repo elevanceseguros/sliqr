@@ -176,21 +176,25 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const fsT    = fsTitulo(titulo, 88)
     const itens  = (slide.itens ?? []).slice(0, 3)
     const n      = itens.length || 1
-    // Cada coluna ocupa 1/n da largura
-    const colW   = Math.floor(W / n)
 
-    const cols = itens.map((item: any) => `
-      <div style="width:${colW}px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;">
-        <div style="width:112px;height:112px;border-radius:${isMin?'50%':'22px'};background:${isMin?'rgba(255,255,255,0.15)':'rgba(255,255,255,0.12)'};display:flex;align-items:center;justify-content:center;">
-          ${ico(item.icone ?? 'star', 52, icCor, 1.5)}
+    // Layout: cards verticais empilhados — cada card = ícone + texto lado a lado
+    // Isso preenche melhor o espaço e fica mais elegante
+    const cardH = Math.floor((cH - 60) / n)  // altura de cada card
+    const cards = itens.map((item: any) => `
+      <div style="display:flex;align-items:center;gap:32px;height:${cardH}px;padding:0 8px;border-bottom:1px solid rgba(255,255,255,0.10);">
+        <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          ${ico(item.icone ?? 'star', 40, icCor, 1.6)}
         </div>
-        <div style="font-family:'${fn}',sans-serif;font-size:28px;font-weight:600;color:${txt};line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(item.label ?? '', 24)}</div>
+        <div style="flex:1;">
+          <div style="font-family:'${fn}',sans-serif;font-size:36px;font-weight:700;color:${txt};line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(item.label ?? '', 28)}</div>
+        </div>
+        <div style="font-family:'${fn}',sans-serif;font-size:22px;font-weight:600;color:rgba(255,255,255,0.25);flex-shrink:0;">${String(itens.indexOf(item)+1).padStart(2,'0')}</div>
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;padding-top:32px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${titulo}</div>
-      <div style="flex:1;display:flex;align-items:center;justify-content:center;padding-bottom:16px;">${cols}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;padding-top:20px;z-index:4;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:32px;">${titulo}</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">${cards}</div>
     </div>`
   }
 
@@ -223,20 +227,21 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const fsT    = fsTitulo(titulo, 80)
     const itens  = (slide.itens ?? []).slice(0, 5)
     const n      = itens.length
-    // Font-size e padding dos itens baseado na quantidade
-    const fsI    = n >= 5 ? 34 : n >= 4 ? 36 : 38
-    const padI   = n >= 5 ? 18 : n >= 4 ? 20 : 22
+    const cardH  = Math.floor((cH - 80) / n)
+    const fsI    = n >= 5 ? 34 : 38
 
-    const rows = itens.map((it: string) => `
-      <div style="display:flex;align-items:center;gap:20px;padding:${padI}px 0;border-bottom:1px solid rgba(255,255,255,0.14);">
-        ${ico('check-circle', 30, icCor, 1.8)}
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;">${trunc(it, 38)}</span>
+    const rows = itens.map((it: string, i: number) => `
+      <div style="display:flex;align-items:center;gap:28px;height:${cardH}px;border-bottom:1px solid rgba(255,255,255,0.10);">
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.90);">${i + 1}</span>
+        </div>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;flex:1;">${trunc(it, 38)}</span>
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:32px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${titulo}</div>
-      <div>${rows}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;padding-top:20px;z-index:4;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:28px;">${titulo}</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">${rows}</div>
     </div>`
   }
 
