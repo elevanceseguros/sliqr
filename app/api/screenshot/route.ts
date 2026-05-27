@@ -21,53 +21,87 @@ export async function POST(request: NextRequest) {
       html = html.replace(/<\/div>\s*<\/body>/, `  ${tag}\n</div>\n</body>`)
     }
 
-    const accessKey = process.env.SCREENSHOTONE_ACCESS_KEY
-    const hctiUser  = process.env.HCTI_USER_ID
-    const hctiKey   = process.env.HCTI_API_KEY
+    // ── ScreenshotAPI.net ──────────────────────────────────────────────────
+    const screenshotApiToken = process.env.SCREENSHOTAPI_TOKEN
 
-    // ── ScreenshotOne ──────────────────────────────────────────────────────
-    if (accessKey) {
-      // ScreenshotOne API: parâmetros via query string para GET com html via POST body
-      // Ref: https://screenshotone.com/docs/options/
+    if (screenshotApiToken) {
       const params = new URLSearchParams({
-        access_key:          accessKey,
+        token:           screenshotApiToken,
+        output:          'image',
+        file_type:       'png',
+        width:           '1080',
+        height:          '1080',
+        full_page:       'false',
+        wait_for_event:  'networkidle',
+        delay:           '1500',        // 1.5s para fontes Google carregarem
+        fresh:           'true',
+        custom_html:     html,          // HTML direto, sem precisar de URL
+      })
+
+      const imgRes = await fetch(
+        `https://shot.screenshotapi.net/v3/screenshot?${params.toString()}`,
+        { method: 'GET' }
+      )
+
+      if (imgRes.ok) {
+        const ct = imgRes.headers.get('content-type') ?? ''
+        if (ct.includes('image')) {
+          const buffer = await imgRes.arrayBuffer()
+          const base64 = Buffer.from(buffer).toString('base64')
+          console.log('[screenshot] ScreenshotAPI.net ok')
+          return NextResponse.json({ url: `data:image/png;base64,${base64}` })
+        }
+        const errText = await imgRes.text()
+        console.error('[screenshot] ScreenshotAPI.net não-imagem:', imgRes.status, errText.slice(0, 200))
+      } else {
+        const errText = await imgRes.text()
+        console.error('[screenshot] ScreenshotAPI.net erro:', imgRes.status, errText.slice(0, 200))
+      }
+    }
+
+    // ── Fallback: ScreenshotOne ────────────────────────────────────────────
+    const screenshotOneKey = process.env.SCREENSHOTONE_ACCESS_KEY
+
+    if (screenshotOneKey) {
+      const params = new URLSearchParams({
+        access_key:          screenshotOneKey,
         format:              'png',
         viewport_width:      '1080',
         viewport_height:     '1080',
         device_scale_factor: '1',
         full_page:           'false',
-        wait_until:          'networkidle2',  // string, não array
-        delay:               '2',             // 2 segundos para fontes carregarem
+        wait_until:          'networkidle2',
+        delay:               '2',
         timeout:             '25',
         cache:               'false',
         block_ads:           'true',
       })
 
-      const imgRes = await fetch(`https://api.screenshotone.com/take?${params.toString()}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/html' },
-        body: html,
-      })
+      const imgRes = await fetch(
+        `https://api.screenshotone.com/take?${params.toString()}`,
+        { method: 'POST', headers: { 'Content-Type': 'text/html' }, body: html }
+      )
 
       if (imgRes.ok) {
-        const contentType = imgRes.headers.get('content-type') ?? ''
-        if (contentType.includes('image')) {
+        const ct = imgRes.headers.get('content-type') ?? ''
+        if (ct.includes('image')) {
           const buffer = await imgRes.arrayBuffer()
           const base64 = Buffer.from(buffer).toString('base64')
-          console.log('[screenshot] ScreenshotOne ok')
+          console.log('[screenshot] ScreenshotOne ok (fallback)')
           return NextResponse.json({ url: `data:image/png;base64,${base64}` })
-        } else {
-          // Logar o erro real do ScreenshotOne
-          const errText = await imgRes.text()
-          console.error('[screenshot] ScreenshotOne retornou não-imagem:', imgRes.status, errText.slice(0, 200))
         }
+        const errText = await imgRes.text()
+        console.error('[screenshot] ScreenshotOne não-imagem:', imgRes.status, errText.slice(0, 200))
       } else {
         const errText = await imgRes.text()
         console.error('[screenshot] ScreenshotOne erro:', imgRes.status, errText.slice(0, 200))
       }
     }
 
-    // ── Fallback: hcti (só se tiver créditos) ─────────────────────────────
+    // ── Fallback final: hcti ───────────────────────────────────────────────
+    const hctiUser = process.env.HCTI_USER_ID
+    const hctiKey  = process.env.HCTI_API_KEY
+
     if (hctiUser && hctiKey) {
       const res = await fetch('https://hcti.io/v1/image', {
         method:  'POST',
@@ -78,27 +112,25 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({ html, viewport_width: 1080, viewport_height: 1080, ms_delay: 800 }),
       })
 
-      if (!res.ok) {
-        const err = await res.text()
-        console.error('[screenshot] hcti erro:', res.status, err.slice(0, 100))
-        return NextResponse.json({ erro: `Screenshot falhou. hcti: ${res.status}` }, { status: 500 })
+      if (res.ok) {
+        const data   = await res.json()
+        const imgUrl = data.url ?? ''
+        if (imgUrl) {
+          const imgRes2  = await fetch(imgUrl)
+          const buffer2  = await imgRes2.arrayBuffer()
+          const base64_2 = Buffer.from(buffer2).toString('base64')
+          console.log('[screenshot] hcti ok (fallback final)')
+          return NextResponse.json({ url: `data:image/png;base64,${base64_2}` })
+        }
       }
-
-      const data   = await res.json()
-      const imgUrl = data.url ?? ''
-      if (!imgUrl) return NextResponse.json({ erro: 'hcti sem URL' }, { status: 500 })
-
-      const imgRes2  = await fetch(imgUrl)
-      const buffer2  = await imgRes2.arrayBuffer()
-      const base64_2 = Buffer.from(buffer2).toString('base64')
-      console.log('[screenshot] hcti ok (fallback)')
-      return NextResponse.json({ url: `data:image/png;base64,${base64_2}` })
+      const err = await res.text().catch(() => '')
+      console.error('[screenshot] hcti erro:', res.status, err.slice(0, 100))
     }
 
-    return NextResponse.json({ erro: 'Nenhum serviço de screenshot configurado' }, { status: 500 })
+    return NextResponse.json({ erro: 'Nenhum serviço de screenshot disponível' }, { status: 500 })
 
   } catch (err: any) {
-    console.error('[screenshot] erro:', err.message)
+    console.error('[screenshot] erro geral:', err.message)
     return NextResponse.json({ erro: err.message }, { status: 500 })
   }
 }
