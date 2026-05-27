@@ -105,7 +105,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${H}px;display:flex;flex-direction:column;justify-content:center;z-index:4;">
       ${!isMin ? `<div style="display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.20);border-radius:8px;padding:10px 20px;align-self:flex-start;margin-bottom:28px;">
         ${ico(slide.icon_nome??'star',18,'rgba(255,255,255,0.9)')}
-        <span style="font-family:'${fn}',sans-serif;font-size:16px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:2px;text-transform:uppercase;">${trunc((slide.subtitulo??'').split(' ').slice(0,3).join(' '),18)}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:16px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:2px;text-transform:uppercase;">${trunc((slide.subtitulo??'').split(' ').slice(0,2).join(' '),16)}</span>
       </div>` : ''}
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;">${tit}</div>
       ${sub2 ? `<div style="font-family:'${fn}',sans-serif;font-size:36px;font-weight:400;color:${sub};margin-top:24px;line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${sub2}</div>` : ''}
@@ -127,9 +127,9 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
 
     const fsT = (slide.titulo??'').length>25 ? 74 : 84
     content = `
-    <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${H}px;display:flex;flex-direction:column;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:52px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(slide.titulo??'',48)}</div>
-      <div style="display:flex;justify-content:center;gap:0;flex:1;align-items:center;">${cols}</div>
+    <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${H}px;display:flex;flex-direction:column;justify-content:center;z-index:4;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:64px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(slide.titulo??'',48)}</div>
+      <div style="display:flex;justify-content:center;gap:0;align-items:flex-start;">${cols}</div>
     </div>`
   }
 
@@ -167,7 +167,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const rows = itens.map((it: string) => `
       <div style="display:flex;align-items:center;gap:18px;padding:${padI}px 0;border-bottom:1px solid rgba(255,255,255,0.14);">
         ${ico('check-circle',30,icCor,1.8)}
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.25;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${trunc(it,52)}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${trunc(it,42)}</span>
       </div>`).join('')
 
     content = `
@@ -181,7 +181,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   else {
     const tit  = trunc(slide.titulo??'',38)
     const sub2 = trunc(slide.subtitulo??'',95)
-    const fsT  = tit.length>18 ? 82 : tit.length>12 ? 94 : 106
+    const fsT  = tit.length>28 ? 68 : tit.length>20 ? 80 : tit.length>14 ? 92 : 106
 
     content = `
     <div style="position:absolute;top:${PAD}px;left:${PAD}px;right:${PAD}px;height:${H}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:4;">
