@@ -22,7 +22,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[screenshot] HTML size:', html.length, 'chars')
-    console.log('[screenshot] HTML snippet:', html.slice(0, 500))
+    // Log focado nos spans de item para debug do truncamento
+    const spanMatch = html.match(/font-weight:700;color:#FFFFFF;line-height:1\.3;width:[^"]+/)
+    console.log('[screenshot] span style:', spanMatch?.[0] ?? 'NAO ENCONTRADO')
     const workerUrl    = process.env.CLOUDFLARE_WORKER_URL
     const workerSecret = process.env.CLOUDFLARE_WORKER_SECRET
 
