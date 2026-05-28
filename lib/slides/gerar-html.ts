@@ -150,12 +150,14 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   const lH = 56
   const lX = cfg.logoX != null ? Math.round(cfg.logoX*1080 - lW/2) : Math.round(540 - lW/2)
   const lY = cfg.logoY != null ? Math.round(cfg.logoY*1080 - lH/2) : 1080 - FOOTER + 32
+  const logoHtml = cfg.logoUrl ? `<img src="${cfg.logoUrl}" style="position:absolute;left:${lX}px;top:${lY}px;width:${lW}px;height:${lH}px;object-fit:contain;z-index:5;" />` : ''
   const footer = `
     <div style="position:absolute;bottom:0;left:0;right:0;height:${FOOTER}px;z-index:4;">
       <div style="position:absolute;top:0;left:${PAD}px;right:${PAD}px;height:1px;background:rgba(255,255,255,0.16);"></div>
       <div style="position:absolute;top:28px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;">
         ${Array.from({length:total},(_,i)=>`<div style="width:${i===idx?'28px':'7px'};height:7px;border-radius:4px;background:${i===idx?'rgba(255,255,255,0.85)':'rgba(255,255,255,0.22)'}"></div>`).join('')}
       </div>
+      ${logoHtml}
     </div>`
 
   // Largura real do container de texto

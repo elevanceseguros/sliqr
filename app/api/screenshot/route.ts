@@ -14,15 +14,7 @@ export async function POST(request: NextRequest) {
       const { slide, total, idx, cfg, fotoUrl, logoUrl, logoW, logoX, logoY } = body
       html = gerarHTML(slide, total ?? 1, idx ?? 0, cfg as SlideCfg, fotoUrl)
 
-      // Injeta logo se fornecida
-      if (logoUrl) {
-        const lW  = Math.min(logoW ?? 160, 300)
-        const lH  = 64
-        const lX  = Math.round((logoX ?? 0.5) * 1080 - lW / 2)
-        const lY  = Math.round((logoY ?? 0.92) * 1080 - lH / 2)
-        const tag = `<img src="${logoUrl}" style="position:absolute;left:${lX}px;top:${lY}px;width:${lW}px;height:${lH}px;object-fit:contain;z-index:10;" />`
-        html = html.replace(/<\/div>\s*<\/body>/, `  ${tag}\n</div>\n</body>`)
-      }
+      // Logo já incluída pelo gerarHTML via cfg.logoUrl
     }
     // Modo 2: HTML puro (legado)
     else if (body.html) {
