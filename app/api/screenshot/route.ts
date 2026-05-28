@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     // Log para debug - mostrar todos os spans de texto
     const allSpans = html.match(/font-size:\d+px;font-weight:\d+;color:[^;]+;line-height:[^;]+;[^"]+/g)
     console.log('[screenshot] spans encontrados:', allSpans?.length ?? 0)
-    allSpans?.forEach((s, i) => console.log('[screenshot] span', i, ':', s.slice(0, 80)))
+    allSpans?.forEach((s: string, i: number) => console.log('[screenshot] span', i, ':', s.slice(0, 80)))
     const workerUrl    = process.env.CLOUDFLARE_WORKER_URL
     const workerSecret = process.env.CLOUDFLARE_WORKER_SECRET
 
