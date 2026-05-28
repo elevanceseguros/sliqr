@@ -155,6 +155,7 @@ function CriarInner() {
           tema: prompt,
           nomeEmpresa: nomeEmpresa || undefined,
           titulo: slide?.titulo ?? '',
+          tipo: slide?.tipo ?? 'topico',
           slideIndex: i,
           cor,
         }),
@@ -280,6 +281,21 @@ function CriarInner() {
 
       const dataL = await resL.json()
       setLegenda(dataL.legenda ?? '')
+
+      // Salvar no histórico
+      try {
+        const { data: { session: sess } } = await supabase.auth.getSession()
+        if (sess) {
+          await supabase.from('carrosseis').insert({
+            usuario_id: sess.user.id,
+            tema: prompt,
+            tom: 'geral',
+            slides: slidesGerados,
+          })
+        }
+      } catch (e) {
+        console.warn('Erro ao salvar histórico:', e)
+      }
 
       setProgresso(100)
       setEtapa('Pronto!')

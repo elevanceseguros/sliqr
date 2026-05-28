@@ -39,13 +39,14 @@ Responda APENAS com o prompt em inglês. Máximo 20 palavras. Inclua sempre: "no
 
 export async function POST(request: NextRequest) {
   try {
-    const { tema, tipo } = await request.json()
+    const { tema, tipo, titulo, nomeEmpresa } = await request.json()
+    const temaCompleto = [nomeEmpresa, titulo, tema].filter(Boolean).join(" - ")
     const falKey = process.env.FAL_API_KEY
 
     if (!falKey) return NextResponse.json({ url: '' })
 
     // Gerar prompt visual inteligente via Claude
-    const prompt = await gerarPromptVisual(tema ?? 'negócios', tipo ?? 'topico')
+    const prompt = await gerarPromptVisual(temaCompleto || tema || 'negócios', tipo ?? 'topico')
     console.log('[imagem-ia] prompt:', prompt.slice(0, 80))
 
     const res = await fetch('https://fal.run/fal-ai/flux/schnell', {
