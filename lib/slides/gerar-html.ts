@@ -201,8 +201,8 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>`).join('')
 
     body = `
-    <div style="${containerBase}display:flex;flex-direction:column;padding-top:32px;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:20px;flex-shrink:0;">${titulo}</div>
+    <div style="${containerBase}display:flex;flex-direction:column;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-top:32px;margin-bottom:20px;flex-shrink:0;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${cards}</div>
     </div>`
   }
@@ -247,8 +247,8 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>`).join('')
 
     body = `
-    <div style="${containerBase}display:flex;flex-direction:column;padding-top:32px;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:20px;flex-shrink:0;">${titulo}</div>
+    <div style="${containerBase}display:flex;flex-direction:column;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-top:32px;margin-bottom:20px;flex-shrink:0;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${rows}</div>
     </div>`
   }
