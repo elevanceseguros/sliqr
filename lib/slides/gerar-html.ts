@@ -174,23 +174,26 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
 
   // ── ÍCONES ────────────────────────────────────────────────────────────────
   else if (tipo === 'icones') {
-    const titulo = trunc(slide.titulo ?? '', 45)
-    const fsT    = fsTitulo(titulo, 88, 530)
-    const itens  = (slide.itens ?? []).slice(0, 3)
-    const n      = itens.length || 1
-    const cardH  = Math.floor((cH - 120) / n)
+    const temFotoLat = isFotoLateral
+    const cW         = temFotoLat ? Math.floor(W * 0.56) : W
+    const cRight     = temFotoLat ? 'auto' : `${PAD}px`
+    const titulo     = trunc(slide.titulo ?? '', 45)
+    const fsT        = fsTitulo(titulo, 88, cW)
+    const itens      = (slide.itens ?? []).slice(0, 3)
+    const n          = itens.length || 1
+    const cardH      = Math.floor((cH - 120) / n)
 
     const cards = itens.map((item: any, i: number) => `
       <div style="display:flex;align-items:center;gap:28px;height:${cardH}px;border-bottom:${i < itens.length-1 ? '1px solid rgba(255,255,255,0.10)' : 'none'};">
         <div style="width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${ico(item.icone ?? 'star', 36, icCor, 1.6)}
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:34px;font-weight:700;color:${txt};line-height:1.2;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;white-space:normal;">${trunc(item.label ?? '', 22)}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:34px;font-weight:700;color:${txt};line-height:1.2;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;">${trunc(item.label ?? '', 40)}</span>
         <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:600;color:rgba(255,255,255,0.22);flex-shrink:0;min-width:28px;text-align:right;">${String(i+1).padStart(2,'0')}</span>
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;width:56%;height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;overflow:hidden;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${cRight};width:${temFotoLat ? `${cW}px` : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;overflow:hidden;">
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">${cards}</div>
     </div>`
@@ -198,10 +201,13 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
 
   // ── TÓPICO ────────────────────────────────────────────────────────────────
   else if (tipo === 'topico') {
-    const titulo = trunc(slide.titulo ?? '', 40)
-    const corpo  = trunc(slide.corpo ?? '', 180)
-    const fsT    = fsTitulo(titulo, 88, 530)
-    const fsC    = corpo.length > 100 ? 34 : 38
+    const temFotoLat = isFotoLateral
+    const cW         = temFotoLat ? Math.floor(W * 0.56) : W
+    const cRight     = temFotoLat ? 'auto' : `${PAD}px`
+    const titulo     = trunc(slide.titulo ?? '', 40)
+    const corpo      = trunc(slide.corpo ?? '', 220)
+    const fsT        = fsTitulo(titulo, 88, cW)
+    const fsC        = corpo.length > 120 ? 34 : 38
 
     body = isMin ? `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:32px;z-index:4;">
@@ -209,7 +215,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${titulo}</div>
       <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;word-break:break-word;overflow-wrap:break-word;">${corpo}</div>
     </div>` : `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;width:56%;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:24px;z-index:4;overflow:hidden;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${cRight};width:${temFotoLat ? `${cW}px` : 'auto'};height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:24px;z-index:4;overflow:hidden;">
       <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;">
         ${ico(slide.icon_nome ?? 'star', 44, icCor)}
       </div>
@@ -221,23 +227,27 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
 
   // ── LISTA ─────────────────────────────────────────────────────────────────
   else if (tipo === 'lista') {
-    const titulo = trunc(slide.titulo ?? '', 40)
-    const fsT    = fsTitulo(titulo, 80, 530)
-    const itens  = (slide.itens ?? []).slice(0, 5)
-    const n      = itens.length
-    const cardH  = Math.floor((cH - 80) / n)
-    const fsI    = n >= 5 ? 34 : 38
+    const temFotoLat = isFotoLateral
+    const cW         = temFotoLat ? Math.floor(W * 0.56) : W
+    const cRight     = temFotoLat ? 'auto' : `${PAD}px`
+    const titulo     = trunc(slide.titulo ?? '', 40)
+    const fsT        = fsTitulo(titulo, 80, cW)
+    const itens      = (slide.itens ?? []).slice(0, 5)
+    const n          = itens.length
+    const cardH      = Math.floor((cH - 80) / n)
+    const fsI        = n >= 5 ? 34 : 38
+    const maxChars   = temFotoLat ? 35 : 55
 
     const rows = itens.map((it: string, i: number) => `
       <div style="display:flex;align-items:center;gap:28px;height:${cardH}px;border-bottom:1px solid rgba(255,255,255,0.10);">
         <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.90);">${i + 1}</span>
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;flex:1;white-space:normal;">${trunc(it, 30)}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;flex:1;white-space:normal;">${trunc(it, maxChars)}</span>
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;width:56%;height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;overflow:hidden;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${cRight};width:${temFotoLat ? `${cW}px` : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;overflow:hidden;">
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:32px;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">${rows}</div>
     </div>`
