@@ -120,7 +120,7 @@ function CriarInner() {
 
   async function gerarScreenshot(html: string): Promise<string> {
     const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
-    const maxTentativas = 4
+    const maxTentativas = 5
 
     for (let tentativa = 1; tentativa <= maxTentativas; tentativa++) {
       const res = await fetch('/api/screenshot', {
@@ -133,7 +133,7 @@ function CriarInner() {
 
       // Rate limit — espera e tenta de novo com backoff exponencial
       if (!res.ok && res.status === 429 && tentativa < maxTentativas) {
-        const espera = tentativa * 2000 // 2s, 4s, 6s
+        const espera = tentativa * 5000 // 5s, 10s, 15s, 20s
         console.warn(`[screenshot] Rate limit, aguardando ${espera}ms (tentativa ${tentativa}/${maxTentativas})`)
         await delay(espera)
         continue
@@ -247,7 +247,7 @@ function CriarInner() {
         }, imagensIAtemp[i])
 
         // Delay entre slides para evitar rate limit do Cloudflare
-        if (i > 0) await new Promise(r => setTimeout(r, 1000))
+        if (i > 0) await new Promise(r => setTimeout(r, 3000))
 
         const img = await gerarScreenshot(html)
         imagens.push(img)
