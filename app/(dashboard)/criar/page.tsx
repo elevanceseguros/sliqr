@@ -216,19 +216,19 @@ function CriarInner() {
           .map((_: any, i: number) => i)
           .filter((i: number) => deveUsarImagemIA(i, slidesGerados.length))
 
-        for (let k = 0; k < indices.length; k++) {
-          const i = indices[k]
-          setEtapa(`Criando imagem IA ${k + 1} de ${indices.length}...`)
+        // Gerar todas as imagens em paralelo
+        const resultados = await Promise.all(
+          indices.map((i: number) => gerarImagemIA(slidesGerados[i], i))
+        )
 
-          const url = await gerarImagemIA(slidesGerados[i], i)
-
+        indices.forEach((i: number, k: number) => {
+          const url = resultados[k]
           if (url) {
             imagensIAtemp[i] = url
-            setImagensIA({ ...imagensIAtemp })
           }
-
-          setProgresso(18 + Math.round(((k + 1) / Math.max(indices.length, 1)) * 27))
-        }
+        })
+        setImagensIA({ ...imagensIAtemp })
+        setProgresso(45)
       }
 
       setProgresso(48)
