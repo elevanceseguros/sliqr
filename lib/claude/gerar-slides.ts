@@ -32,8 +32,8 @@ REGRAS DE CONTEÚDO:
 - Cada slide deve ter conteúdo ESPECÍFICO ao pedido — não genérico
 - Títulos: MAIÚSCULAS. Podem ter até 6 palavras se necessário para ser claro.
 - Corpo/subtítulo: 2-3 frases diretas com dado real. Pode ter até 25 palavras.
-- Itens de lista: frases COMPLETAS e DESCRITIVAS. Pode ter até 8 palavras por item. NUNCA use "..." nem corte frases. NUNCA numere os itens (sem "1.", "2." etc — a numeração é visual).
-- Labels de ícone: frase curta mas COMPLETA e ESPECÍFICA. Até 5 palavras. NUNCA use "..." nem corte frases.
+- Itens de lista: frases COMPLETAS. Nunca corte com "...". Escreva a frase inteira mesmo que seja longa. Ex: "Cobertura contra roubo e furto", "Reboque ilimitado para qualquer oficina", "App próprio para solicitar ajuda". NUNCA numere os itens (sem "1.", "2." etc).
+- Labels de ícone: frase COMPLETA e ESPECÍFICA. Ex: "Cobertura contra roubo", "Assistência 24 horas", "Indenização rápida". NUNCA use "..." nem corte frases.
 - Se o pedido mencionar empresa/produto, use o nome nos slides relevantes
 - Para comparativos: o slide "icones" deve mostrar LADOS DO COMPARATIVO (ex: restaurante vs marmita)
 - Para benefícios: liste benefícios REAIS e ESPECÍFICOS com detalhes concretos
