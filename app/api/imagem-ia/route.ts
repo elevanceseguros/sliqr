@@ -34,7 +34,7 @@ Responda APENAS com o prompt em inglês. Máximo 20 palavras. Inclua sempre: "no
   })
   const prompt = res.content[0].type === 'text' ? res.content[0].text.trim() : ''
   // Garantir sem texto na imagem
-  return prompt + ', no text, no words, no letters, no watermark, photorealistic'
+  return prompt + ', absolutely no text, no words, no letters, no numbers, no watermark, no signs, no labels, no inscriptions, photorealistic, clean image'
 }
 
 export async function POST(request: NextRequest) {
