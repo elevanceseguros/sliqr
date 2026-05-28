@@ -147,7 +147,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const fsS    = fs(subtit, W, 3, 40, 28, false)
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;bottom:${FOOTER}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>
       ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:${fsS}px;font-weight:400;color:${sub};line-height:1.55;">${subtit}</div>` : ''}
     </div>`
@@ -172,7 +172,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:32px;z-index:4;box-sizing:border-box;overflow:hidden;">
+    <div style="position:absolute;top:${cTop}px;bottom:${FOOTER}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};display:flex;flex-direction:column;padding-top:32px;z-index:4;box-sizing:border-box;overflow:hidden;">
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:24px;flex-shrink:0;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${cards}</div>
     </div>`
@@ -186,12 +186,12 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const fsC    = fs(corpo, txtW, 5, 38, 26, false)
 
     body = isMin ? `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;bottom:${FOOTER}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
       <div style="width:4px;height:60px;background:rgba(255,255,255,0.45);border-radius:2px;flex-shrink:0;"></div>
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>
       <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.6;overflow:hidden;">${corpo}</div>
     </div>` : `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:22px;z-index:4;box-sizing:border-box;overflow:hidden;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};bottom:${FOOTER}px;display:flex;flex-direction:column;justify-content:center;gap:22px;z-index:4;box-sizing:border-box;overflow:hidden;">
       <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         ${ico(slide.icon_nome ?? 'star', 44, icCor)}
       </div>
@@ -220,7 +220,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:32px;z-index:4;box-sizing:border-box;overflow:hidden;">
+    <div style="position:absolute;top:${cTop}px;bottom:${FOOTER}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};display:flex;flex-direction:column;padding-top:32px;z-index:4;box-sizing:border-box;overflow:hidden;">
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:20px;flex-shrink:0;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${rows}</div>
     </div>`
@@ -234,7 +234,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const fsS    = fs(subtit, W, 2, 38, 28, false)
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:32px;z-index:4;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;bottom:${FOOTER}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:32px;z-index:4;">
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-3px;text-transform:uppercase;">${titulo}</div>
       ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:${fsS}px;font-weight:400;color:${sub};line-height:1.55;">${subtit}</div>` : ''}
       <div style="display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.32);border-radius:999px;padding:22px 60px;margin-top:8px;">
