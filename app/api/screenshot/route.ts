@@ -40,6 +40,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ erro: 'slide+cfg ou html obrigatório' }, { status: 400 })
     }
 
+    // Debug: verificar spans no HTML gerado no servidor
+    const spanCheck = html.match(/line-height:1\.3;width:[^"]+|line-height:1\.3;flex:[^"]+/g)
+    console.log('[screenshot] server HTML spans:', spanCheck?.slice(0,3) ?? 'NENHUM')
     const workerUrl    = process.env.CLOUDFLARE_WORKER_URL
     const workerSecret = process.env.CLOUDFLARE_WORKER_SECRET
 
