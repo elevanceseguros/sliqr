@@ -1,4 +1,4 @@
-// ─── SLIQR Motor HTML v5 — Tipografia responsiva via CSS clamp() ────────────
+// ─── SLIQR Motor HTML v6 ─────────────────────────────────────────────────────
 
 const ICONS: Record<string, string> = {
   'shield':       '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
@@ -41,16 +41,17 @@ function drk(h: string, f = 0.4): string {
   return '#' + [1,3,5].map(i => Math.round(parseInt(h.slice(i,i+2)||'88',16)*f).toString(16).padStart(2,'0')).join('')
 }
 
-// Font-size adaptativo via CSS clamp() — mín, ideal proporcional ao comprimento, máx
-// Retorna string CSS como "clamp(48px, Xvw, 108px)"
-function fsClamp(len: number, maxPx: number, minPx = 44): string {
-  // vw ideal: queremos que o texto ocupe ~90% da largura disponível em 1 linha
-  // 1080px viewport, 1 char bold Inter ~= 0.60 * fontSize
-  // fontSize ideal = 0.90 * 1080 / (len * 0.60) = 972 / (len * 0.60)
-  const idealPx = Math.round(972 / (len * 0.62))
-  const clampedIdeal = Math.min(idealPx, maxPx)
-  const vwVal = +(clampedIdeal / 10.80).toFixed(2) // converte px para vw (1080px base)
-  return `clamp(${minPx}px, ${vwVal}vw, ${maxPx}px)`
+// Calcula font-size ideal para caber em `maxLinhas` dentro de `larguraPx`
+// Retorna px inteiro, entre minPx e maxPx
+function fs(texto: string, larguraPx: number, maxLinhas: number, maxPx: number, minPx = 36): number {
+  const len = texto.length || 1
+  const charsPerLine = larguraPx / (maxPx * 0.58)
+  const linesAtMax = Math.ceil(len / charsPerLine)
+  if (linesAtMax <= maxLinhas) return maxPx
+  // Resolve: maxLinhas = ceil(len / (larguraPx / (fs * 0.58)))
+  // => fs = len * 0.58 / (larguraPx / maxLinhas)  ...simplificado
+  const ideal = Math.floor((larguraPx * maxLinhas) / (len * 0.58))
+  return Math.max(minPx, Math.min(maxPx, ideal))
 }
 
 export interface SlideCfg {
@@ -64,16 +65,14 @@ export interface SlideCfg {
 }
 
 export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg, fotoUrl?: string): string {
-  const cor    = cfg.cor
-  const dark   = lum(cor) < 0.55
-  const txt    = '#FFFFFF'
-  const sub    = 'rgba(255,255,255,0.80)'
-  const icCor  = dark ? 'rgba(255,255,255,0.90)' : drk(cor, 0.25)
-  const isMin  = cfg.estilo === 'minimal'
+  const cor   = cfg.cor
+  const dark  = lum(cor) < 0.55
+  const txt   = '#FFFFFF'
+  const sub   = 'rgba(255,255,255,0.80)'
+  const icCor = dark ? 'rgba(255,255,255,0.90)' : drk(cor, 0.25)
+  const isMin = cfg.estilo === 'minimal'
 
-  const FF: Record<string,string> = {
-    inter: 'Inter', montserrat: 'Montserrat', playfair: 'Playfair Display'
-  }
+  const FF: Record<string,string> = { inter:'Inter', montserrat:'Montserrat', playfair:'Playfair Display' }
   const fn = FF[cfg.fonte] ?? 'Inter'
   const fw = cfg.fonte === 'playfair' ? '700' : '900'
 
@@ -83,9 +82,9 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     ? `@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');`
     : `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');`
 
-  const PAD     = 72
-  const HEADER  = 80
-  const FOOTER  = 140
+  const PAD    = 72
+  const HEADER = 80
+  const FOOTER = 140
   const CONTENT = 1080 - HEADER - FOOTER  // 860px
   const W       = 1080 - PAD * 2          // 936px
 
@@ -104,11 +103,11 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,0,0,0.80) 0%,rgba(0,0,0,0.28) 55%,rgba(0,0,0,0.72) 100%);z-index:1;"></div>`
   : isFotoLateral ? `
     <img src="${fotoUrl}" style="position:absolute;top:0;right:0;width:42%;height:100%;object-fit:cover;opacity:0.40;z-index:0;"/>
-    <div style="position:absolute;top:0;right:0;width:42%;height:100%;background:linear-gradient(90deg,${bgStyle.includes(cor)?cor:'rgba(0,0,0,0)'} 0%,transparent 40%);z-index:1;"></div>`
+    <div style="position:absolute;top:0;right:0;width:50%;height:100%;background:linear-gradient(90deg,${cor} 0%,transparent 60%);z-index:1;"></div>`
   : ''
 
   const decos = isMin
-    ? `<div style="position:absolute;bottom:${FOOTER - 20}px;right:${PAD}px;width:24px;height:24px;background:rgba(255,255,255,0.18);transform:rotate(45deg);z-index:2;"></div>`
+    ? `<div style="position:absolute;bottom:${FOOTER-20}px;right:${PAD}px;width:24px;height:24px;background:rgba(255,255,255,0.18);transform:rotate(45deg);z-index:2;"></div>`
     : `
       <div style="position:absolute;top:-60px;right:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,0.05);z-index:2;"></div>
       <div style="position:absolute;bottom:${FOOTER}px;left:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.04);z-index:2;"></div>
@@ -119,10 +118,10 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       <span style="font-family:'${fn}',sans-serif;font-size:18px;font-weight:500;color:rgba(255,255,255,0.30);letter-spacing:1px;">${idx+1} / ${total}</span>
     </div>`
 
-  const lW     = Math.min(cfg.logoW ?? 150, 280)
-  const lH     = 56
-  const lX     = cfg.logoX != null ? Math.round(cfg.logoX*1080 - lW/2) : Math.round(540 - lW/2)
-  const lY     = cfg.logoY != null ? Math.round(cfg.logoY*1080 - lH/2) : 1080 - FOOTER + 32
+  const lW = Math.min(cfg.logoW ?? 150, 280)
+  const lH = 56
+  const lX = cfg.logoX != null ? Math.round(cfg.logoX*1080 - lW/2) : Math.round(540 - lW/2)
+  const lY = cfg.logoY != null ? Math.round(cfg.logoY*1080 - lH/2) : 1080 - FOOTER + 32
   const footer = `
     <div style="position:absolute;bottom:0;left:0;right:0;height:${FOOTER}px;z-index:4;">
       <div style="position:absolute;top:0;left:${PAD}px;right:${PAD}px;height:1px;background:rgba(255,255,255,0.16);"></div>
@@ -134,48 +133,48 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   const cTop = HEADER
   const cH   = CONTENT
 
-  // Largura útil do conteúdo (com ou sem foto lateral)
-  const hasLat  = isFotoLateral
-  const txtW    = hasLat ? Math.floor(W * 0.56) : W  // px numérico
-  const txtWpx  = `${txtW}px`
-  const rightVal = hasLat ? 'auto' : `${PAD}px`
+  // Largura real do container de texto
+  const hasLat = isFotoLateral
+  const txtW   = hasLat ? Math.floor(W * 0.54) : W  // px disponível para texto
 
   let body = ''
   const tipo = slide.tipo
 
-  // ── CAPA ─────────────────────────────────────────────────────────────────
+  // ── CAPA ──────────────────────────────────────────────────────────────────
   if (tipo === 'capa') {
     const titulo = slide.titulo ?? ''
     const subtit = slide.subtitulo ?? ''
-    const fs     = fsClamp(titulo.length || 1, 112)
+    const fsT    = fs(titulo, W, 3, 108)
+    const fsS    = fs(subtit, W, 3, 40, 28)
 
     body = `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
-      ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:clamp(28px,3.5vw,40px);font-weight:400;color:${sub};line-height:1.55;word-break:break-word;">${subtit}</div>` : ''}
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>
+      ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:${fsS}px;font-weight:400;color:${sub};line-height:1.55;">${subtit}</div>` : ''}
     </div>`
   }
 
   // ── ÍCONES ────────────────────────────────────────────────────────────────
   else if (tipo === 'icones') {
     const titulo = slide.titulo ?? ''
-    const fs     = fsClamp(titulo.length || 1, 90, 40)
+    const fsT    = fs(titulo, txtW, 2, 88)
     const itens  = (slide.itens ?? []).slice(0, 3)
     const n      = itens.length || 1
-    const cardH  = Math.floor((cH - 130) / n)
+    const cardH  = Math.floor((cH - fsT * 1.2 - 80) / n)
+    const fsL    = Math.max(28, Math.min(36, Math.floor(cardH * 0.38)))
 
     const cards = itens.map((item: any, i: number) => `
       <div style="display:flex;align-items:center;gap:28px;height:${cardH}px;border-bottom:${i < itens.length-1 ? '1px solid rgba(255,255,255,0.10)' : 'none'};">
         <div style="width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${ico(item.icone ?? 'star', 36, icCor, 1.6)}
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:clamp(24px,3.2vw,36px);font-weight:700;color:${txt};line-height:1.25;flex:1;word-break:break-word;overflow-wrap:break-word;">${item.label ?? ''}</span>
-        <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:600;color:rgba(255,255,255,0.22);flex-shrink:0;min-width:28px;text-align:right;">${String(i+1).padStart(2,'0')}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsL}px;font-weight:700;color:${txt};line-height:1.2;flex:1;">${item.label ?? ''}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:18px;font-weight:600;color:rgba(255,255,255,0.22);flex-shrink:0;">${String(i+1).padStart(2,'0')}</span>
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${rightVal};width:${hasLat ? txtWpx : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:20px;z-index:4;box-sizing:border-box;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:32px;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;box-sizing:border-box;overflow:hidden;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:32px;flex-shrink:0;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${cards}</div>
     </div>`
   }
@@ -184,45 +183,46 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   else if (tipo === 'topico') {
     const titulo = slide.titulo ?? ''
     const corpo  = slide.corpo ?? ''
-    const fs     = fsClamp(titulo.length || 1, 90, 40)
-    const fsC    = `clamp(28px,3.4vw,38px)`
+    const fsT    = fs(titulo, txtW, 3, 88)
+    const fsC    = fs(corpo, txtW, 5, 38, 26)
 
     body = isMin ? `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
-      <div style="width:4px;height:60px;background:rgba(255,255,255,0.45);border-radius:2px;"></div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsC};font-weight:400;color:${sub};line-height:1.65;word-break:break-word;overflow-wrap:break-word;">${corpo}</div>
+      <div style="width:4px;height:60px;background:rgba(255,255,255,0.45);border-radius:2px;flex-shrink:0;"></div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.6;">${corpo}</div>
     </div>` : `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${rightVal};width:${hasLat ? txtWpx : 'auto'};height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:22px;z-index:4;box-sizing:border-box;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:22px;z-index:4;box-sizing:border-box;overflow:hidden;">
       <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         ${ico(slide.icon_nome ?? 'star', 44, icCor)}
       </div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;flex-shrink:0;">${titulo}</div>
       <div style="width:48px;height:3px;background:rgba(255,255,255,0.35);border-radius:2px;flex-shrink:0;"></div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsC};font-weight:400;color:${sub};line-height:1.65;word-break:break-word;overflow-wrap:break-word;">${corpo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.6;">${corpo}</div>
     </div>`
   }
 
   // ── LISTA ─────────────────────────────────────────────────────────────────
   else if (tipo === 'lista') {
     const titulo = slide.titulo ?? ''
-    const fs     = fsClamp(titulo.length || 1, 84, 40)
+    const fsT    = fs(titulo, txtW, 2, 84)
     const itens  = (slide.itens ?? []).slice(0, 5)
     const n      = itens.length || 1
-    const cardH  = Math.floor((cH - 100) / n)
-    const fsI    = `clamp(24px,3.2vw,${n >= 5 ? 34 : 38}px)`
+    const tituloH = fsT * 1.1 + 44  // altura do título + margem
+    const cardH  = Math.floor((cH - tituloH) / n)
+    const fsI    = Math.max(26, Math.min(38, Math.floor(cardH * 0.40)))
 
     const rows = itens.map((it: string, i: number) => `
       <div style="display:flex;align-items:center;gap:28px;height:${cardH}px;border-bottom:1px solid rgba(255,255,255,0.10);">
         <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.90);">${i + 1}</span>
+          <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.90);">${i+1}</span>
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsI};font-weight:500;color:${txt};line-height:1.25;flex:1;word-break:break-word;overflow-wrap:break-word;">${it}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.2;flex:1;">${it}</span>
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${rightVal};width:${hasLat ? txtWpx : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:20px;z-index:4;box-sizing:border-box;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:28px;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;box-sizing:border-box;overflow:hidden;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:28px;flex-shrink:0;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${rows}</div>
     </div>`
   }
@@ -231,12 +231,13 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   else {
     const titulo = slide.titulo ?? ''
     const subtit = slide.subtitulo ?? ''
-    const fs     = fsClamp(titulo.length || 1, 112)
+    const fsT    = fs(titulo, W, 3, 108)
+    const fsS    = fs(subtit, W, 2, 38, 28)
 
     body = `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:32px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-3px;text-transform:uppercase;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
-      ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:clamp(28px,3.4vw,38px);font-weight:400;color:${sub};line-height:1.55;word-break:break-word;">${subtit}</div>` : ''}
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-3px;text-transform:uppercase;">${titulo}</div>
+      ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:${fsS}px;font-weight:400;color:${sub};line-height:1.55;">${subtit}</div>` : ''}
       <div style="display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.32);border-radius:999px;padding:22px 60px;margin-top:8px;">
         ${ico('phone', 28, '#FFFFFF', 2)}
         <span style="font-family:'${fn}',sans-serif;font-size:32px;font-weight:700;color:#FFFFFF;letter-spacing:0.5px;">Me chame no direct</span>
