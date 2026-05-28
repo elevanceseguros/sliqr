@@ -216,22 +216,28 @@ function CriarInner() {
           .map((_: any, i: number) => i)
           .filter((i: number) => deveUsarImagemIA(i, slidesGerados.length))
 
-        // Gerar todas as imagens em paralelo
-        const resultados = await Promise.all(
-          indices.map((i: number) => gerarImagemIA(slidesGerados[i], i))
-        )
-
-        // Retry para as que falharam
-        const retryPromises = indices.map(async (i: number, k: number) => {
-          if (!resultados[k]) {
-            return gerarImagemIA(slidesGerados[i], i)
+        // Gerar imagens com concorrência limitada (2 por vez) para evitar rate limit do fal.ai
+        async function gerarComConcorrencia(lista: number[], concorrencia: number) {
+          const resultados: (string | null)[] = new Array(lista.length).fill(null)
+          for (let start = 0; start < lista.length; start += concorrencia) {
+            const lote = lista.slice(start, start + concorrencia)
+            const urls = await Promise.all(lote.map((i: number) => gerarImagemIA(slidesGerados[i], i)))
+            lote.forEach((i: number, k: number) => { resultados[start + k] = urls[k] })
           }
-          return resultados[k]
-        })
-        const resultadosFinais = await Promise.all(retryPromises)
+          return resultados
+        }
+
+        const resultados = await gerarComConcorrencia(indices, 2)
+
+        // Retry único para as que falharam
+        for (let k = 0; k < indices.length; k++) {
+          if (!resultados[k]) {
+            resultados[k] = await gerarImagemIA(slidesGerados[indices[k]], indices[k])
+          }
+        }
 
         indices.forEach((i: number, k: number) => {
-          const url = resultadosFinais[k]
+          const url = resultados[k]
           if (url) {
             imagensIAtemp[i] = url
           }
