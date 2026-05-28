@@ -497,12 +497,14 @@ function CriarInner() {
               />
             ))}
 
-            <input
-              type="color"
-              value={cor}
-              onChange={e => setCor(e.target.value)}
-              style={{ width:'32px', height:'32px', borderRadius:'50%', border:'2px solid rgba(255,255,255,0.2)', cursor:'pointer', padding:0, background:'transparent', flexShrink:0 }}
-            />
+            <label style={{ position:'relative', width:'32px', height:'32px', borderRadius:'50%', background:'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)', border:!CORES.includes(cor) ? '3px solid #fff' : '2px solid rgba(255,255,255,0.2)', cursor:'pointer', flexShrink:0, transform:!CORES.includes(cor) ? 'scale(1.2)' : 'scale(1)', display:'block', overflow:'hidden' }} title="Cor personalizada">
+              <input
+                type="color"
+                value={cor}
+                onChange={e => setCor(e.target.value)}
+                style={{ position:'absolute', inset:0, width:'100%', height:'100%', opacity:0, cursor:'pointer', padding:0, border:'none' }}
+              />
+            </label>
           </div>
         </div>
 
