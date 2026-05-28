@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Zap, Download, Loader2, Upload, Image as ImageIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { gerarHTML, SlideCfg } from '@/lib/slides/gerar-html'
 import JSZip from 'jszip'
 
 const CORES = ['#2D6FFF','#7C3AED','#059669','#DC2626','#D97706','#DB2777','#0891B2','#111827','#1E4D1E','#7DC242']
@@ -118,7 +117,7 @@ function CriarInner() {
     return canvas.toDataURL('image/png')
   }
 
-  async function gerarScreenshot(html: string): Promise<string> {
+  async function gerarScreenshot(payload: object): Promise<string> {
     const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
     const maxTentativas = 5
 
@@ -126,7 +125,7 @@ function CriarInner() {
       const res = await fetch('/api/screenshot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html }),
+        body: JSON.stringify(payload),
       })
 
       const data = await res.json()
@@ -236,20 +235,27 @@ function CriarInner() {
       const imagens: string[] = []
 
       for (let i = 0; i < slidesGerados.length; i++) {
-        const html = gerarHTML(slidesGerados[i], slidesGerados.length, i, {
-          cor: cfg.cor,
-          fonte: cfg.fonte,
-          estilo: cfg.estilo,
-          logoUrl: cfg.logoUrl,
+        // HTML gerado no servidor — não no browser
+        const slidePayload = {
+          slide: slidesGerados[i],
+          total: slidesGerados.length,
+          idx: i,
+          cfg: {
+            cor: cfg.cor,
+            fonte: cfg.fonte,
+            estilo: cfg.estilo,
+          },
+          fotoUrl: imagensIAtemp[i] ?? null,
+          logoUrl: cfg.logoUrl ?? null,
           logoX: cfg.logoX,
           logoY: cfg.logoY,
           logoW: cfg.logoW,
-        }, imagensIAtemp[i])
+        }
 
         // Delay mínimo entre slides
         if (i > 0) await new Promise(r => setTimeout(r, 500))
 
-        const img = await gerarScreenshot(html)
+        const img = await gerarScreenshot(slidePayload)
         imagens.push(img)
         setImgs([...imagens])
 
