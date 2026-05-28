@@ -246,8 +246,8 @@ function CriarInner() {
           logoW: cfg.logoW,
         }, imagensIAtemp[i])
 
-        // Delay entre slides para evitar rate limit do Cloudflare
-        if (i > 0) await new Promise(r => setTimeout(r, 3000))
+        // Delay mínimo entre slides
+        if (i > 0) await new Promise(r => setTimeout(r, 500))
 
         const img = await gerarScreenshot(html)
         imagens.push(img)
