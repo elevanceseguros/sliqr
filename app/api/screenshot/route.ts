@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
             html,
             viewport: { width: 1080, height: 1080 },
             screenshotOptions: {
-              type:    'png',
-              clip:    { x: 0, y: 0, width: 1080, height: 1080 },
+              type:     'png',
+              clip:     { x: 0, y: 0, width: 1080, height: 1080 },
               fullPage: false,
             },
             gotoOptions: { waitUntil: 'networkidle2' },
@@ -65,6 +65,10 @@ export async function POST(request: NextRequest) {
       } else {
         const errText = await res.text()
         console.error('[screenshot] Cloudflare erro HTTP:', res.status, errText.slice(0, 300))
+        // Propaga 429 para o frontend fazer retry com backoff
+        if (res.status === 429) {
+          return NextResponse.json({ erro: 'Rate limit' }, { status: 429 })
+        }
       }
     } catch (e: any) {
       console.error('[screenshot] Cloudflare exception:', e.message)

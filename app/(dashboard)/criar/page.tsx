@@ -119,15 +119,31 @@ function CriarInner() {
   }
 
   async function gerarScreenshot(html: string): Promise<string> {
-    const res = await fetch('/api/screenshot', {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ html }),
-    })
+    const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
+    const maxTentativas = 4
 
-    const data = await res.json()
-    if (data.erro) throw new Error(data.erro)
-    return data.url
+    for (let tentativa = 1; tentativa <= maxTentativas; tentativa++) {
+      const res = await fetch('/api/screenshot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html }),
+      })
+
+      const data = await res.json()
+
+      // Rate limit — espera e tenta de novo com backoff exponencial
+      if (!res.ok && res.status === 429 && tentativa < maxTentativas) {
+        const espera = tentativa * 2000 // 2s, 4s, 6s
+        console.warn(`[screenshot] Rate limit, aguardando ${espera}ms (tentativa ${tentativa}/${maxTentativas})`)
+        await delay(espera)
+        continue
+      }
+
+      if (data.erro) throw new Error(data.erro)
+      return data.url
+    }
+
+    throw new Error('Nenhum serviço de screenshot disponível')
   }
 
   async function gerarImagemIA(slide: any, i: number): Promise<string | null> {
@@ -229,6 +245,9 @@ function CriarInner() {
           logoY: cfg.logoY,
           logoW: cfg.logoW,
         }, imagensIAtemp[i])
+
+        // Delay entre slides para evitar rate limit do Cloudflare
+        if (i > 0) await new Promise(r => setTimeout(r, 1000))
 
         const img = await gerarScreenshot(html)
         imagens.push(img)
