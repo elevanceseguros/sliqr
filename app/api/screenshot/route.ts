@@ -21,6 +21,8 @@ export async function POST(request: NextRequest) {
       html = html.replace(/<\/div>\s*<\/body>/, `  ${tag}\n</div>\n</body>`)
     }
 
+    console.log('[screenshot] HTML size:', html.length, 'chars')
+    console.log('[screenshot] HTML snippet:', html.slice(0, 500))
     const workerUrl    = process.env.CLOUDFLARE_WORKER_URL
     const workerSecret = process.env.CLOUDFLARE_WORKER_SECRET
 
