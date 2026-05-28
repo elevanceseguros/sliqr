@@ -21,37 +21,33 @@ export async function POST(request: NextRequest) {
       html = html.replace(/<\/div>\s*<\/body>/, `  ${tag}\n</div>\n</body>`)
     }
 
-    const browserlessToken = process.env.BROWSERLESS_TOKEN
-    if (!browserlessToken) {
-      console.error('[screenshot] BROWSERLESS_TOKEN não configurada')
+    const cfToken     = process.env.CLOUDFLARE_API_TOKEN
+    const cfAccountId = process.env.CLOUDFLARE_ACCOUNT_ID
+
+    if (!cfToken || !cfAccountId) {
+      console.error('[screenshot] Cloudflare env vars não configuradas')
       return NextResponse.json({ erro: 'Serviço de screenshot não configurado' }, { status: 500 })
     }
 
-    // ── Browserless — POST com HTML no body (sem limite de tamanho) ────────
+    // ── Cloudflare Browser Rendering ──────────────────────────────────────
     try {
       const res = await fetch(
-        `https://production-sfo.browserless.io/screenshot?token=${browserlessToken}`,
+        `https://api.cloudflare.com/client/v4/accounts/${cfAccountId}/browser-rendering/screenshot`,
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache',
+            'Authorization': `Bearer ${cfToken}`,
+            'Content-Type':  'application/json',
           },
           body: JSON.stringify({
             html,
-            options: {
-              type: 'png',
+            viewport: { width: 1080, height: 1080 },
+            screenshotOptions: {
+              type:    'png',
+              clip:    { x: 0, y: 0, width: 1080, height: 1080 },
               fullPage: false,
-              clip: { x: 0, y: 0, width: 1080, height: 1080 },
             },
-            setViewport: {
-              width: 1080,
-              height: 1080,
-              deviceScaleFactor: 1,
-            },
-            gotoOptions: {
-              waitUntil: 'networkidle2',
-            },
+            gotoOptions: { waitUntil: 'networkidle2' },
           }),
         }
       )
@@ -61,17 +57,17 @@ export async function POST(request: NextRequest) {
         if (ct.includes('image')) {
           const buffer = await res.arrayBuffer()
           const base64 = Buffer.from(buffer).toString('base64')
-          console.log('[screenshot] Browserless ✓')
+          console.log('[screenshot] Cloudflare Browser Rendering ✓')
           return NextResponse.json({ url: `data:image/png;base64,${base64}` })
         }
         const errText = await res.text()
-        console.error('[screenshot] Browserless resposta não-imagem:', res.status, errText.slice(0, 300))
+        console.error('[screenshot] Cloudflare resposta não-imagem:', res.status, errText.slice(0, 300))
       } else {
         const errText = await res.text()
-        console.error('[screenshot] Browserless erro HTTP:', res.status, errText.slice(0, 300))
+        console.error('[screenshot] Cloudflare erro HTTP:', res.status, errText.slice(0, 300))
       }
     } catch (e: any) {
-      console.error('[screenshot] Browserless exception:', e.message)
+      console.error('[screenshot] Cloudflare exception:', e.message)
     }
 
     return NextResponse.json({ erro: 'Nenhum serviço de screenshot disponível' }, { status: 500 })
