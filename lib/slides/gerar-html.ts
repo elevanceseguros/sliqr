@@ -148,7 +148,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
 
     body = `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>
       ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:${fsS}px;font-weight:400;color:${sub};line-height:1.55;">${subtit}</div>` : ''}
     </div>`
   }
@@ -156,7 +156,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   // ── ÍCONES ────────────────────────────────────────────────────────────────
   else if (tipo === 'icones') {
     const titulo = slide.titulo ?? ''
-    const fsT    = fs(titulo, txtW, 2, 88)
+    const fsT    = fs(titulo, txtW, 2, 80)
     const itens  = (slide.itens ?? []).slice(0, 3)
     const n      = itens.length || 1
     const cardH  = Math.floor((cH - fsT * 1.2 - 80) / n)
@@ -172,8 +172,8 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;box-sizing:border-box;overflow:hidden;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:32px;flex-shrink:0;">${titulo}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:32px;z-index:4;box-sizing:border-box;overflow:hidden;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:24px;flex-shrink:0;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${cards}</div>
     </div>`
   }
@@ -182,32 +182,32 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   else if (tipo === 'topico') {
     const titulo = slide.titulo ?? ''
     const corpo  = slide.corpo ?? ''
-    const fsT    = fs(titulo, txtW, 3, 88)
+    const fsT    = fs(titulo, txtW, 3, 80)
     const fsC    = fs(corpo, txtW, 5, 38, 26, false)
 
     body = isMin ? `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
       <div style="width:4px;height:60px;background:rgba(255,255,255,0.45);border-radius:2px;flex-shrink:0;"></div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.6;">${corpo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.6;overflow:hidden;">${corpo}</div>
     </div>` : `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:22px;z-index:4;box-sizing:border-box;overflow:hidden;">
       <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         ${ico(slide.icon_nome ?? 'star', 44, icCor)}
       </div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;flex-shrink:0;">${titulo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;flex-shrink:0;">${titulo}</div>
       <div style="width:48px;height:3px;background:rgba(255,255,255,0.35);border-radius:2px;flex-shrink:0;"></div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.6;">${corpo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.6;overflow:hidden;">${corpo}</div>
     </div>`
   }
 
   // ── LISTA ─────────────────────────────────────────────────────────────────
   else if (tipo === 'lista') {
     const titulo = slide.titulo ?? ''
-    const fsT    = fs(titulo, txtW, 2, 84)
+    const fsT    = fs(titulo, txtW, 2, 76)
     const itens  = (slide.itens ?? []).slice(0, 5)
     const n      = itens.length || 1
-    const tituloH = fsT * 1.1 + 44  // altura do título + margem
+    const tituloH = fsT * 1.15 + 52 + 32 // line-height + margin-bottom + padding-top
     const cardH  = Math.floor((cH - tituloH) / n)
     const fsI    = Math.max(26, Math.min(38, Math.floor(cardH * 0.40)))
 
@@ -220,8 +220,8 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;box-sizing:border-box;overflow:hidden;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:28px;flex-shrink:0;">${titulo}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${hasLat ? 'auto' : PAD+'px'};width:${hasLat ? txtW+'px' : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:32px;z-index:4;box-sizing:border-box;overflow:hidden;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:20px;flex-shrink:0;">${titulo}</div>
       <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${rows}</div>
     </div>`
   }
@@ -235,7 +235,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
 
     body = `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:32px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-3px;text-transform:uppercase;">${titulo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-3px;text-transform:uppercase;">${titulo}</div>
       ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:${fsS}px;font-weight:400;color:${sub};line-height:1.55;">${subtit}</div>` : ''}
       <div style="display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.32);border-radius:999px;padding:22px 60px;margin-top:8px;">
         ${ico('phone', 28, '#FFFFFF', 2)}
