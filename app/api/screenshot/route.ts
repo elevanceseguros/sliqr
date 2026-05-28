@@ -23,8 +23,10 @@ export async function POST(request: NextRequest) {
 
     console.log('[screenshot] HTML size:', html.length, 'chars')
     // Log focado nos spans de item para debug do truncamento
-    const spanMatch = html.match(/font-weight:700;color:#FFFFFF;line-height:1\.3;width:[^"]+/)
-    console.log('[screenshot] span style:', spanMatch?.[0] ?? 'NAO ENCONTRADO')
+    const spanMatch = html.match(/line-height:1\.3;width:[^"]+/)
+    const flexMatch = html.match(/line-height:1\.3;flex:[^"]+/)
+    console.log('[screenshot] span width:', spanMatch?.[0] ?? 'NAO ENCONTRADO')
+    console.log('[screenshot] span flex:', flexMatch?.[0] ?? 'NAO ENCONTRADO')
     const workerUrl    = process.env.CLOUDFLARE_WORKER_URL
     const workerSecret = process.env.CLOUDFLARE_WORKER_SECRET
 
