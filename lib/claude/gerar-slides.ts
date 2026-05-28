@@ -30,13 +30,13 @@ TIPOS DE SLIDE:
 
 REGRAS DE CONTEÚDO:
 - Cada slide deve ter conteúdo ESPECÍFICO ao pedido — não genérico
-- Titulos: MAIÚSCULAS, máximo 4 palavras. NUNCA use títulos de mais de 4 palavras.
-- Corpo/subtítulo: 1-2 frases diretas com dado real. Máximo 15 palavras total.
-- Itens de lista: MÁXIMO 4 palavras por item, sem vírgulas, sem reticências, frase COMPLETA
-- Labels de ícone: MÁXIMO 3 palavras, nunca use "..." nem corte frases
+- Títulos: MAIÚSCULAS. Podem ter até 6 palavras se necessário para ser claro.
+- Corpo/subtítulo: 2-3 frases diretas com dado real. Pode ter até 25 palavras.
+- Itens de lista: frases COMPLETAS e DESCRITIVAS. Pode ter até 8 palavras por item. NUNCA use "..." nem corte frases. NUNCA numere os itens (sem "1.", "2." etc — a numeração é visual).
+- Labels de ícone: frase curta mas COMPLETA e ESPECÍFICA. Até 5 palavras. NUNCA use "..." nem corte frases.
 - Se o pedido mencionar empresa/produto, use o nome nos slides relevantes
 - Para comparativos: o slide "icones" deve mostrar LADOS DO COMPARATIVO (ex: restaurante vs marmita)
-- Para benefícios: liste benefícios REAIS e ESPECÍFICOS
+- Para benefícios: liste benefícios REAIS e ESPECÍFICOS com detalhes concretos
 - CTA: mencione o nome da empresa e uma ação concreta (ex: "Peça sua marmita Hortelã hoje")
 
 ÍCONES disponíveis: ${ICONES}
