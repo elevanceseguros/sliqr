@@ -41,16 +41,15 @@ function drk(h: string, f = 0.4): string {
   return '#' + [1,3,5].map(i => Math.round(parseInt(h.slice(i,i+2)||'88',16)*f).toString(16).padStart(2,'0')).join('')
 }
 
-// Calcula font-size ideal para caber em `maxLinhas` dentro de `larguraPx`
-// Retorna px inteiro, entre minPx e maxPx
-function fs(texto: string, larguraPx: number, maxLinhas: number, maxPx: number, minPx = 36): number {
-  const len = texto.length || 1
-  const charsPerLine = larguraPx / (maxPx * 0.58)
-  const linesAtMax = Math.ceil(len / charsPerLine)
+// Calcula font-size ideal para caber em maxLinhas dentro de larguraPx
+// Fator 0.68 calibrado para Inter/Montserrat Bold uppercase
+function fs(texto: string, larguraPx: number, maxLinhas: number, maxPx: number, minPx = 36, upper = true): number {
+  const len   = texto.length || 1
+  const fator = upper ? 0.68 : 0.52
+  const charsPerLineAtMax = larguraPx / (maxPx * fator)
+  const linesAtMax = Math.ceil(len / charsPerLineAtMax)
   if (linesAtMax <= maxLinhas) return maxPx
-  // Resolve: maxLinhas = ceil(len / (larguraPx / (fs * 0.58)))
-  // => fs = len * 0.58 / (larguraPx / maxLinhas)  ...simplificado
-  const ideal = Math.floor((larguraPx * maxLinhas) / (len * 0.58))
+  const ideal = Math.floor((larguraPx * maxLinhas) / (len * fator))
   return Math.max(minPx, Math.min(maxPx, ideal))
 }
 
@@ -145,7 +144,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const titulo = slide.titulo ?? ''
     const subtit = slide.subtitulo ?? ''
     const fsT    = fs(titulo, W, 3, 108)
-    const fsS    = fs(subtit, W, 3, 40, 28)
+    const fsS    = fs(subtit, W, 3, 40, 28, false)
 
     body = `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
@@ -184,7 +183,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const titulo = slide.titulo ?? ''
     const corpo  = slide.corpo ?? ''
     const fsT    = fs(titulo, txtW, 3, 88)
-    const fsC    = fs(corpo, txtW, 5, 38, 26)
+    const fsC    = fs(corpo, txtW, 5, 38, 26, false)
 
     body = isMin ? `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
@@ -232,7 +231,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const titulo = slide.titulo ?? ''
     const subtit = slide.subtitulo ?? ''
     const fsT    = fs(titulo, W, 3, 108)
-    const fsS    = fs(subtit, W, 2, 38, 28)
+    const fsS    = fs(subtit, W, 2, 38, 28, false)
 
     body = `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:32px;z-index:4;">
