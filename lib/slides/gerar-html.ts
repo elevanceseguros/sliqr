@@ -1,7 +1,4 @@
-// ─── SLIQR Motor HTML v4 — Sistema visual coeso ───────────────────────────────
-// Grid consistente: PAD=72px em todos os lados
-// Hierarquia tipográfica única: título sempre no topo, conteúdo abaixo
-// Todos os slides têm o mesmo "peso visual"
+// ─── SLIQR Motor HTML v5 — Tipografia responsiva via CSS clamp() ────────────
 
 const ICONS: Record<string, string> = {
   'shield':       '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
@@ -44,22 +41,16 @@ function drk(h: string, f = 0.4): string {
   return '#' + [1,3,5].map(i => Math.round(parseInt(h.slice(i,i+2)||'88',16)*f).toString(16).padStart(2,'0')).join('')
 }
 
-function trunc(s: string, max: number) {
-  return s.length > max ? s.slice(0, max-1) + '…' : s
-}
-
-// Font-size adaptativo considerando largura disponível e comprimento do título
-// larguraDisp: largura em px onde o texto vai renderizar
-function fsTitulo(titulo: string, base: number, larguraDisp = 936): number {
-  const len = titulo.length
-  // Estimativa: cada char bold Inter ocupa ~0.58 * fontSize em largura
-  // Queremos que o título caiba em 2 linhas no máximo
-  // Chars por linha = larguraDisp / (fontSize * 0.58)
-  // 2 linhas => charsMax = 2 * larguraDisp / (fontSize * 0.58)
-  // Resolvendo: fontSize = 2 * larguraDisp / (len * 0.58)
-  const fsIdeal = Math.round((2 * larguraDisp) / (len * 0.60))
-  // Limitar entre 48 e base
-  return Math.max(48, Math.min(base, fsIdeal))
+// Font-size adaptativo via CSS clamp() — mín, ideal proporcional ao comprimento, máx
+// Retorna string CSS como "clamp(48px, Xvw, 108px)"
+function fsClamp(len: number, maxPx: number, minPx = 44): string {
+  // vw ideal: queremos que o texto ocupe ~90% da largura disponível em 1 linha
+  // 1080px viewport, 1 char bold Inter ~= 0.60 * fontSize
+  // fontSize ideal = 0.90 * 1080 / (len * 0.60) = 972 / (len * 0.60)
+  const idealPx = Math.round(972 / (len * 0.62))
+  const clampedIdeal = Math.min(idealPx, maxPx)
+  const vwVal = +(clampedIdeal / 10.80).toFixed(2) // converte px para vw (1080px base)
+  return `clamp(${minPx}px, ${vwVal}vw, ${maxPx}px)`
 }
 
 export interface SlideCfg {
@@ -92,30 +83,22 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     ? `@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');`
     : `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');`
 
-  // ── SISTEMA DE GRID ──────────────────────────────────────────────────────
-  // PAD: margem em todos os lados
-  // HEADER: zona do número do slide (topo)
-  // FOOTER: zona da logo + linha (rodapé)
-  // CONTENT: área útil restante
   const PAD     = 72
-  const HEADER  = 80   // altura da zona de cabeçalho
-  const FOOTER  = 140  // altura da zona de rodapé (logo + espaço)
-  const CONTENT = 1080 - HEADER - FOOTER  // = 860px disponíveis para conteúdo
-  const W       = 1080 - PAD * 2          // = 936px de largura útil
+  const HEADER  = 80
+  const FOOTER  = 140
+  const CONTENT = 1080 - HEADER - FOOTER  // 860px
+  const W       = 1080 - PAD * 2          // 936px
 
-  // ── FUNDO ────────────────────────────────────────────────────────────────
-  const temFoto = !!fotoUrl
-  const bgStyle = temFoto
+  const temFoto      = !!fotoUrl
+  const bgStyle      = temFoto
     ? `background:${drk(cor, 0.50)};`
     : isMin
     ? `background:${cor};`
     : `background:linear-gradient(145deg,${cor} 0%,${drk(cor,0.40)} 100%);`
 
-  const isFotoFull = temFoto && ['capa','cta'].includes(slide.tipo)
+  const isFotoFull    = temFoto && ['capa','cta'].includes(slide.tipo)
   const isFotoLateral = temFoto && !['capa','cta'].includes(slide.tipo)
 
-  // Capa/CTA: foto full background com overlay escuro
-  // Outros slides: foto no lado direito (40% da largura) com gradiente de fusão
   const fotoHtml = isFotoFull ? `
     <img src="${fotoUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.30;z-index:0;"/>
     <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,0,0,0.80) 0%,rgba(0,0,0,0.28) 55%,rgba(0,0,0,0.72) 100%);z-index:1;"></div>`
@@ -124,7 +107,6 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     <div style="position:absolute;top:0;right:0;width:42%;height:100%;background:linear-gradient(90deg,${bgStyle.includes(cor)?cor:'rgba(0,0,0,0)'} 0%,transparent 40%);z-index:1;"></div>`
   : ''
 
-  // ── DECORATIVOS (consistentes em todos os slides) ─────────────────────────
   const decos = isMin
     ? `<div style="position:absolute;bottom:${FOOTER - 20}px;right:${PAD}px;width:24px;height:24px;background:rgba(255,255,255,0.18);transform:rotate(45deg);z-index:2;"></div>`
     : `
@@ -132,13 +114,11 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       <div style="position:absolute;bottom:${FOOTER}px;left:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.04);z-index:2;"></div>
       <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,${drk(cor,0.55)},${cor},${drk(cor,0.55)});z-index:3;"></div>`
 
-  // ── CABEÇALHO: número do slide (consistente) ──────────────────────────────
   const header = `
     <div style="position:absolute;top:${PAD}px;right:${PAD}px;z-index:4;">
       <span style="font-family:'${fn}',sans-serif;font-size:18px;font-weight:500;color:rgba(255,255,255,0.30);letter-spacing:1px;">${idx+1} / ${total}</span>
     </div>`
 
-  // ── RODAPÉ: linha + logo (consistente) ───────────────────────────────────
   const lW     = Math.min(cfg.logoW ?? 150, 280)
   const lH     = 56
   const lX     = cfg.logoX != null ? Math.round(cfg.logoX*1080 - lW/2) : Math.round(540 - lW/2)
@@ -151,118 +131,112 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       </div>
     </div>`
 
-  // ── ZONA DE CONTEÚDO (igual em todos os tipos) ────────────────────────────
-  // Sempre começa em top=HEADER, tem height=CONTENT
-  const cTop  = HEADER
-  const cH    = CONTENT  // 860px
+  const cTop = HEADER
+  const cH   = CONTENT
+
+  // Largura útil do conteúdo (com ou sem foto lateral)
+  const hasLat  = isFotoLateral
+  const txtW    = hasLat ? Math.floor(W * 0.56) : W  // px numérico
+  const txtWpx  = `${txtW}px`
+  const rightVal = hasLat ? 'auto' : `${PAD}px`
 
   let body = ''
   const tipo = slide.tipo
 
   // ── CAPA ─────────────────────────────────────────────────────────────────
   if (tipo === 'capa') {
-    const titulo = trunc(slide.titulo ?? '', 60)
-    const fsT    = fsTitulo(titulo, 108)
-    const subtit = trunc(slide.subtitulo ?? '', 90)
+    const titulo = slide.titulo ?? ''
+    const subtit = slide.subtitulo ?? ''
+    const fs     = fsClamp(titulo.length || 1, 112)
 
     body = `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;">${titulo}</div>
-      ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:38px;font-weight:400;color:${sub};line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${subtit}</div>` : ''}
+      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
+      ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:clamp(28px,3.5vw,40px);font-weight:400;color:${sub};line-height:1.55;word-break:break-word;">${subtit}</div>` : ''}
     </div>`
   }
 
   // ── ÍCONES ────────────────────────────────────────────────────────────────
   else if (tipo === 'icones') {
-    const temFotoLat = isFotoLateral
-    const cW         = temFotoLat ? Math.floor(W * 0.56) : W
-    const cRight     = temFotoLat ? 'auto' : `${PAD}px`
-    const titulo     = trunc(slide.titulo ?? '', 45)
-    const fsT        = fsTitulo(titulo, 88, cW)
-    const itens      = (slide.itens ?? []).slice(0, 3)
-    const n          = itens.length || 1
-    const cardH      = Math.floor((cH - 120) / n)
+    const titulo = slide.titulo ?? ''
+    const fs     = fsClamp(titulo.length || 1, 90, 40)
+    const itens  = (slide.itens ?? []).slice(0, 3)
+    const n      = itens.length || 1
+    const cardH  = Math.floor((cH - 130) / n)
 
     const cards = itens.map((item: any, i: number) => `
       <div style="display:flex;align-items:center;gap:28px;height:${cardH}px;border-bottom:${i < itens.length-1 ? '1px solid rgba(255,255,255,0.10)' : 'none'};">
         <div style="width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${ico(item.icone ?? 'star', 36, icCor, 1.6)}
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:34px;font-weight:700;color:${txt};line-height:1.2;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;">${trunc(item.label ?? '', 40)}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:clamp(24px,3.2vw,36px);font-weight:700;color:${txt};line-height:1.25;flex:1;word-break:break-word;overflow-wrap:break-word;">${item.label ?? ''}</span>
         <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:600;color:rgba(255,255,255,0.22);flex-shrink:0;min-width:28px;text-align:right;">${String(i+1).padStart(2,'0')}</span>
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${cRight};width:${temFotoLat ? `${cW}px` : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;overflow:hidden;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${titulo}</div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">${cards}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${rightVal};width:${hasLat ? txtWpx : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:20px;z-index:4;box-sizing:border-box;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:32px;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${cards}</div>
     </div>`
   }
 
   // ── TÓPICO ────────────────────────────────────────────────────────────────
   else if (tipo === 'topico') {
-    const temFotoLat = isFotoLateral
-    const cW         = temFotoLat ? Math.floor(W * 0.56) : W
-    const cRight     = temFotoLat ? 'auto' : `${PAD}px`
-    const titulo     = trunc(slide.titulo ?? '', 40)
-    const corpo      = trunc(slide.corpo ?? '', 220)
-    const fsT        = fsTitulo(titulo, 88, cW)
-    const fsC        = corpo.length > 120 ? 34 : 38
+    const titulo = slide.titulo ?? ''
+    const corpo  = slide.corpo ?? ''
+    const fs     = fsClamp(titulo.length || 1, 90, 40)
+    const fsC    = `clamp(28px,3.4vw,38px)`
 
     body = isMin ? `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:32px;z-index:4;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
       <div style="width:4px;height:60px;background:rgba(255,255,255,0.45);border-radius:2px;"></div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${titulo}</div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;word-break:break-word;overflow-wrap:break-word;">${corpo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsC};font-weight:400;color:${sub};line-height:1.65;word-break:break-word;overflow-wrap:break-word;">${corpo}</div>
     </div>` : `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${cRight};width:${temFotoLat ? `${cW}px` : 'auto'};height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:24px;z-index:4;overflow:hidden;">
-      <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;">
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${rightVal};width:${hasLat ? txtWpx : 'auto'};height:${cH}px;display:flex;flex-direction:column;justify-content:center;gap:22px;z-index:4;box-sizing:border-box;">
+      <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         ${ico(slide.icon_nome ?? 'star', 44, icCor)}
       </div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${titulo}</div>
-      <div style="width:48px;height:3px;background:rgba(255,255,255,0.35);border-radius:2px;"></div>
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.65;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;word-break:break-word;overflow-wrap:break-word;">${corpo}</div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
+      <div style="width:48px;height:3px;background:rgba(255,255,255,0.35);border-radius:2px;flex-shrink:0;"></div>
+      <div style="font-family:'${fn}',sans-serif;font-size:${fsC};font-weight:400;color:${sub};line-height:1.65;word-break:break-word;overflow-wrap:break-word;">${corpo}</div>
     </div>`
   }
 
   // ── LISTA ─────────────────────────────────────────────────────────────────
   else if (tipo === 'lista') {
-    const temFotoLat = isFotoLateral
-    const cW         = temFotoLat ? Math.floor(W * 0.56) : W
-    const cRight     = temFotoLat ? 'auto' : `${PAD}px`
-    const titulo     = trunc(slide.titulo ?? '', 40)
-    const fsT        = fsTitulo(titulo, 80, cW)
-    const itens      = (slide.itens ?? []).slice(0, 5)
-    const n          = itens.length
-    const cardH      = Math.floor((cH - 80) / n)
-    const fsI        = n >= 5 ? 34 : 38
-    const maxChars   = temFotoLat ? 35 : 55
+    const titulo = slide.titulo ?? ''
+    const fs     = fsClamp(titulo.length || 1, 84, 40)
+    const itens  = (slide.itens ?? []).slice(0, 5)
+    const n      = itens.length || 1
+    const cardH  = Math.floor((cH - 100) / n)
+    const fsI    = `clamp(24px,3.2vw,${n >= 5 ? 34 : 38}px)`
 
     const rows = itens.map((it: string, i: number) => `
       <div style="display:flex;align-items:center;gap:28px;height:${cardH}px;border-bottom:1px solid rgba(255,255,255,0.10);">
         <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.90);">${i + 1}</span>
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;flex:1;white-space:normal;">${trunc(it, maxChars)}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsI};font-weight:500;color:${txt};line-height:1.25;flex:1;word-break:break-word;overflow-wrap:break-word;">${it}</span>
       </div>`).join('')
 
     body = `
-    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${cRight};width:${temFotoLat ? `${cW}px` : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:24px;z-index:4;overflow:hidden;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:32px;">${titulo}</div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">${rows}</div>
+    <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${rightVal};width:${hasLat ? txtWpx : 'auto'};height:${cH}px;display:flex;flex-direction:column;padding-top:20px;z-index:4;box-sizing:border-box;">
+      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-bottom:28px;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${rows}</div>
     </div>`
   }
 
   // ── CTA ───────────────────────────────────────────────────────────────────
   else {
-    const titulo = trunc(slide.titulo ?? '', 35)
-    const subtit = trunc(slide.subtitulo ?? '', 80)
-    const fsT    = fsTitulo(titulo, 108)
+    const titulo = slide.titulo ?? ''
+    const subtit = slide.subtitulo ?? ''
+    const fs     = fsClamp(titulo.length || 1, 112)
 
     body = `
     <div style="position:absolute;top:${cTop}px;left:${PAD}px;right:${PAD}px;height:${cH}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:32px;z-index:4;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-3px;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">${titulo}</div>
-      ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:36px;font-weight:400;color:${sub};line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${subtit}</div>` : ''}
+      <div style="font-family:'${fn}',sans-serif;font-size:${fs};font-weight:${fw};line-height:1.0;color:${txt};letter-spacing:-3px;text-transform:uppercase;word-break:break-word;overflow-wrap:break-word;">${titulo}</div>
+      ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:clamp(28px,3.4vw,38px);font-weight:400;color:${sub};line-height:1.55;word-break:break-word;">${subtit}</div>` : ''}
       <div style="display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.32);border-radius:999px;padding:22px 60px;margin-top:8px;">
         ${ico('phone', 28, '#FFFFFF', 2)}
         <span style="font-family:'${fn}',sans-serif;font-size:32px;font-weight:700;color:#FFFFFF;letter-spacing:0.5px;">Me chame no direct</span>
