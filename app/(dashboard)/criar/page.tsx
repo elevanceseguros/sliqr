@@ -221,8 +221,17 @@ function CriarInner() {
           indices.map((i: number) => gerarImagemIA(slidesGerados[i], i))
         )
 
+        // Retry para as que falharam
+        const retryPromises = indices.map(async (i: number, k: number) => {
+          if (!resultados[k]) {
+            return gerarImagemIA(slidesGerados[i], i)
+          }
+          return resultados[k]
+        })
+        const resultadosFinais = await Promise.all(retryPromises)
+
         indices.forEach((i: number, k: number) => {
-          const url = resultados[k]
+          const url = resultadosFinais[k]
           if (url) {
             imagensIAtemp[i] = url
           }
