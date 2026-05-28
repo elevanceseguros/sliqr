@@ -206,8 +206,8 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
         <div style="width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${ico(item.icone ?? 'star', 36, icCor, 1.6)}
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsL}px;font-weight:700;color:${txt};line-height:1.3;flex:1;">${item.label ?? ''}</span>
-        <span style="font-family:'${fn}',sans-serif;font-size:18px;font-weight:600;color:rgba(255,255,255,0.22);flex-shrink:0;">${String(i+1).padStart(2,'0')}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsL}px;font-weight:700;color:${txt};line-height:1.3;width:${txtW - 160}px;">${item.label ?? ''}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:18px;font-weight:600;color:rgba(255,255,255,0.22);width:28px;text-align:right;">${String(i+1).padStart(2,'0')}</span>
       </div>`
     }).join('')
 
@@ -256,7 +256,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
         <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.90);">${i+1}</span>
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.3;flex:1;">${it}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.3;width:${txtW - 80}px;">${it}</span>
       </div>`
     }).join('')
 
