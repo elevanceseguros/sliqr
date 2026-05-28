@@ -216,18 +216,13 @@ function CriarInner() {
           .map((_: any, i: number) => i)
           .filter((i: number) => deveUsarImagemIA(i, slidesGerados.length))
 
-        // Gerar imagens com concorrência limitada (2 por vez) para evitar rate limit do fal.ai
-        async function gerarComConcorrencia(lista: number[], concorrencia: number) {
-          const resultados: (string | null)[] = new Array(lista.length).fill(null)
-          for (let start = 0; start < lista.length; start += concorrencia) {
-            const lote = lista.slice(start, start + concorrencia)
-            const urls = await Promise.all(lote.map((i: number) => gerarImagemIA(slidesGerados[i], i)))
-            lote.forEach((i: number, k: number) => { resultados[start + k] = urls[k] })
-          }
-          return resultados
+        // Lotes de 3 em paralelo (balanceia velocidade e estabilidade para até 10 slides)
+        const resultados: (string | null)[] = new Array(indices.length).fill(null)
+        for (let start = 0; start < indices.length; start += 3) {
+          const lote = indices.slice(start, start + 3)
+          const urls = await Promise.all(lote.map((i: number) => gerarImagemIA(slidesGerados[i], i)))
+          lote.forEach((i: number, k: number) => { resultados[start + k] = urls[k] })
         }
-
-        const resultados = await gerarComConcorrencia(indices, 2)
 
         // Retry único para as que falharam
         for (let k = 0; k < indices.length; k++) {
