@@ -218,8 +218,8 @@ function CriarInner() {
 
         // Lotes de 3 em paralelo (balanceia velocidade e estabilidade para até 10 slides)
         const resultados: (string | null)[] = new Array(indices.length).fill(null)
-        for (let start = 0; start < indices.length; start += 3) {
-          const lote = indices.slice(start, start + 3)
+        for (let start = 0; start < indices.length; start += 2) {
+          const lote = indices.slice(start, start + 2)
           const urls = await Promise.all(lote.map((i: number) => gerarImagemIA(slidesGerados[i], i)))
           lote.forEach((i: number, k: number) => { resultados[start + k] = urls[k] })
         }
