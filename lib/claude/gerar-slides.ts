@@ -67,7 +67,19 @@ JSON puro sem markdown:
     throw new Error('Erro ao processar resposta da IA. Tente novamente.')
   }
 
-  return dados.map((s,i) => ({...s, id: Math.random().toString(36).slice(2), ordem: i+1}))
+  // Limpa "..." gerados pelo modelo em qualquer campo de texto
+  function limparReticencias(obj: any): any {
+    if (typeof obj === 'string') return obj.replace(/\.{2,}$/g, '').trim()
+    if (Array.isArray(obj)) return obj.map(limparReticencias)
+    if (obj && typeof obj === 'object') {
+      const r: any = {}
+      for (const k of Object.keys(obj)) r[k] = limparReticencias(obj[k])
+      return r
+    }
+    return obj
+  }
+
+  return dados.map((s,i) => ({...limparReticencias(s), id: Math.random().toString(36).slice(2), ordem: i+1}))
 }
 
 export async function gerarLegenda(prompt: string, slides: any[], nomeEmpresa?: string): Promise<string> {
