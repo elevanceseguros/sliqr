@@ -1,3 +1,4 @@
+import { SlideCfg } from '@/lib/slides/gerar-html'
 'use client'
 
 import { useState, useEffect, useRef, Suspense } from 'react'
