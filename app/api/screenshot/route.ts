@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 export const maxDuration = 30
-
-/** Remove whitespace desnecessário do HTML para reduzir tamanho da URL */
-function minifyHtml(html: string): string {
-  return html
-    .replace(/\n\s*/g, ' ')   // quebras de linha + indent → espaço
-    .replace(/\s{2,}/g, ' ')  // múltiplos espaços → um
-    .replace(/> </g, '><')    // espaço entre tags
-    .trim()
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,147 +22,93 @@ export async function POST(request: NextRequest) {
       html = html.replace(/<\/div>\s*<\/body>/, `  ${tag}\n</div>\n</body>`)
     }
 
-    const htmlSize = Buffer.byteLength(html, 'utf8')
-    console.log(`[screenshot] HTML size: ${htmlSize} bytes`)
-
-    // ── 1º: ScreenshotOne — POST com body HTML (suporta HTML grande) ──────
-    const screenshotOneKey = process.env.SCREENSHOTONE_ACCESS_KEY
-
-    if (screenshotOneKey) {
-      try {
-        const params = new URLSearchParams({
-          access_key:          screenshotOneKey,
-          format:              'png',
-          viewport_width:      '1080',
-          viewport_height:     '1080',
-          device_scale_factor: '1',
-          full_page:           'false',
-          wait_until:          'networkidle2',
-          delay:               '2',
-          timeout:             '25',
-          cache:               'false',
-          block_ads:           'true',
-        })
-
-        const imgRes = await fetch(
-          `https://api.screenshotone.com/take?${params.toString()}`,
-          {
-            method:  'POST',
-            headers: { 'Content-Type': 'text/html' },
-            body:    html,
-          }
-        )
-
-        if (imgRes.ok) {
-          const ct = imgRes.headers.get('content-type') ?? ''
-          if (ct.includes('image')) {
-            const buffer = await imgRes.arrayBuffer()
-            const base64 = Buffer.from(buffer).toString('base64')
-            console.log('[screenshot] ScreenshotOne ✓')
-            return NextResponse.json({ url: `data:image/png;base64,${base64}` })
-          }
-          const errText = await imgRes.text()
-          console.error('[screenshot] ScreenshotOne resposta não-imagem:', imgRes.status, errText.slice(0, 300))
-        } else {
-          const errText = await imgRes.text()
-          console.error('[screenshot] ScreenshotOne erro HTTP:', imgRes.status, errText.slice(0, 300))
-        }
-      } catch (e: any) {
-        console.error('[screenshot] ScreenshotOne exception:', e.message)
-      }
-    } else {
-      console.warn('[screenshot] SCREENSHOTONE_ACCESS_KEY não configurada')
-    }
-
-    // ── 2º: ScreenshotAPI.net — GET com HTML minificado ───────────────────
-    // Atenção: limite prático de URL ~8KB. Minificamos o HTML para caber.
     const screenshotApiToken = process.env.SCREENSHOTAPI_TOKEN
+    if (!screenshotApiToken) {
+      console.error('[screenshot] SCREENSHOTAPI_TOKEN não configurada')
+      return NextResponse.json({ erro: 'Serviço de screenshot não configurado' }, { status: 500 })
+    }
 
-    if (screenshotApiToken) {
-      try {
-        const htmlMin = minifyHtml(html)
-        const htmlMinSize = Buffer.byteLength(htmlMin, 'utf8')
-        console.log(`[screenshot] ScreenshotAPI.net HTML minificado: ${htmlMinSize} bytes`)
+    // ── Upload HTML temporário para Supabase Storage ──────────────────────
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
 
-        // Só tenta se o HTML minificado couber razoavelmente na URL (~6KB de margem)
-        if (htmlMinSize <= 6000) {
-          const params = new URLSearchParams({
-            token:          screenshotApiToken,
-            output:         'image',
-            file_type:      'png',
-            width:          '1080',
-            height:         '1080',
-            full_page:      'false',
-            wait_for_event: 'networkidle',
-            delay:          '1500',
-            fresh:          'true',
-            custom_html:    htmlMin,
-          })
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.html`
+    const filePath = `slides/${fileName}`
 
-          const imgRes = await fetch(
-            `https://shot.screenshotapi.net/v3/screenshot?${params.toString()}`,
-            { method: 'GET' }
-          )
+    const { error: uploadError } = await supabase.storage
+      .from('html-temp')
+      .upload(filePath, Buffer.from(html, 'utf-8'), {
+        contentType: 'text/html',
+        upsert: false,
+      })
 
-          if (imgRes.ok) {
-            const ct = imgRes.headers.get('content-type') ?? ''
-            if (ct.includes('image')) {
-              const buffer = await imgRes.arrayBuffer()
-              const base64 = Buffer.from(buffer).toString('base64')
-              console.log('[screenshot] ScreenshotAPI.net ✓')
-              return NextResponse.json({ url: `data:image/png;base64,${base64}` })
-            }
-            const errText = await imgRes.text()
-            console.error('[screenshot] ScreenshotAPI.net resposta não-imagem:', imgRes.status, errText.slice(0, 300))
-          } else {
-            const errText = await imgRes.text()
-            console.error('[screenshot] ScreenshotAPI.net erro HTTP:', imgRes.status, errText.slice(0, 300))
-          }
+    if (uploadError) {
+      console.error('[screenshot] Supabase upload erro:', uploadError.message)
+      return NextResponse.json({ erro: 'Falha ao preparar screenshot' }, { status: 500 })
+    }
+
+    // URL pública do arquivo
+    const { data: publicUrlData } = supabase.storage
+      .from('html-temp')
+      .getPublicUrl(filePath)
+
+    const publicUrl = publicUrlData.publicUrl
+    console.log(`[screenshot] HTML publicado: ${publicUrl}`)
+
+    // ── ScreenshotAPI.net via URL pública ─────────────────────────────────
+    let imagemBase64: string | null = null
+
+    try {
+      const params = new URLSearchParams({
+        token:          screenshotApiToken,
+        url:            publicUrl,
+        output:         'image',
+        file_type:      'png',
+        width:          '1080',
+        height:         '1080',
+        full_page:      'false',
+        wait_for_event: 'networkidle',
+        delay:          '1500',
+        fresh:          'true',
+      })
+
+      const imgRes = await fetch(
+        `https://shot.screenshotapi.net/v3/screenshot?${params.toString()}`,
+        { method: 'GET' }
+      )
+
+      if (imgRes.ok) {
+        const ct = imgRes.headers.get('content-type') ?? ''
+        if (ct.includes('image')) {
+          const buffer = await imgRes.arrayBuffer()
+          imagemBase64 = Buffer.from(buffer).toString('base64')
+          console.log('[screenshot] ScreenshotAPI.net ✓')
         } else {
-          console.warn(`[screenshot] ScreenshotAPI.net ignorado: HTML minificado (${htmlMinSize}b) excede limite de URL`)
+          const errText = await imgRes.text()
+          console.error('[screenshot] ScreenshotAPI.net não-imagem:', imgRes.status, errText.slice(0, 300))
         }
-      } catch (e: any) {
-        console.error('[screenshot] ScreenshotAPI.net exception:', e.message)
+      } else {
+        const errText = await imgRes.text()
+        console.error('[screenshot] ScreenshotAPI.net erro HTTP:', imgRes.status, errText.slice(0, 300))
       }
-    } else {
-      console.warn('[screenshot] SCREENSHOTAPI_TOKEN não configurada')
+    } catch (e: any) {
+      console.error('[screenshot] ScreenshotAPI.net exception:', e.message)
     }
 
-    // ── 3º: hcti (fallback final — pode estar esgotado) ───────────────────
-    const hctiUser = process.env.HCTI_USER_ID
-    const hctiKey  = process.env.HCTI_API_KEY
+    // ── Limpa arquivo temporário do storage (fire-and-forget) ─────────────
+    supabase.storage
+      .from('html-temp')
+      .remove([filePath])
+      .then(() => console.log(`[screenshot] HTML temporário removido: ${filePath}`))
+      .catch((e: any) => console.warn('[screenshot] Falha ao remover HTML temp:', e.message))
 
-    if (hctiUser && hctiKey) {
-      try {
-        const res = await fetch('https://hcti.io/v1/image', {
-          method:  'POST',
-          headers: {
-            'Content-Type':  'application/json',
-            'Authorization': 'Basic ' + Buffer.from(`${hctiUser}:${hctiKey}`).toString('base64'),
-          },
-          body: JSON.stringify({ html, viewport_width: 1080, viewport_height: 1080, ms_delay: 800 }),
-        })
-
-        if (res.ok) {
-          const data   = await res.json()
-          const imgUrl = data.url ?? ''
-          if (imgUrl) {
-            const imgRes2  = await fetch(imgUrl)
-            const buffer2  = await imgRes2.arrayBuffer()
-            const base64_2 = Buffer.from(buffer2).toString('base64')
-            console.log('[screenshot] hcti ✓')
-            return NextResponse.json({ url: `data:image/png;base64,${base64_2}` })
-          }
-        }
-        const err = await res.text().catch(() => '')
-        console.error('[screenshot] hcti erro:', res.status, err.slice(0, 100))
-      } catch (e: any) {
-        console.error('[screenshot] hcti exception:', e.message)
-      }
+    if (!imagemBase64) {
+      return NextResponse.json({ erro: 'Nenhum serviço de screenshot disponível' }, { status: 500 })
     }
 
-    console.error('[screenshot] Todos os serviços falharam')
-    return NextResponse.json({ erro: 'Nenhum serviço de screenshot disponível' }, { status: 500 })
+    return NextResponse.json({ url: `data:image/png;base64,${imagemBase64}` })
 
   } catch (err: any) {
     console.error('[screenshot] erro geral:', err.message)
