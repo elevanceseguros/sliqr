@@ -1,4 +1,4 @@
-// ─── SLIQR Motor HTML v7 — Layout calculado, testado localmente ──────────────
+// ─── SLIQR Motor HTML v8 — Posicionamento absoluto, sem truncamento ───────────
 
 const ICONS: Record<string, string> = {
   'shield':       '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
@@ -41,41 +41,42 @@ function drk(h: string, f = 0.4): string {
   return '#' + [1,3,5].map(i => Math.round(parseInt(h.slice(i,i+2)||'88',16)*f).toString(16).padStart(2,'0')).join('')
 }
 
-/**
- * Calcula fsT e cardH de forma que o layout caiba exatamente no container.
- * Itera do maxFs para baixo até encontrar um tamanho onde tudo cabe.
- * Fator 0.68 calibrado para Inter/Montserrat Bold uppercase com letter-spacing:-2px.
- */
-function calcLayout(titulo: string, txtW: number, nItens: number, maxFs: number, CONTENT: number) {
-  const PADDING_TOP = 32
-  const MARGIN_BOTTOM = 20
-  const LINE_HEIGHT = 1.15
+// Calcula altura real que o título vai ocupar (nLinhas * fsT * lineHeight + marginBottom)
+function calcTituloH(titulo: string, txtW: number, fsT: number): number {
   const FATOR = 0.68
-  const MIN_CARD_H = 75
-
-  for (let fsT = maxFs; fsT >= 36; fsT -= 2) {
-    const charsPerLine = txtW / (fsT * FATOR)
-    const nLinhas = Math.ceil((titulo.length || 1) / charsPerLine)
-    const altTitulo = fsT * LINE_HEIGHT * nLinhas + MARGIN_BOTTOM
-    const espacoItens = CONTENT - PADDING_TOP - altTitulo
-    const cardH = Math.floor(espacoItens / nItens)
-    if (cardH >= MIN_CARD_H) {
-      return { fsT, cardH, nLinhas }
-    }
-  }
-  return { fsT: 36, cardH: MIN_CARD_H, nLinhas: 1 }
+  const charsPerLine = txtW / (fsT * FATOR)
+  const nLinhas = Math.ceil((titulo.length || 1) / charsPerLine)
+  return Math.ceil(fsT * 1.15 * nLinhas) + 24
 }
 
-/**
- * Para slides sem itens (capa, topico, cta): font-size simples.
- * Fator 0.68 uppercase, 0.52 texto normal.
- */
+// Encontra o maior fsT tal que cardH >= minCardH para nItens itens
+function calcLayout(titulo: string, txtW: number, nItens: number, maxFs: number, tituloTop: number): {
+  fsT: number, cardH: number, itensTop: number
+} {
+  const FOOTER_TOP = 940  // 1080 - 140
+  const MIN_CARD_H = 72
+
+  for (let fsT = maxFs; fsT >= 36; fsT -= 2) {
+    const tH       = calcTituloH(titulo, txtW, fsT)
+    const itensTop = tituloTop + tH
+    const cardH    = Math.floor((FOOTER_TOP - itensTop) / nItens)
+    if (cardH >= MIN_CARD_H) {
+      return { fsT, cardH, itensTop }
+    }
+  }
+  const fsT      = 36
+  const tH       = calcTituloH(titulo, txtW, fsT)
+  const itensTop = tituloTop + tH
+  const cardH    = Math.floor((FOOTER_TOP - itensTop) / nItens)
+  return { fsT, cardH: Math.max(cardH, MIN_CARD_H), itensTop }
+}
+
+// Font-size para textos sem itens (capa, topico, cta)
 function fsTitulo(titulo: string, txtW: number, maxFs: number, maxLinhas = 3, upper = true): number {
-  const len = titulo.length || 1
   const fator = upper ? 0.68 : 0.52
   for (let fs = maxFs; fs >= 36; fs -= 2) {
     const charsPerLine = txtW / (fs * fator)
-    const nLinhas = Math.ceil(len / charsPerLine)
+    const nLinhas = Math.ceil((titulo.length || 1) / charsPerLine)
     if (nLinhas <= maxLinhas) return fs
   }
   return 36
@@ -112,11 +113,11 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   const PAD    = 72
   const HEADER = 80
   const FOOTER = 140
-  const CONTENT = 1080 - HEADER - FOOTER  // 860px
-  const W       = 1080 - PAD * 2          // 936px
 
   const temFoto      = !!fotoUrl
-  const bgStyle      = temFoto
+  const W            = 1080 - PAD * 2  // 936
+
+  const bgStyle = temFoto
     ? `background:${drk(cor, 0.50)};`
     : isMin
     ? `background:${cor};`
@@ -163,8 +164,11 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   const rightV = hasLat ? 'auto' : `${PAD}px`
   const widthV = hasLat ? `${txtW}px` : 'auto'
 
-  // Container base: top:HEADER, bottom:FOOTER (sem height fixo)
-  const containerBase = `position:absolute;top:${HEADER}px;bottom:${FOOTER}px;left:${PAD}px;right:${rightV};width:${widthV};z-index:4;box-sizing:border-box;overflow:hidden;`
+  // Top absoluto do título: logo abaixo do header
+  const TITULO_TOP = HEADER + 32
+
+  // Estilo base para elementos posicionados absolutamente na área de texto
+  const absBase = `position:absolute;left:${PAD}px;right:${rightV};width:${widthV};box-sizing:border-box;z-index:4;`
 
   let body = ''
   const tipo = slide.tipo
@@ -175,9 +179,11 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const subtit = slide.subtitulo ?? ''
     const fsT    = fsTitulo(titulo, W, 108, 3)
     const fsS    = fsTitulo(subtit, W, 40, 3, false)
+    const CONTENT_TOP    = HEADER
+    const CONTENT_BOTTOM = FOOTER
 
     body = `
-    <div style="${containerBase}display:flex;flex-direction:column;justify-content:center;gap:28px;padding:0 0 0 0;">
+    <div style="position:absolute;top:${CONTENT_TOP}px;bottom:${CONTENT_BOTTOM}px;left:${PAD}px;right:${PAD}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>
       ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:${fsS}px;font-weight:400;color:${sub};line-height:1.55;">${subtit}</div>` : ''}
     </div>`
@@ -188,23 +194,24 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const titulo = slide.titulo ?? ''
     const itens  = (slide.itens ?? []).slice(0, 3)
     const n      = itens.length || 1
-    const { fsT, cardH } = calcLayout(titulo, txtW, n, 80, CONTENT)
-    const fsL    = Math.max(26, Math.min(34, Math.floor(cardH * 0.33)))
+    const { fsT, cardH, itensTop } = calcLayout(titulo, txtW, n, 80, TITULO_TOP)
+    const fsL = Math.max(24, Math.min(32, Math.floor(cardH * 0.30)))
 
-    const cards = itens.map((item: any, i: number) => `
-      <div style="display:flex;align-items:center;gap:28px;height:${cardH}px;border-bottom:${i < n-1 ? '1px solid rgba(255,255,255,0.10)' : 'none'};">
+    const tituloDiv = `<div style="${absBase}top:${TITULO_TOP}px;font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>`
+
+    const cards = itens.map((item: any, i: number) => {
+      const top    = itensTop + i * cardH
+      const border = i < n-1 ? '1px solid rgba(255,255,255,0.10)' : 'none'
+      return `<div style="${absBase}top:${top}px;min-height:${cardH}px;display:flex;align-items:center;gap:28px;border-bottom:${border};">
         <div style="width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${ico(item.icone ?? 'star', 36, icCor, 1.6)}
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsL}px;font-weight:700;color:${txt};line-height:1.2;flex:1;">${item.label ?? ''}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsL}px;font-weight:700;color:${txt};line-height:1.3;flex:1;">${item.label ?? ''}</span>
         <span style="font-family:'${fn}',sans-serif;font-size:18px;font-weight:600;color:rgba(255,255,255,0.22);flex-shrink:0;">${String(i+1).padStart(2,'0')}</span>
-      </div>`).join('')
+      </div>`
+    }).join('')
 
-    body = `
-    <div style="${containerBase}display:flex;flex-direction:column;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-top:32px;margin-bottom:20px;flex-shrink:0;">${titulo}</div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${cards}</div>
-    </div>`
+    body = tituloDiv + cards
   }
 
   // ── TÓPICO ────────────────────────────────────────────────────────────────
@@ -212,15 +219,17 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const titulo = slide.titulo ?? ''
     const corpo  = slide.corpo ?? ''
     const fsT    = fsTitulo(titulo, txtW, 80, 3)
-    const fsC    = fsTitulo(corpo, txtW, 38, 5, false)
+    const fsC    = fsTitulo(corpo, txtW, 38, 6, false)
+    const CONTENT_TOP    = HEADER
+    const CONTENT_BOTTOM = FOOTER
 
     body = isMin ? `
-    <div style="${containerBase}display:flex;flex-direction:column;justify-content:center;gap:28px;">
+    <div style="position:absolute;top:${CONTENT_TOP}px;bottom:${CONTENT_BOTTOM}px;left:${PAD}px;right:${PAD}px;display:flex;flex-direction:column;justify-content:center;gap:28px;z-index:4;">
       <div style="width:4px;height:60px;background:rgba(255,255,255,0.45);border-radius:2px;flex-shrink:0;"></div>
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>
       <div style="font-family:'${fn}',sans-serif;font-size:${fsC}px;font-weight:400;color:${sub};line-height:1.6;">${corpo}</div>
     </div>` : `
-    <div style="${containerBase}display:flex;flex-direction:column;justify-content:center;gap:22px;">
+    <div style="position:absolute;top:${CONTENT_TOP}px;bottom:${CONTENT_BOTTOM}px;left:${PAD}px;right:${rightV};width:${widthV};display:flex;flex-direction:column;justify-content:center;gap:22px;z-index:4;box-sizing:border-box;">
       <div style="width:80px;height:80px;border-radius:20px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         ${ico(slide.icon_nome ?? 'star', 44, icCor)}
       </div>
@@ -235,22 +244,23 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const titulo = slide.titulo ?? ''
     const itens  = (slide.itens ?? []).slice(0, 5)
     const n      = itens.length || 1
-    const { fsT, cardH } = calcLayout(titulo, txtW, n, 76, CONTENT)
-    const fsI    = Math.max(24, Math.min(36, Math.floor(cardH * 0.33)))
+    const { fsT, cardH, itensTop } = calcLayout(titulo, txtW, n, 76, TITULO_TOP)
+    const fsI = Math.max(22, Math.min(34, Math.floor(cardH * 0.30)))
 
-    const rows = itens.map((it: string, i: number) => `
-      <div style="display:flex;align-items:center;gap:28px;height:${cardH}px;border-bottom:1px solid rgba(255,255,255,0.10);">
+    const tituloDiv = `<div style="${absBase}top:${TITULO_TOP}px;font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>`
+
+    const rows = itens.map((it: string, i: number) => {
+      const top    = itensTop + i * cardH
+      const border = i < n-1 ? '1px solid rgba(255,255,255,0.10)' : 'none'
+      return `<div style="${absBase}top:${top}px;min-height:${cardH}px;display:flex;align-items:center;gap:28px;border-bottom:${border};">
         <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <span style="font-family:'${fn}',sans-serif;font-size:20px;font-weight:700;color:rgba(255,255,255,0.90);">${i+1}</span>
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.2;flex:1;">${it}</span>
-      </div>`).join('')
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsI}px;font-weight:500;color:${txt};line-height:1.3;flex:1;">${it}</span>
+      </div>`
+    }).join('')
 
-    body = `
-    <div style="${containerBase}display:flex;flex-direction:column;">
-      <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;margin-top:32px;margin-bottom:20px;flex-shrink:0;">${titulo}</div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;">${rows}</div>
-    </div>`
+    body = tituloDiv + rows
   }
 
   // ── CTA ───────────────────────────────────────────────────────────────────
@@ -259,9 +269,11 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const subtit = slide.subtitulo ?? ''
     const fsT    = fsTitulo(titulo, W, 108, 3)
     const fsS    = fsTitulo(subtit, W, 38, 2, false)
+    const CONTENT_TOP    = HEADER
+    const CONTENT_BOTTOM = FOOTER
 
     body = `
-    <div style="${containerBase}display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:32px;">
+    <div style="position:absolute;top:${CONTENT_TOP}px;bottom:${CONTENT_BOTTOM}px;left:${PAD}px;right:${PAD}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:32px;z-index:4;">
       <div style="font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-3px;text-transform:uppercase;">${titulo}</div>
       ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:${fsS}px;font-weight:400;color:${sub};line-height:1.55;">${subtit}</div>` : ''}
       <div style="display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.32);border-radius:999px;padding:22px 60px;margin-top:8px;">
