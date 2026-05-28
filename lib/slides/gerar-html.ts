@@ -43,7 +43,7 @@ function drk(h: string, f = 0.4): string {
 
 // Calcula altura real que o título vai ocupar (nLinhas * fsT * lineHeight + marginBottom)
 function calcTituloH(titulo: string, txtW: number, fsT: number): number {
-  const FATOR = 0.68
+  const FATOR = 0.78
   const charsPerLine = txtW / (fsT * FATOR)
   const nLinhas = Math.ceil((titulo.length || 1) / charsPerLine)
   return Math.ceil(fsT * 1.15 * nLinhas) + 24
@@ -73,7 +73,7 @@ function calcLayout(titulo: string, txtW: number, nItens: number, maxFs: number,
 
 // Font-size para textos sem itens (capa, topico, cta)
 function fsTitulo(titulo: string, txtW: number, maxFs: number, maxLinhas = 3, upper = true): number {
-  const fator = upper ? 0.68 : 0.52
+  const fator = upper ? 0.78 : 0.56
   for (let fs = maxFs; fs >= 36; fs -= 2) {
     const charsPerLine = txtW / (fs * fator)
     const nLinhas = Math.ceil((titulo.length || 1) / charsPerLine)

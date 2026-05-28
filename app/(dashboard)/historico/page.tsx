@@ -32,11 +32,11 @@ export default function HistoricoPage() {
   }, [])
 
   if (!pronto) return (
-    <div style={{ padding:'2.5rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', fontSize:'0.8rem' }}>carregando...</div>
+    <div style={{ padding:'clamp(1rem,4vw,2.5rem)', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', fontSize:'0.8rem' }}>carregando...</div>
   )
 
   return (
-    <div style={{ padding:'2.5rem', maxWidth:'800px' }}>
+    <div style={{ padding:'clamp(1rem,4vw,2.5rem)', maxWidth:'800px', width:'100%', boxSizing:'border-box' as const }}>
       <div style={{ marginBottom:'2.5rem' }}>
         <h1 style={{ fontSize:'1.75rem', fontWeight:700, letterSpacing:'-0.03em', marginBottom:'0.4rem' }}>Histórico</h1>
         <p style={{ color:'#8B95A8', fontSize:'0.9rem' }}>Todos os posts que você criou.</p>
@@ -56,7 +56,7 @@ export default function HistoricoPage() {
             const qtd  = Array.isArray(c.slides) ? c.slides.length : 0
             const data = new Date(c.criado_em).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })
             return (
-              <div key={c.id} style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'12px', padding:'1.25rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'center', gap:'1rem' }}>
+              <div key={c.id} style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'12px', padding:'1.25rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:'1rem', flexWrap:'wrap' as const }}>
                 <div>
                   <p style={{ fontWeight:600, fontSize:'0.95rem', marginBottom:'4px' }}>{c.tema}</p>
                   <div style={{ display:'flex', gap:'12px' }}>
