@@ -49,26 +49,36 @@ function calcTituloH(titulo: string, txtW: number, fsT: number): number {
   return Math.ceil(fsT * 1.15 * nLinhas) + 24
 }
 
-// Encontra o maior fsT tal que cardH >= minCardH para nItens itens
-function calcLayout(titulo: string, txtW: number, nItens: number, maxFs: number, tituloTop: number): {
-  fsT: number, cardH: number, itensTop: number
+// Calcula o layout ótimo para título + itens
+// Itera fsT e fsI até encontrar combinação onde todos os itens cabem
+function calcLayout(titulo: string, txtW: number, nItens: number, maxFs: number, tituloTop: number, itensTextos: string[] = []): {
+  fsT: number, cardH: number, itensTop: number, fsI: number
 } {
-  const FOOTER_TOP = 940  // 1080 - 140
-  const MIN_CARD_H = 72
+  const FOOTER_TOP = 940
+  const MIN_CARD_H = 60
+  const spanW      = txtW - 80
+  const maxItemLen = itensTextos.length > 0 ? Math.max(...itensTextos.map(s => s.length)) : 30
 
   for (let fsT = maxFs; fsT >= 36; fsT -= 2) {
     const tH       = calcTituloH(titulo, txtW, fsT)
     const itensTop = tituloTop + tH
-    const cardH    = Math.floor((FOOTER_TOP - itensTop) / nItens)
-    if (cardH >= MIN_CARD_H) {
-      return { fsT, cardH, itensTop }
+    const espacoTotal = FOOTER_TOP - itensTop
+    const cardH    = Math.floor(espacoTotal / nItens)
+    if (cardH < MIN_CARD_H) continue
+
+    // Encontrar fsI que caiba nos itens
+    for (let fsI = 32; fsI >= 18; fsI -= 1) {
+      const charsPerLine = spanW / (fsI * 0.56)
+      const nLinhas      = Math.ceil(maxItemLen / charsPerLine)
+      const altNecessaria = Math.ceil(fsI * 1.3 * nLinhas) + 16
+      if (cardH >= altNecessaria) {
+        return { fsT, cardH, itensTop, fsI }
+      }
     }
   }
-  const fsT      = 36
-  const tH       = calcTituloH(titulo, txtW, fsT)
-  const itensTop = tituloTop + tH
-  const cardH    = Math.floor((FOOTER_TOP - itensTop) / nItens)
-  return { fsT, cardH: Math.max(cardH, MIN_CARD_H), itensTop }
+  const fsT = 36
+  const tH  = calcTituloH(titulo, txtW, fsT)
+  return { fsT, cardH: MIN_CARD_H, itensTop: tituloTop + tH, fsI: 20 }
 }
 
 // Font-size para textos sem itens (capa, topico, cta)
@@ -196,8 +206,9 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const titulo = slide.titulo ?? ''
     const itens  = (slide.itens ?? []).slice(0, 3)
     const n      = itens.length || 1
-    const { fsT, cardH, itensTop } = calcLayout(titulo, txtW, n, 80, TITULO_TOP)
-    const fsL = Math.max(24, Math.min(32, Math.floor(cardH * 0.30)))
+    const itensTxt = itens.map((item: any) => item.label ?? '')
+    const { fsT, cardH, itensTop, fsI: fsIcalc } = calcLayout(titulo, txtW, n, 80, TITULO_TOP, itensTxt)
+    const fsL = fsIcalc
 
     const tituloDiv = `<div style="${absBase}top:${TITULO_TOP}px;font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>`
 
@@ -246,8 +257,8 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
     const titulo = slide.titulo ?? ''
     const itens  = (slide.itens ?? []).slice(0, 5)
     const n      = itens.length || 1
-    const { fsT, cardH, itensTop } = calcLayout(titulo, txtW, n, 76, TITULO_TOP)
-    const fsI = Math.max(22, Math.min(34, Math.floor(cardH * 0.30)))
+    const { fsT, cardH, itensTop, fsI: fsIcalc } = calcLayout(titulo, txtW, n, 76, TITULO_TOP, itens)
+    const fsI = fsIcalc
 
     const tituloDiv = `<div style="${absBase}top:${TITULO_TOP}px;font-family:'${fn}',sans-serif;font-size:${fsT}px;font-weight:${fw};line-height:1.15;color:${txt};letter-spacing:-2px;text-transform:uppercase;">${titulo}</div>`
 
