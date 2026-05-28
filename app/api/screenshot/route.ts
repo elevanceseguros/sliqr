@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const maxDuration = 30
+export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,57 +21,41 @@ export async function POST(request: NextRequest) {
       html = html.replace(/<\/div>\s*<\/body>/, `  ${tag}\n</div>\n</body>`)
     }
 
-    const cfToken     = process.env.CLOUDFLARE_API_TOKEN
-    const cfAccountId = process.env.CLOUDFLARE_ACCOUNT_ID
+    const workerUrl    = process.env.CLOUDFLARE_WORKER_URL
+    const workerSecret = process.env.CLOUDFLARE_WORKER_SECRET
 
-    if (!cfToken || !cfAccountId) {
-      console.error('[screenshot] Cloudflare env vars não configuradas')
+    if (!workerUrl || !workerSecret) {
+      console.error('[screenshot] CLOUDFLARE_WORKER_URL ou CLOUDFLARE_WORKER_SECRET não configuradas')
       return NextResponse.json({ erro: 'Serviço de screenshot não configurado' }, { status: 500 })
     }
 
-    // ── Cloudflare Browser Rendering ──────────────────────────────────────
+    // ── Cloudflare Worker (Browser Rendering) ─────────────────────────────
     try {
-      const res = await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${cfAccountId}/browser-rendering/screenshot`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${cfToken}`,
-            'Content-Type':  'application/json',
-          },
-          body: JSON.stringify({
-            html,
-            viewport: { width: 1080, height: 1080 },
-            screenshotOptions: {
-              type:     'png',
-              clip:     { x: 0, y: 0, width: 1080, height: 1080 },
-              fullPage: false,
-            },
-            gotoOptions: { waitUntil: 'networkidle2' },
-          }),
-        }
-      )
+      const res = await fetch(workerUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${workerSecret}`,
+        },
+        body: JSON.stringify({ html }),
+      })
 
       if (res.ok) {
-        const ct = res.headers.get('content-type') ?? ''
-        if (ct.includes('image')) {
-          const buffer = await res.arrayBuffer()
-          const base64 = Buffer.from(buffer).toString('base64')
-          console.log('[screenshot] Cloudflare Browser Rendering ✓')
-          return NextResponse.json({ url: `data:image/png;base64,${base64}` })
+        const data = await res.json() as any
+        if (data.url) {
+          console.log('[screenshot] Cloudflare Worker ✓')
+          return NextResponse.json({ url: data.url })
         }
-        const errText = await res.text()
-        console.error('[screenshot] Cloudflare resposta não-imagem:', res.status, errText.slice(0, 300))
+        console.error('[screenshot] Worker sem url na resposta:', JSON.stringify(data).slice(0, 200))
       } else {
         const errText = await res.text()
-        console.error('[screenshot] Cloudflare erro HTTP:', res.status, errText.slice(0, 300))
-        // Propaga 429 para o frontend fazer retry com backoff
+        console.error('[screenshot] Worker erro HTTP:', res.status, errText.slice(0, 300))
         if (res.status === 429) {
           return NextResponse.json({ erro: 'Rate limit' }, { status: 429 })
         }
       }
     } catch (e: any) {
-      console.error('[screenshot] Cloudflare exception:', e.message)
+      console.error('[screenshot] Worker exception:', e.message)
     }
 
     return NextResponse.json({ erro: 'Nenhum serviço de screenshot disponível' }, { status: 500 })
