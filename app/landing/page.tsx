@@ -295,9 +295,9 @@ export default function LandingPage() {
           Sliqr
         </div>
         <div style={{display:'flex',gap:'1.5rem',flexWrap:'wrap'}}>
-          {['Privacidade','Termos de uso','Contato'].map(l => (
-            <a key={l} href="#" style={{color:'#4A5568',textDecoration:'none',fontSize:'0.8rem'}}>{l}</a>
-          ))}
+          <a href="/privacidade" style={{color:'#4A5568',textDecoration:'none',fontSize:'0.8rem'}}>Privacidade</a>
+          <a href="/termos" style={{color:'#4A5568',textDecoration:'none',fontSize:'0.8rem'}}>Termos de uso</a>
+          <a href="mailto:contato@sliqr.com.br" style={{color:'#4A5568',textDecoration:'none',fontSize:'0.8rem'}}>Contato</a>
         </div>
         <p style={{fontSize:'0.75rem',color:'#4A5568',fontFamily:'JetBrains Mono,monospace'}}>© 2025 Sliqr</p>
       </footer>
