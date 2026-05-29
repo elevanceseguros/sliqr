@@ -487,10 +487,10 @@ function CriarInner() {
               </button>
             ))}
             {maxSlides < 10 && (
-              <div style={{ display:'flex', alignItems:'center', gap:'6px', padding:'0 12px', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.05)', background:'#0D1117', height:'52px' }}>
+              <a href="/planos" style={{ display:'flex', alignItems:'center', gap:'6px', padding:'0 12px', borderRadius:'12px', border:'1px solid rgba(45,111,255,0.2)', background:'rgba(45,111,255,0.06)', height:'52px', textDecoration:'none' }}>
                 <span style={{ fontSize:'0.72rem', color:'#4A5568' }}>até 10 no</span>
-                <a href="/planos" style={{ fontSize:'0.72rem', color:'#2D6FFF', textDecoration:'none', fontWeight:600 }}>Pro ↗</a>
-              </div>
+                <span style={{ fontSize:'0.72rem', color:'#2D6FFF', fontWeight:600 }}>Pro</span>
+              </a>
             )}
           </div>
         </div>

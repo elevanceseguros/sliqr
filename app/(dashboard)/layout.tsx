@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Zap, Clock, LogOut, Building2, Lightbulb, Menu, X, CreditCard } from 'lucide-react'
+import { Zap, Clock, LogOut, Building2, Lightbulb, Menu, X, CreditCard, ArrowUpRight } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { PlanoContext, LIMITES } from '@/lib/plano-context'
 
@@ -105,7 +105,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           )}
           {plano !== 'ilimitado' && (
             <Link href="/planos" style={{ display:'block', marginTop:'4px', background: plano === 'free' ? '#2D6FFF' : 'transparent', color: plano === 'free' ? '#fff' : '#4A5568', textAlign:'center', borderRadius:'6px', padding:'5px', fontSize:'0.75rem', fontWeight:600, textDecoration:'none', border: plano !== 'free' ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
-              {plano === 'free' ? 'Fazer upgrade ↗' : 'Ver planos ↗'}
+              <span style={{ display:'flex', alignItems:'center', gap:'5px', justifyContent:'center' }}>
+                {plano === 'free' ? 'Fazer upgrade' : 'Ver planos'}
+                <ArrowUpRight size={12}/>
+              </span>
             </Link>
           )}
         </div>
@@ -143,10 +146,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           Sliqr
         </div>
-        <button onClick={() => setMenuOpen(p => !p)}
-          style={{ background:'transparent', border:'none', color:'#F0F4FF', cursor:'pointer', padding:'8px', display:'flex', alignItems:'center' }}>
-          {menuOpen ? <X size={22}/> : <Menu size={22}/>}
-        </button>
+        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+          {/* Pill de plano visível no mobile */}
+          <Link href="/planos" style={{ display:'flex', alignItems:'center', gap:'6px', background:'#111827', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'100px', padding:'4px 10px', textDecoration:'none' }}>
+            <span style={{ fontSize:'0.65rem', fontWeight:700, color: planoCores[plano] ?? '#4A5568', textTransform:'uppercase', letterSpacing:'0.06em' }}>{plano}</span>
+            {limites.maxPosts < 999 && (
+              <span style={{ fontSize:'0.65rem', color: postsHoje >= limites.maxPosts ? '#FC8181' : '#4A5568', fontFamily:'JetBrains Mono,monospace' }}>
+                {postsHoje}/{limites.maxPosts}
+              </span>
+            )}
+          </Link>
+          <button onClick={() => setMenuOpen(p => !p)}
+            style={{ background:'transparent', border:'none', color:'#F0F4FF', cursor:'pointer', padding:'8px', display:'flex', alignItems:'center' }}>
+            {menuOpen ? <X size={22}/> : <Menu size={22}/>}
+          </button>
+        </div>
       </header>
 
       {/* Overlay mobile */}
