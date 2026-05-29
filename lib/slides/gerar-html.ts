@@ -54,9 +54,9 @@ function calcTituloH(titulo: string, txtW: number, fsT: number): number {
 function calcLayout(titulo: string, txtW: number, nItens: number, maxFs: number, tituloTop: number, itensTextos: string[] = []): {
   fsT: number, cardH: number, itensTop: number, fsI: number
 } {
-  const FOOTER_TOP = 940
-  const MIN_CARD_H = 60
-  const spanW      = txtW - 80
+  const FOOTER_TOP = 928  // margem extra para não vazar no footer
+  const MIN_CARD_H = 64
+  const spanW      = txtW - 100  // 76px círculo+gap + 24px folga
   const maxItemLen = itensTextos.length > 0 ? Math.max(...itensTextos.map(s => s.length)) : 30
 
   for (let fsT = maxFs; fsT >= 36; fsT -= 2) {
@@ -66,11 +66,11 @@ function calcLayout(titulo: string, txtW: number, nItens: number, maxFs: number,
     const cardH    = Math.floor(espacoTotal / nItens)
     if (cardH < MIN_CARD_H) continue
 
-    // Encontrar fsI que caiba nos itens
-    for (let fsI = 32; fsI >= 18; fsI -= 1) {
+    // Encontrar fsI que caiba nos itens com margem conservadora
+    for (let fsI = 32; fsI >= 16; fsI -= 1) {
       const charsPerLine = spanW / (fsI * 0.56)
       const nLinhas      = Math.ceil(maxItemLen / charsPerLine)
-      const altNecessaria = Math.ceil(fsI * 1.3 * nLinhas) + 16
+      const altNecessaria = Math.ceil(fsI * 1.45 * nLinhas) + 20
       if (cardH >= altNecessaria) {
         return { fsT, cardH, itensTop, fsI }
       }
@@ -78,7 +78,7 @@ function calcLayout(titulo: string, txtW: number, nItens: number, maxFs: number,
   }
   const fsT = 36
   const tH  = calcTituloH(titulo, txtW, fsT)
-  return { fsT, cardH: MIN_CARD_H, itensTop: tituloTop + tH, fsI: 20 }
+  return { fsT, cardH: MIN_CARD_H, itensTop: tituloTop + tH, fsI: 16 }
 }
 
 // Font-size para textos sem itens (capa, topico, cta)

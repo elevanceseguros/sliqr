@@ -298,6 +298,8 @@ function CriarInner() {
             tema: prompt,
             tom: 'geral',
             slides: slidesGerados,
+            legenda: dataL.legenda ?? '',
+            cfg: { cor, fonte, estilo: cfg.estilo },
           })
         }
       } catch (e) {
@@ -401,6 +403,11 @@ function CriarInner() {
         zip.file(`slide_${String(i + 1).padStart(2, '0')}.png`, b64, { base64: true })
       }
 
+      // Adicionar legenda como arquivo de texto UTF-8
+      if (legenda) {
+        zip.file('legenda.txt', legenda, { binary: false })
+      }
+
       setBaixandoPct(85)
 
       const blob = await zip.generateAsync(
@@ -502,6 +509,9 @@ function CriarInner() {
                 style={{ position:'absolute', inset:0, width:'100%', height:'100%', opacity:0, cursor:'pointer', padding:0, border:'none' }}
               />
             </label>
+            {!CORES.includes(cor) && (
+              <span style={{ fontSize:'0.72rem', color:'#8B95A8', fontFamily:'JetBrains Mono, monospace', background:'#111827', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'6px', padding:'3px 8px', letterSpacing:'0.05em' }}>{cor.toUpperCase()}</span>
+            )}
           </div>
         </div>
 
@@ -565,27 +575,32 @@ function CriarInner() {
           </button>
 
           {cfg.logoUrl && (
-            <div style={{ marginTop:'10px', display:'flex', alignItems:'center', gap:'12px' }}>
-              <span style={{ fontSize:'0.75rem', color:'#4A5568' }}>Tamanho:</span>
+            <>
+              <div style={{ marginTop:'10px', display:'flex', alignItems:'center', gap:'12px' }}>
+                <span style={{ fontSize:'0.75rem', color:'#4A5568' }}>Tamanho:</span>
 
-              <input
-                type="range"
-                min={60}
-                max={480}
-                value={cfg.logoW ?? 210}
-                onChange={e => setCfg(p => ({ ...p, logoW:Number(e.target.value) }))}
-                style={{ flex:1, maxWidth:'220px', accentColor:cor }}
-              />
+                <input
+                  type="range"
+                  min={60}
+                  max={480}
+                  value={cfg.logoW ?? 210}
+                  onChange={e => setCfg(p => ({ ...p, logoW:Number(e.target.value) }))}
+                  style={{ flex:1, maxWidth:'220px', accentColor:cor }}
+                />
 
-              <span style={{ fontSize:'0.75rem', color:'#4A5568', minWidth:'46px' }}>{cfg.logoW ?? 210}px</span>
+                <span style={{ fontSize:'0.75rem', color:'#4A5568', minWidth:'46px' }}>{cfg.logoW ?? 210}px</span>
 
-              <button
-                onClick={() => setCfg(p => ({ ...p, logoUrl:'' }))}
-                style={{ background:'transparent', border:'none', color:'#4A5568', fontSize:'0.75rem', cursor:'pointer' }}
-              >
-                Remover
-              </button>
-            </div>
+                <button
+                  onClick={() => setCfg(p => ({ ...p, logoUrl:'' }))}
+                  style={{ background:'transparent', border:'none', color:'#4A5568', fontSize:'0.75rem', cursor:'pointer' }}
+                >
+                  Remover
+                </button>
+              </div>
+              <p style={{ fontSize:'0.7rem', color:'#4A5568', marginTop:'6px' }}>
+                A logo aparece no preview e é aplicada ao baixar os slides.
+              </p>
+            </>
           )}
         </div>
 

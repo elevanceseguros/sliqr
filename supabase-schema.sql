@@ -60,3 +60,9 @@ create policy "Usuário acessa próprios carrosséis"
 -- Index para busca por usuário
 create index if not exists carrosseis_usuario_id_idx on public.carrosseis(usuario_id);
 create index if not exists carrosseis_criado_em_idx  on public.carrosseis(criado_em desc);
+
+-- ── Migração: adicionar legenda e cfg aos carrosséis ────────────────────────
+-- Executar no SQL Editor do Supabase caso as colunas não existam ainda
+alter table public.carrosseis
+  add column if not exists legenda text,
+  add column if not exists cfg     jsonb;
