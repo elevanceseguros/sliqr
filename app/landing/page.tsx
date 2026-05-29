@@ -196,7 +196,7 @@ export default function LandingPage() {
           <span style={{fontSize:'0.85rem',color: anual ? '#F0F4FF' : '#4A5568',fontWeight: anual ? 600 : 400}}>Anual</span>
           {anual && (
             <span style={{background:'rgba(5,150,105,0.15)',border:'1px solid rgba(5,150,105,0.4)',color:'#34D399',fontSize:'0.7rem',fontWeight:700,padding:'2px 10px',borderRadius:'100px',letterSpacing:'0.04em'}}>
-              25% OFF · em até 12x no cartão
+              25% OFF · cobrança anual
             </span>
           )}
         </div>
@@ -219,7 +219,7 @@ export default function LandingPage() {
                     <div style={{fontSize:'0.78rem',color:'#4A5568'}}>/mês</div>
                   </div>
                   <div style={{fontSize:'0.75rem',color:'#34D399',marginBottom:'1.5rem',marginTop:'4px'}}>
-                    R${precoAnual(p.preco)}/ano · 12x no cartão
+                    R${precoAnual(p.preco)}/ano · cobrado anualmente
                   </div>
                 </>
               ) : (
@@ -248,8 +248,11 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/cadastro" style={{display:'block',width:'100%',padding:'0.75rem',borderRadius:'8px',textAlign:'center',fontWeight:600,fontSize:'0.875rem',textDecoration:'none',background: p.featured ? '#2D6FFF' : 'transparent',color: p.featured ? '#fff' : '#8B95A8',border: p.featured ? 'none' : '1px solid rgba(255,255,255,0.1)'}}>
-                {p.preco === 0 ? 'Começar grátis' : `Assinar ${p.nome}`}
+              <Link
+                href={p.preco === 0 ? '/cadastro' : `/cadastro?plano=${p.nome.toLowerCase()}&periodo=${anual ? 'anual' : 'mensal'}`}
+                style={{display:'block',width:'100%',padding:'0.75rem',borderRadius:'8px',textAlign:'center',fontWeight:600,fontSize:'0.875rem',textDecoration:'none',background: p.featured ? '#2D6FFF' : 'transparent',color: p.featured ? '#fff' : '#8B95A8',border: p.featured ? 'none' : '1px solid rgba(255,255,255,0.1)'}}
+              >
+                {p.preco === 0 ? 'Começar grátis' : `Assinar ${p.nome}${anual ? ' Anual' : ''}`}
               </Link>
             </div>
           ))}

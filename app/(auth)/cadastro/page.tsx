@@ -1,21 +1,42 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 export default function CadastroPage() {
-  const supabase  = createClient()
+  const supabase      = createClient()
+  const searchParams  = useSearchParams()
+  const planoParam    = searchParams.get('plano')    // ex: "pro"
+  const periodoParam  = searchParams.get('periodo')  // "mensal" | "anual"
+
   const [email, setEmail]     = useState('')
   const [senha, setSenha]     = useState('')
   const [nome, setNome]       = useState('')
   const [erro, setErro]       = useState('')
   const [loading, setLoading] = useState(false)
 
+  async function irParaCheckout() {
+    if (!planoParam) return false
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ plano: planoParam, periodo: periodoParam ?? 'mensal' }),
+      })
+      const data = await res.json()
+      if (data.url) { window.location.href = data.url; return true }
+    } catch {}
+    return false
+  }
+
   async function loginGoogle() {
+    const redirectTo = window.location.origin + '/auth/callback' +
+      (planoParam ? `?plano=${planoParam}&periodo=${periodoParam ?? 'mensal'}` : '')
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + '/auth/callback' },
+      options: { redirectTo },
     })
   }
 
@@ -24,7 +45,6 @@ export default function CadastroPage() {
     setErro('')
     setLoading(true)
 
-    // 1. Cadastra
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password: senha,
@@ -37,7 +57,6 @@ export default function CadastroPage() {
       return
     }
 
-    // 2. Faz login imediato (sem precisar confirmar email)
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password: senha,
@@ -49,8 +68,9 @@ export default function CadastroPage() {
       return
     }
 
-    // 3. Redireciona
-    window.location.href = '/criar'
+    // Se veio de um plano pago, redireciona pro checkout
+    const foiParaCheckout = await irParaCheckout()
+    if (!foiParaCheckout) window.location.href = '/criar'
   }
 
   return (
@@ -59,56 +79,81 @@ export default function CadastroPage() {
         <div style={{ textAlign:'center', marginBottom:'2.5rem' }}>
           <div style={{ display:'inline-flex', alignItems:'center', gap:'10px', marginBottom:'0.5rem' }}>
             <div style={{ width:'32px', height:'32px', background:'#2D6FFF', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <svg width="18" height="18" viewBox="0 0 16 16" fill="white"><rect x="2" y="3" width="5" height="10" rx="1.5"/><rect x="9" y="3" width="5" height="6" rx="1.5"/></svg>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="white"><rect x="2" y="3" width="5" height="10" rx="1.5"/><rect x="9" y="3" width="5" height="6" rx="1.5"/></svg>
             </div>
-            <span style={{ fontSize:'1.5rem', fontWeight:800, letterSpacing:'-0.04em' }}>Sliqr</span>
+            <span style={{ fontWeight:800, fontSize:'1.4rem', letterSpacing:'-0.04em' }}>Sliqr</span>
           </div>
-          <p style={{ color:'#8B95A8', fontSize:'0.9rem' }}>Crie sua conta grátis</p>
+          <h1 style={{ fontSize:'1.5rem', fontWeight:700, letterSpacing:'-0.03em', marginBottom:'0.3rem' }}>
+            {planoParam ? `Criar conta e assinar ${planoParam}` : 'Criar sua conta'}
+          </h1>
+          <p style={{ color:'#8B95A8', fontSize:'0.875rem' }}>
+            {planoParam
+              ? `Você será redirecionado para o pagamento após o cadastro.`
+              : 'Comece grátis, sem cartão de crédito.'}
+          </p>
         </div>
 
-        <div style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'20px', padding:'2rem' }}>
-          <button onClick={loginGoogle}
-            style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', background:'#111827', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.8rem', color:'#F0F4FF', fontSize:'0.9rem', fontWeight:500, cursor:'pointer', fontFamily:'Sora, sans-serif', marginBottom:'1.5rem' }}>
-            <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
-            Cadastrar com Google
+        {planoParam && (
+          <div style={{ background:'rgba(45,111,255,0.08)', border:'1px solid rgba(45,111,255,0.25)', borderRadius:'10px', padding:'0.75rem 1rem', marginBottom:'1.5rem', fontSize:'0.82rem', color:'#6B9FFF', display:'flex', gap:'8px', alignItems:'center' }}>
+            <span>✦</span>
+            <span>Plano <strong>{planoParam.charAt(0).toUpperCase() + planoParam.slice(1)}</strong> {periodoParam === 'anual' ? '· Anual (25% OFF)' : '· Mensal'} selecionado</span>
+          </div>
+        )}
+
+        <button
+          onClick={loginGoogle}
+          style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.75rem', color:'#F0F4FF', fontSize:'0.875rem', fontWeight:500, cursor:'pointer', marginBottom:'1.25rem' }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continuar com Google
+        </button>
+
+        <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'1.25rem' }}>
+          <div style={{ flex:1, height:'1px', background:'rgba(255,255,255,0.07)' }}/>
+          <span style={{ fontSize:'0.75rem', color:'#4A5568' }}>ou</span>
+          <div style={{ flex:1, height:'1px', background:'rgba(255,255,255,0.07)' }}/>
+        </div>
+
+        <form onSubmit={cadastrar} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+          <input
+            type="text"
+            placeholder="Seu nome"
+            value={nome}
+            onChange={e => setNome(e.target.value)}
+            required
+            style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.75rem 1rem', color:'#F0F4FF', fontSize:'0.875rem', outline:'none', width:'100%' }}
+          />
+          <input
+            type="email"
+            placeholder="Seu email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.75rem 1rem', color:'#F0F4FF', fontSize:'0.875rem', outline:'none', width:'100%' }}
+          />
+          <input
+            type="password"
+            placeholder="Crie uma senha"
+            value={senha}
+            onChange={e => setSenha(e.target.value)}
+            required
+            style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.75rem 1rem', color:'#F0F4FF', fontSize:'0.875rem', outline:'none', width:'100%' }}
+          />
+          {erro && <p style={{ color:'#FC8181', fontSize:'0.8rem' }}>{erro}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            style={{ background:'#2D6FFF', color:'#fff', border:'none', borderRadius:'10px', padding:'0.85rem', fontWeight:600, fontSize:'0.9rem', cursor:'pointer', opacity: loading ? 0.7 : 1 }}
+          >
+            {loading ? 'Criando conta...' : planoParam ? 'Criar conta e ir para pagamento' : 'Criar conta grátis'}
           </button>
+        </form>
 
-          <div style={{ display:'flex', alignItems:'center', gap:'1rem', marginBottom:'1.5rem' }}>
-            <div style={{ flex:1, height:'1px', background:'rgba(255,255,255,0.07)' }}/>
-            <span style={{ color:'#4A5568', fontSize:'0.75rem', fontFamily:'JetBrains Mono, monospace' }}>ou</span>
-            <div style={{ flex:1, height:'1px', background:'rgba(255,255,255,0.07)' }}/>
-          </div>
-
-          <form onSubmit={cadastrar} style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
-            <div>
-              <label style={{ display:'block', fontSize:'0.78rem', color:'#8B95A8', marginBottom:'6px', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.06em', textTransform:'uppercase' }}>Nome</label>
-              <input type="text" value={nome} onChange={e => setNome(e.target.value)} required
-                style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'8px', padding:'0.7rem 1rem', color:'#F0F4FF', fontSize:'0.9rem', fontFamily:'Sora, sans-serif', outline:'none' }}
-                placeholder="Seu nome" />
-            </div>
-            <div>
-              <label style={{ display:'block', fontSize:'0.78rem', color:'#8B95A8', marginBottom:'6px', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.06em', textTransform:'uppercase' }}>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-                style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'8px', padding:'0.7rem 1rem', color:'#F0F4FF', fontSize:'0.9rem', fontFamily:'Sora, sans-serif', outline:'none' }}
-                placeholder="seu@email.com" />
-            </div>
-            <div>
-              <label style={{ display:'block', fontSize:'0.78rem', color:'#8B95A8', marginBottom:'6px', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.06em', textTransform:'uppercase' }}>Senha</label>
-              <input type="password" value={senha} onChange={e => setSenha(e.target.value)} required minLength={6}
-                style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'8px', padding:'0.7rem 1rem', color:'#F0F4FF', fontSize:'0.9rem', fontFamily:'Sora, sans-serif', outline:'none' }}
-                placeholder="Mínimo 6 caracteres" />
-            </div>
-            {erro && <p style={{ color:'#FC8181', fontSize:'0.82rem', margin:0 }}>{erro}</p>}
-            <button type="submit" disabled={loading}
-              style={{ background:'#2D6FFF', color:'#fff', border:'none', borderRadius:'8px', padding:'0.8rem', fontFamily:'Sora, sans-serif', fontWeight:600, fontSize:'0.9rem', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
-              {loading ? 'Criando conta...' : 'Criar conta grátis'}
-            </button>
-          </form>
-        </div>
-
-        <p style={{ textAlign:'center', marginTop:'1.5rem', color:'#4A5568', fontSize:'0.85rem' }}>
+        <p style={{ textAlign:'center', marginTop:'1.25rem', fontSize:'0.8rem', color:'#4A5568' }}>
           Já tem conta?{' '}
-          <Link href="/login" style={{ color:'#2D6FFF', textDecoration:'none', fontWeight:500 }}>Entrar</Link>
+          <Link href={`/login${planoParam ? `?plano=${planoParam}&periodo=${periodoParam ?? 'mensal'}` : ''}`} style={{ color:'#2D6FFF', textDecoration:'none' }}>
+            Entrar
+          </Link>
         </p>
       </div>
     </div>

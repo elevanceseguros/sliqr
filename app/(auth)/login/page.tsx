@@ -1,15 +1,34 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 export default function LoginPage() {
-  const supabase = createClient()
+  const supabase     = createClient()
+  const searchParams = useSearchParams()
+  const planoParam   = searchParams.get('plano')
+  const periodoParam = searchParams.get('periodo')
+
   const [email, setEmail]           = useState('')
   const [senha, setSenha]           = useState('')
   const [erro, setErro]             = useState('')
   const [carregando, setCarregando] = useState(false)
+
+  async function irParaCheckout() {
+    if (!planoParam) return false
+    try {
+      const res  = await fetch('/api/stripe/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ plano: planoParam, periodo: periodoParam ?? 'mensal' }),
+      })
+      const data = await res.json()
+      if (data.url) { window.location.href = data.url; return true }
+    } catch {}
+    return false
+  }
 
   async function loginGoogle() {
     setCarregando(true)
@@ -41,7 +60,8 @@ export default function LoginPage() {
           refresh_token: data.session.refresh_token,
         }),
       })
-      window.location.href = '/criar'
+      const foiParaCheckout = await irParaCheckout()
+    if (!foiParaCheckout) window.location.href = '/criar'
     }
   }
 

@@ -11,11 +11,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ erro: 'Não autorizado' }, { status: 401 })
     }
 
-    const { plano } = await request.json() as { plano: keyof typeof PLANOS }
+    const { plano, periodo } = await request.json() as {
+      plano:   keyof typeof PLANOS
+      periodo: 'mensal' | 'anual'
+    }
+
     const config = PLANOS[plano]
     if (!config) {
       return NextResponse.json({ erro: 'Plano inválido' }, { status: 400 })
     }
+
+    const priceId = periodo === 'anual' ? config.priceIdAnual : config.priceId
 
     const { data: perfil } = await supabase
       .from('perfis')
@@ -30,11 +36,11 @@ export async function POST(request: NextRequest) {
       customer_email:       perfil?.stripe_id ? undefined : user.email,
       mode:                 'subscription',
       payment_method_types: ['card'],
-      line_items: [{ price: config.priceId, quantity: 1 }],
-      success_url: `${appUrl}/criar?upgrade=sucesso`,
-      cancel_url:  `${appUrl}/criar?upgrade=cancelado`,
-      metadata:    { usuario_id: user.id, plano },
-      locale:      'pt-BR',
+      line_items:           [{ price: priceId, quantity: 1 }],
+      success_url:          `${appUrl}/criar?upgrade=sucesso`,
+      cancel_url:           `${appUrl}/criar?upgrade=cancelado`,
+      metadata:             { usuario_id: user.id, plano, periodo },
+      locale:               'pt-BR',
     })
 
     return NextResponse.json({ url: session.url })
