@@ -27,7 +27,10 @@ function CriarInner() {
   const [session, setSession] = useState<any>(null)
   const [prompt, setPrompt] = useState('')
   const [nomeEmpresa, setNomeEmpresa] = useState('')
-  const [qtd, setQtd] = useState(5)
+  const [qtd, setQtdRaw] = useState(5)
+  const setQtd = (n: number) => setQtdRaw(Math.min(n, maxSlides))
+  // Ajusta qtd se o plano limitar abaixo do valor atual
+  useEffect(() => { setQtdRaw(q => Math.min(q, maxSlides)) }, [maxSlides])
   const [cor, setCor] = useState('#2D6FFF')
   const [fonte, setFonte] = useState('inter')
   const [usarIA, setUsarIA] = useState(true)
@@ -488,8 +491,12 @@ function CriarInner() {
             ))}
             {maxSlides < 10 && (
               <a href="/planos" style={{ display:'flex', alignItems:'center', gap:'6px', padding:'0 12px', borderRadius:'12px', border:'1px solid rgba(45,111,255,0.2)', background:'rgba(45,111,255,0.06)', height:'52px', textDecoration:'none' }}>
-                <span style={{ fontSize:'0.72rem', color:'#4A5568' }}>até 10 no</span>
-                <span style={{ fontSize:'0.72rem', color:'#2D6FFF', fontWeight:600 }}>Pro</span>
+                <span style={{ fontSize:'0.72rem', color:'#4A5568' }}>
+                  {plano === 'free' ? 'até 5 no' : 'até 10 no'}
+                </span>
+                <span style={{ fontSize:'0.72rem', color:'#2D6FFF', fontWeight:600 }}>
+                  {plano === 'free' ? 'Starter' : 'Pro'}
+                </span>
               </a>
             )}
           </div>

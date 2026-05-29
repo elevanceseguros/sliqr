@@ -10,7 +10,7 @@ export default function LandingPage() {
   const planos = [
     {
       nome:'Free', preco:0, features:[
-        '1 post por dia','Até 4 slides','Download ZIP','Legenda com hashtags',
+        '1 post por dia','1 slide por post','Download ZIP','Legenda com hashtags',
       ], off:['Sem logo própria','Histórico de posts'], featured:false
     },
     {
