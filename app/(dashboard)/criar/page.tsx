@@ -452,7 +452,7 @@ function CriarInner() {
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
-            placeholder="Ex: 5 benefícios da proteção veicular&#10;Ex: Por que fazer manipulados na Pharmapenha&#10;Ex: Como escolher o plano de saúde ideal"
+            placeholder="Ex: 5 dicas para vender mais no Instagram&#10;Ex: Por que todo negócio precisa de um plano de saúde&#10;Ex: Como economizar na conta de luz todo mês"
             rows={3}
             style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'12px', padding:'1rem', color:'#F0F4FF', fontSize:'0.95rem', outline:'none', resize:'vertical', lineHeight:1.6, boxSizing:'border-box', fontFamily:'inherit' }}
           />
@@ -464,7 +464,7 @@ function CriarInner() {
           <input
             value={nomeEmpresa}
             onChange={e => setNomeEmpresa(e.target.value)}
-            placeholder="Ex: Bendito Hortelã, Elevance Seguros, Dr. Carlos..."
+            placeholder="Ex: Studio Ana Lima, Clínica Bem Estar, Ateliê da Mari..."
             style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'12px', padding:'0.8rem 1rem', color:'#F0F4FF', fontSize:'0.9rem', outline:'none', boxSizing:'border-box' as const, fontFamily:'inherit' }}
           />
         </div>
@@ -497,21 +497,31 @@ function CriarInner() {
               <button
                 key={c}
                 onClick={() => setCor(c)}
-                style={{ width:'32px', height:'32px', borderRadius:'50%', background:c, border:cor===c ? '3px solid #fff' : '3px solid transparent', cursor:'pointer', transform:cor===c ? 'scale(1.2)' : 'scale(1)', flexShrink:0 }}
+                style={{ width:'28px', height:'28px', borderRadius:'50%', background:c, border:cor===c ? '3px solid #fff' : '3px solid transparent', cursor:'pointer', transform:cor===c ? 'scale(1.2)' : 'scale(1)', flexShrink:0 }}
               />
             ))}
-
-            <label style={{ position:'relative', width:'32px', height:'32px', borderRadius:'50%', background:'conic-gradient(red,yellow,lime,cyan,blue,magenta,red)', border:!CORES.includes(cor) ? '3px solid #fff' : '2px solid rgba(255,255,255,0.2)', cursor:'pointer', flexShrink:0, transform:!CORES.includes(cor) ? 'scale(1.2)' : 'scale(1)', display:'block', overflow:'hidden' }} title="Cor personalizada">
+            <div style={{ display:'flex', alignItems:'center', gap:'6px', background:'#111827', border:`1px solid ${!CORES.includes(cor) ? cor : 'rgba(255,255,255,0.1)'}`, borderRadius:'8px', padding:'4px 8px', transition:'border-color 0.2s' }}>
               <input
                 type="color"
                 value={cor}
                 onChange={e => setCor(e.target.value)}
-                style={{ position:'absolute', inset:0, width:'100%', height:'100%', opacity:0, cursor:'pointer', padding:0, border:'none' }}
+                style={{ width:'20px', height:'20px', border:'none', background:'transparent', cursor:'pointer', padding:0, borderRadius:'4px' }}
+                title="Escolher cor"
               />
-            </label>
-            {!CORES.includes(cor) && (
-              <span style={{ fontSize:'0.72rem', color:'#8B95A8', fontFamily:'JetBrains Mono, monospace', background:'#111827', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'6px', padding:'3px 8px', letterSpacing:'0.05em' }}>{cor.toUpperCase()}</span>
-            )}
+              <input
+                type="text"
+                value={cor.toUpperCase()}
+                onChange={e => {
+                  const v = e.target.value
+                  if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) setCor(v.toLowerCase())
+                }}
+                onBlur={e => {
+                  if (!/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) setCor('#2D6FFF')
+                }}
+                maxLength={7}
+                style={{ fontFamily:'JetBrains Mono,monospace', fontSize:'0.72rem', color:'#C0C8D8', background:'transparent', border:'none', outline:'none', width:'62px', letterSpacing:'0.05em' }}
+              />
+            </div>
           </div>
         </div>
 

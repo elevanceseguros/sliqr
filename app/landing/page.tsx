@@ -1,6 +1,48 @@
+'use client'
 import Link from 'next/link'
+import { useState } from 'react'
 
 export default function LandingPage() {
+  const [anual, setAnual] = useState(false)
+
+  const desc = 0.25 // 25% de desconto no anual
+
+  const planos = [
+    {
+      nome:'Free', preco:0, features:[
+        '1 post por dia','Até 4 slides','Download ZIP','Legenda com hashtags'
+      ], off:['Sem edição de texto','Com marca d\'água','Sem logo própria'], featured:false
+    },
+    {
+      nome:'Starter', preco:37, features:[
+        '1 post por dia','Até 5 slides','Download ZIP','Legenda com hashtags',
+        'Edite antes de baixar','Sem marca d\'água'
+      ], off:['Sem logo própria'], featured:false
+    },
+    {
+      nome:'Pro', preco:77, features:[
+        '2 posts por dia','Até 10 slides','Download ZIP','Legenda com hashtags',
+        'Edite antes de baixar','Sem marca d\'água','Logo da sua empresa'
+      ], off:[], featured:true
+    },
+    {
+      nome:'Ilimitado', preco:147, features:[
+        'Posts sem limite','Até 10 slides','Download ZIP','Legenda com hashtags',
+        'Edite antes de baixar','Sem marca d\'água','Logo da sua empresa'
+      ], off:[], featured:false
+    },
+  ]
+
+  function precoMes(base: number) {
+    if (base === 0) return 'R$0'
+    if (anual) return `R$${Math.round(base * (1 - desc))}`
+    return `R$${base}`
+  }
+
+  function precoAnual(base: number) {
+    return Math.round(base * (1 - desc)) * 12
+  }
+
   return (
     <>
       <style>{`
@@ -16,7 +58,6 @@ export default function LandingPage() {
         .fade3{animation:fadeUp 0.6s 0.2s ease both}
         .fade4{animation:fadeUp 0.6s 0.3s ease both}
         .fade5{animation:fadeUp 0.6s 0.4s ease both}
-
         @media (max-width: 768px) {
           .nav-links { display: none !important; }
           .hero-section { padding: 100px 5% 60px !important; }
@@ -58,7 +99,7 @@ export default function LandingPage() {
             <div style={{width:'20px',height:'20px',background:'rgba(45,111,255,0.12)',border:'1px solid rgba(45,111,255,0.35)',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center'}}>
               <span style={{width:'6px',height:'6px',background:'#2D6FFF',borderRadius:'50%',display:'block',animation:'blink 2s ease-in-out infinite'}}/>
             </div>
-            <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.72rem',color:'#6B9FFF',letterSpacing:'0.06em',textTransform:'uppercase'}}>Crie posts para o Instagram em segundos</span>
+            <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.72rem',color:'#6B9FFF',letterSpacing:'0.06em',textTransform:'uppercase'}}>Carrosséis para Instagram com IA — sem designer</span>
           </div>
 
           <h1 className="fade2" style={{fontSize:'clamp(3rem,7.5vw,5.8rem)',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1.0,marginBottom:'1.5rem'}}>
@@ -66,8 +107,8 @@ export default function LandingPage() {
             <span style={{background:'linear-gradient(90deg,#2D6FFF,#00D4FF)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>A Sliqr cria o post.</span>
           </h1>
 
-          <p className="fade3" style={{fontSize:'clamp(1rem,1.8vw,1.15rem)',color:'#8B95A8',fontWeight:300,lineHeight:1.75,maxWidth:'520px',margin:'0 auto 2.5rem'}}>
-            Sem precisar de designer, sem complicação. Digite o assunto do seu negócio e receba um carrossel completo, pronto para publicar.
+          <p className="fade3" style={{fontSize:'clamp(1rem,1.8vw,1.15rem)',color:'#8B95A8',fontWeight:300,lineHeight:1.75,maxWidth:'540px',margin:'0 auto 2.5rem'}}>
+            Sem designer, sem Canva, sem espera. Em menos de 1 minuto você tem um carrossel completo com imagens, texto e legenda — pronto para publicar.
           </p>
 
           <div className="fade4" style={{display:'flex',gap:'12px',justifyContent:'center',flexWrap:'wrap'}}>
@@ -78,6 +119,10 @@ export default function LandingPage() {
               Ver como funciona
             </a>
           </div>
+
+          <p className="fade5" style={{marginTop:'1.5rem',fontFamily:'JetBrains Mono,monospace',fontSize:'0.68rem',color:'#4A5568',letterSpacing:'0.06em'}}>
+            // GRÁTIS PARA COMEÇAR · SEM CARTÃO · SEM CONFIGURAÇÃO
+          </p>
         </div>
       </section>
 
@@ -91,9 +136,9 @@ export default function LandingPage() {
         </h2>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:'1px',background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'24px',overflow:'hidden'}}>
           {[
-            {n:'01',t:'Digite o tema do seu negócio',p:'Qualquer assunto, qualquer área. Seguro, saúde, alimentação, imóveis — a Sliqr entende o contexto e cria o conteúdo certo para o seu público.'},
-            {n:'02',t:'Escolha como você quer soar',p:'Quer vender, ensinar, criar urgência ou inspirar? Com um clique, o texto de cada slide muda de estilo — e já sai pronto para publicar.'},
-            {n:'03',t:'Ajuste e baixe as imagens',p:'Edite o texto, troque a ordem. Depois é só baixar os slides separados ou todos de uma vez e publicar no Instagram.'},
+            {n:'01',t:'Digite o tema do seu negócio',p:'Qualquer assunto, qualquer área. Seguro, saúde, beleza, alimentação — a Sliqr entende o contexto e cria o conteúdo certo para o seu público.'},
+            {n:'02',t:'Escolha a cor, a fonte e o estilo',p:'Personalize em segundos com a paleta de cores da sua marca. O carrossel já sai com imagens geradas por IA e legenda com hashtags incluída.'},
+            {n:'03',t:'Baixe e publique no Instagram',p:'Download do ZIP com todos os slides prontos e o arquivo de legenda. Só copiar, colar e postar. Sem etapas extras.'},
           ].map(s => (
             <div key={s.n} style={{background:'#0D1117',padding:'2.5rem 2rem'}}>
               <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.65rem',letterSpacing:'0.1em',color:'#4A5568',marginBottom:'1.25rem'}}>PASSO {s.n}</div>
@@ -104,26 +149,86 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* O QUE FAZ */}
+      <section id="o-que-faz" className="section-pad" style={{padding:'7rem 5%',borderTop:'1px solid rgba(255,255,255,0.07)'}}>
+        <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.7rem',letterSpacing:'0.1em',textTransform:'uppercase',color:'#2D6FFF',marginBottom:'1rem',display:'flex',alignItems:'center',gap:'8px'}}>
+          <span style={{width:'20px',height:'1px',background:'#2D6FFF',display:'block'}}/>Para quem é
+        </div>
+        <h2 style={{fontSize:'clamp(2rem,3.5vw,2.8rem)',fontWeight:700,letterSpacing:'-0.03em',lineHeight:1.1,marginBottom:'3rem'}}>
+          Para todo negócio que precisa<br/><span style={{background:'linear-gradient(90deg,#2D6FFF,#00D4FF)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>postar mais e melhor.</span>
+        </h2>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px'}}>
+          {[
+            {icone:'🛡️',titulo:'Corretores de seguros',desc:'Eduque clientes sobre coberturas, prevenção e benefícios sem depender de agência.'},
+            {icone:'🥗',titulo:'Nutricionistas',desc:'Compartilhe dicas, cardápios e transformações que atraem novos pacientes.'},
+            {icone:'💊',titulo:'Farmácias de manipulação',desc:'Explique fórmulas, ingredientes e diferenciais que constroem confiança.'},
+            {icone:'🏠',titulo:'Corretores de imóveis',desc:'Mostre lançamentos, tendências e dicas para quem quer comprar ou investir.'},
+            {icone:'✂️',titulo:'Estúdios e ateliês',desc:'Apresente portfólio, processos e resultados que vendem sem precisar explicar.'},
+            {icone:'📦',titulo:'Qualquer pequeno negócio',desc:'Se você tem algo pra contar, a Sliqr transforma em post profissional.'},
+          ].map(c => (
+            <div key={c.titulo} style={{background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'16px',padding:'1.5rem'}}>
+              <div style={{fontSize:'1.5rem',marginBottom:'0.75rem'}}>{c.icone}</div>
+              <h3 style={{fontSize:'0.9rem',fontWeight:600,marginBottom:'0.4rem',letterSpacing:'-0.01em'}}>{c.titulo}</h3>
+              <p style={{fontSize:'0.8rem',color:'#8B95A8',lineHeight:1.6,fontWeight:300}}>{c.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* PLANOS */}
       <section id="planos" className="section-pad" style={{padding:'7rem 5%',borderTop:'1px solid rgba(255,255,255,0.07)'}}>
         <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.7rem',letterSpacing:'0.1em',textTransform:'uppercase',color:'#2D6FFF',marginBottom:'1rem',display:'flex',alignItems:'center',gap:'8px'}}>
           <span style={{width:'20px',height:'1px',background:'#2D6FFF',display:'block'}}/>Planos
         </div>
-        <h2 style={{fontSize:'clamp(2rem,3.5vw,2.8rem)',fontWeight:700,letterSpacing:'-0.03em',lineHeight:1.1,marginBottom:'4rem'}}>
+        <h2 style={{fontSize:'clamp(2rem,3.5vw,2.8rem)',fontWeight:700,letterSpacing:'-0.03em',lineHeight:1.1,marginBottom:'2rem'}}>
           Comece grátis.<br/><span style={{background:'linear-gradient(90deg,#2D6FFF,#00D4FF)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>Pague só quando quiser mais.</span>
         </h2>
+
+        {/* Toggle mensal/anual */}
+        <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'3rem'}}>
+          <span style={{fontSize:'0.85rem',color: !anual ? '#F0F4FF' : '#4A5568',fontWeight: !anual ? 600 : 400}}>Mensal</span>
+          <button
+            onClick={() => setAnual(a => !a)}
+            style={{width:'44px',height:'24px',borderRadius:'100px',background: anual ? '#2D6FFF' : '#1A2235',border:'none',cursor:'pointer',position:'relative',transition:'background 0.2s',flexShrink:0}}
+          >
+            <span style={{position:'absolute',top:'3px',left: anual ? '22px' : '3px',width:'18px',height:'18px',background:'#fff',borderRadius:'50%',transition:'left 0.2s',display:'block'}}/>
+          </button>
+          <span style={{fontSize:'0.85rem',color: anual ? '#F0F4FF' : '#4A5568',fontWeight: anual ? 600 : 400}}>Anual</span>
+          {anual && (
+            <span style={{background:'rgba(5,150,105,0.15)',border:'1px solid rgba(5,150,105,0.4)',color:'#34D399',fontSize:'0.7rem',fontWeight:700,padding:'2px 10px',borderRadius:'100px',letterSpacing:'0.04em'}}>
+              25% OFF · em até 12x no cartão
+            </span>
+          )}
+        </div>
+
         <div className="planos-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'16px',alignItems:'start'}}>
-          {[
-            {nome:'Free',preco:'R$0',periodo:'para sempre',features:['1 post por dia','1 slide por post','Baixar pacote'],off:['Sem edição','Com marca d\'água'],featured:false},
-            {nome:'Starter',preco:'R$37',periodo:'/mês',features:['1 post por dia','Até 5 slides','Baixar separado ou ZIP','Edite antes de baixar','Sem marca d\'água'],off:['Sem logo própria'],featured:false},
-            {nome:'Pro',preco:'R$77',periodo:'/mês',features:['2 posts por dia','Até 10 slides','Baixar separado ou ZIP','Edite antes de baixar','Sem marca d\'água','Com logo da empresa'],off:[],featured:true},
-            {nome:'Ilimitado',preco:'R$147',periodo:'/mês',features:['Posts sem limite','Até 10 slides','Baixar separado ou ZIP','Edite antes de baixar','Sem marca d\'água','Com logo da empresa'],off:[],featured:false},
-          ].map(p => (
+          {planos.map(p => (
             <div key={p.nome} style={{background: p.featured ? 'linear-gradient(145deg,#0D1829,#0A1422)' : '#0D1117',border: p.featured ? '1px solid rgba(45,111,255,0.4)' : '1px solid rgba(255,255,255,0.07)',borderRadius:'24px',padding:'2rem',boxShadow: p.featured ? '0 0 0 1px rgba(45,111,255,0.1),0 20px 50px rgba(45,111,255,0.12)' : 'none',position:'relative'}}>
               {p.featured && <div style={{position:'absolute',top:'-12px',left:'50%',transform:'translateX(-50%)',background:'#2D6FFF',color:'#fff',fontSize:'0.65rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',padding:'3px 12px',borderRadius:'100px',whiteSpace:'nowrap'}}>Mais popular</div>}
               <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.75rem',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',color:'#8B95A8',marginBottom:'1.5rem'}}>{p.nome}</div>
-              <div style={{fontSize:'2.75rem',fontWeight:700,letterSpacing:'-0.04em',lineHeight:1,marginBottom:'0.3rem'}}>{p.preco}</div>
-              <div style={{fontSize:'0.78rem',color:'#4A5568',marginBottom:'1.5rem'}}>{p.periodo}</div>
+
+              {p.preco === 0 ? (
+                <>
+                  <div style={{fontSize:'2.75rem',fontWeight:700,letterSpacing:'-0.04em',lineHeight:1,marginBottom:'0.3rem'}}>R$0</div>
+                  <div style={{fontSize:'0.78rem',color:'#4A5568',marginBottom:'1.5rem'}}>para sempre</div>
+                </>
+              ) : anual ? (
+                <>
+                  <div style={{display:'flex',alignItems:'baseline',gap:'8px'}}>
+                    <div style={{fontSize:'2.75rem',fontWeight:700,letterSpacing:'-0.04em',lineHeight:1}}>{precoMes(p.preco)}</div>
+                    <div style={{fontSize:'0.78rem',color:'#4A5568'}}>/mês</div>
+                  </div>
+                  <div style={{fontSize:'0.75rem',color:'#34D399',marginBottom:'1.5rem',marginTop:'4px'}}>
+                    R${precoAnual(p.preco)}/ano · 12x no cartão
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{fontSize:'2.75rem',fontWeight:700,letterSpacing:'-0.04em',lineHeight:1,marginBottom:'0.3rem'}}>R${p.preco}</div>
+                  <div style={{fontSize:'0.78rem',color:'#4A5568',marginBottom:'1.5rem'}}>/mês</div>
+                </>
+              )}
+
               <div style={{height:'1px',background:'rgba(255,255,255,0.07)',marginBottom:'1.5rem'}}/>
               <ul style={{listStyle:'none',display:'flex',flexDirection:'column',gap:'10px',marginBottom:'2rem'}}>
                 {p.features.map(f => (
@@ -144,7 +249,7 @@ export default function LandingPage() {
                 ))}
               </ul>
               <Link href="/cadastro" style={{display:'block',width:'100%',padding:'0.75rem',borderRadius:'8px',textAlign:'center',fontWeight:600,fontSize:'0.875rem',textDecoration:'none',background: p.featured ? '#2D6FFF' : 'transparent',color: p.featured ? '#fff' : '#8B95A8',border: p.featured ? 'none' : '1px solid rgba(255,255,255,0.1)'}}>
-                {p.nome === 'Free' ? 'Começar grátis' : `Assinar ${p.nome}`}
+                {p.preco === 0 ? 'Começar grátis' : `Assinar ${p.nome}`}
               </Link>
             </div>
           ))}
