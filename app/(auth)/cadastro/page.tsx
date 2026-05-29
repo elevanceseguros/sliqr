@@ -1,16 +1,15 @@
 'use client'
 import { Suspense } from 'react'
-
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 function CadastroForm() {
-  const supabase      = createClient()
-  const searchParams  = useSearchParams()
-  const planoParam    = searchParams.get('plano')    // ex: "pro"
-  const periodoParam  = searchParams.get('periodo')  // "mensal" | "anual"
+  const supabase     = createClient()
+  const searchParams = useSearchParams()
+  const planoParam   = searchParams.get('plano')
+  const periodoParam = searchParams.get('periodo') ?? 'mensal'
 
   const [email, setEmail]     = useState('')
   const [senha, setSenha]     = useState('')
@@ -18,26 +17,16 @@ function CadastroForm() {
   const [erro, setErro]       = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function irParaCheckout() {
-    if (!planoParam) return false
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ plano: planoParam, periodo: periodoParam ?? 'mensal' }),
-      })
-      const data = await res.json()
-      if (data.url) { window.location.href = data.url; return true }
-    } catch {}
-    return false
+  // Destino após login: se tem plano, vai para /checkout-redirect, senão /criar
+  function destino() {
+    if (planoParam) return `/checkout-redirect?plano=${planoParam}&periodo=${periodoParam}`
+    return '/criar'
   }
 
   async function loginGoogle() {
-    const redirectTo = window.location.origin + '/auth/callback' +
-      (planoParam ? `?plano=${planoParam}&periodo=${periodoParam ?? 'mensal'}` : '')
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo },
+      options: { redirectTo: window.location.origin + '/auth/callback?next=' + encodeURIComponent(destino()) },
     })
   }
 
@@ -58,10 +47,7 @@ function CadastroForm() {
       return
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
-    })
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: senha })
 
     if (signInError) {
       setErro('Conta criada! Entre com seu email e senha.')
@@ -69,9 +55,7 @@ function CadastroForm() {
       return
     }
 
-    // Se veio de um plano pago, redireciona pro checkout
-    const foiParaCheckout = await irParaCheckout()
-    if (!foiParaCheckout) window.location.href = '/criar'
+    window.location.href = destino()
   }
 
   return (
@@ -88,9 +72,7 @@ function CadastroForm() {
             {planoParam ? `Criar conta e assinar ${planoParam}` : 'Criar sua conta'}
           </h1>
           <p style={{ color:'#8B95A8', fontSize:'0.875rem' }}>
-            {planoParam
-              ? `Você será redirecionado para o pagamento após o cadastro.`
-              : 'Comece grátis, sem cartão de crédito.'}
+            {planoParam ? 'Você será redirecionado para o pagamento após o cadastro.' : 'Comece grátis, sem cartão de crédito.'}
           </p>
         </div>
 
@@ -116,43 +98,22 @@ function CadastroForm() {
         </div>
 
         <form onSubmit={cadastrar} style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-          <input
-            type="text"
-            placeholder="Seu nome"
-            value={nome}
-            onChange={e => setNome(e.target.value)}
-            required
-            style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.75rem 1rem', color:'#F0F4FF', fontSize:'0.875rem', outline:'none', width:'100%' }}
-          />
-          <input
-            type="email"
-            placeholder="Seu email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.75rem 1rem', color:'#F0F4FF', fontSize:'0.875rem', outline:'none', width:'100%' }}
-          />
-          <input
-            type="password"
-            placeholder="Crie uma senha"
-            value={senha}
-            onChange={e => setSenha(e.target.value)}
-            required
-            style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.75rem 1rem', color:'#F0F4FF', fontSize:'0.875rem', outline:'none', width:'100%' }}
-          />
+          <input type="text" placeholder="Seu nome" value={nome} onChange={e => setNome(e.target.value)} required
+            style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.75rem 1rem', color:'#F0F4FF', fontSize:'0.875rem', outline:'none', width:'100%' }} />
+          <input type="email" placeholder="Seu email" value={email} onChange={e => setEmail(e.target.value)} required
+            style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.75rem 1rem', color:'#F0F4FF', fontSize:'0.875rem', outline:'none', width:'100%' }} />
+          <input type="password" placeholder="Crie uma senha" value={senha} onChange={e => setSenha(e.target.value)} required
+            style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'10px', padding:'0.75rem 1rem', color:'#F0F4FF', fontSize:'0.875rem', outline:'none', width:'100%' }} />
           {erro && <p style={{ color:'#FC8181', fontSize:'0.8rem' }}>{erro}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            style={{ background:'#2D6FFF', color:'#fff', border:'none', borderRadius:'10px', padding:'0.85rem', fontWeight:600, fontSize:'0.9rem', cursor:'pointer', opacity: loading ? 0.7 : 1 }}
-          >
+          <button type="submit" disabled={loading}
+            style={{ background:'#2D6FFF', color:'#fff', border:'none', borderRadius:'10px', padding:'0.85rem', fontWeight:600, fontSize:'0.9rem', cursor:'pointer', opacity: loading ? 0.7 : 1 }}>
             {loading ? 'Criando conta...' : planoParam ? 'Criar conta e ir para pagamento' : 'Criar conta grátis'}
           </button>
         </form>
 
         <p style={{ textAlign:'center', marginTop:'1.25rem', fontSize:'0.8rem', color:'#4A5568' }}>
           Já tem conta?{' '}
-          <Link href={`/login${planoParam ? `?plano=${planoParam}&periodo=${periodoParam ?? 'mensal'}` : ''}`} style={{ color:'#2D6FFF', textDecoration:'none' }}>
+          <Link href={`/login${planoParam ? `?plano=${planoParam}&periodo=${periodoParam}` : ''}`} style={{ color:'#2D6FFF', textDecoration:'none' }}>
             Entrar
           </Link>
         </p>

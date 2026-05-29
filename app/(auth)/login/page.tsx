@@ -17,25 +17,16 @@ function LoginForm() {
   const [erro, setErro]             = useState('')
   const [carregando, setCarregando] = useState(false)
 
-  async function irParaCheckout() {
-    if (!planoParam) return false
-    try {
-      const res  = await fetch('/api/stripe/checkout', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ plano: planoParam, periodo: periodoParam ?? 'mensal' }),
-      })
-      const data = await res.json()
-      if (data.url) { window.location.href = data.url; return true }
-    } catch {}
-    return false
+  function destino() {
+    if (planoParam) return `/checkout-redirect?plano=${planoParam}&periodo=${periodoParam ?? 'mensal'}`
+    return '/criar'
   }
 
   async function loginGoogle() {
     setCarregando(true)
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + '/auth/callback' },
+      options: { redirectTo: window.location.origin + '/auth/callback?next=' + encodeURIComponent(destino()) },
     })
   }
 
@@ -61,8 +52,7 @@ function LoginForm() {
           refresh_token: data.session.refresh_token,
         }),
       })
-      const foiParaCheckout = await irParaCheckout()
-    if (!foiParaCheckout) window.location.href = '/criar'
+      window.location.href = destino()
     }
   }
 
