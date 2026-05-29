@@ -620,7 +620,7 @@ function CriarInner() {
               </p>
             </>
           )}
-        </div>
+        </div>}
 
         {erro && <p style={{ color:'#FC8181', fontSize:'0.85rem', marginBottom:'1rem' }}>{erro}</p>}
 
