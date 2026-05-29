@@ -42,11 +42,13 @@ function drk(h: string, f = 0.4): string {
 }
 
 // Calcula altura real que o título vai ocupar (nLinhas * fsT * lineHeight + marginBottom)
+// FATOR 0.72 (conservador para uppercase com letras largas como Ú, Ó, D)
+// lineHeight 1.2 e marginBottom 28 para não subsumar o espaço real
 function calcTituloH(titulo: string, txtW: number, fsT: number): number {
-  const FATOR = 0.78
+  const FATOR = 0.72
   const charsPerLine = txtW / (fsT * FATOR)
   const nLinhas = Math.ceil((titulo.length || 1) / charsPerLine)
-  return Math.ceil(fsT * 1.15 * nLinhas) + 24
+  return Math.ceil(fsT * 1.2 * nLinhas) + 28
 }
 
 // Calcula o layout ótimo para título + itens
@@ -58,10 +60,12 @@ function calcLayout(titulo: string, txtW: number, nItens: number, maxFs: number,
   const MIN_CARD_H = 64
   const spanW      = txtW - 100  // 76px círculo+gap + 24px folga
   const maxItemLen = itensTextos.length > 0 ? Math.max(...itensTextos.map(s => s.length)) : 30
+  // maxFs adaptativo: títulos longos com muitos itens precisam de fonte menor
+  const maxFsAdapt = nItens >= 5 ? Math.min(maxFs, 56) : nItens >= 4 ? Math.min(maxFs, 64) : maxFs
 
-  for (let fsT = maxFs; fsT >= 36; fsT -= 2) {
+  for (let fsT = maxFsAdapt; fsT >= 36; fsT -= 2) {
     const tH       = calcTituloH(titulo, txtW, fsT)
-    const itensTop = tituloTop + tH
+    const itensTop = tituloTop + tH + 20  // buffer de 20px entre título e itens
     const espacoTotal = FOOTER_TOP - itensTop
     const cardH    = Math.floor(espacoTotal / nItens)
     if (cardH < MIN_CARD_H) continue
@@ -78,7 +82,7 @@ function calcLayout(titulo: string, txtW: number, nItens: number, maxFs: number,
   }
   const fsT = 36
   const tH  = calcTituloH(titulo, txtW, fsT)
-  return { fsT, cardH: MIN_CARD_H, itensTop: tituloTop + tH, fsI: 16 }
+  return { fsT, cardH: MIN_CARD_H, itensTop: tituloTop + tH + 20, fsI: 16 }
 }
 
 // Font-size para textos sem itens (capa, topico, cta)
