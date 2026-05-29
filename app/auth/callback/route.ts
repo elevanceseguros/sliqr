@@ -7,7 +7,6 @@ export async function GET(request: NextRequest) {
   const code       = searchParams.get('code')
   const token_hash = searchParams.get('token_hash')
   const type       = searchParams.get('type')
-  const next       = searchParams.get('next') ?? '/criar'
   const error      = searchParams.get('error')
 
   if (error) {
@@ -16,6 +15,11 @@ export async function GET(request: NextRequest) {
   }
 
   const cookieStore = cookies()
+
+  // Destino após login: cookie tem precedência, fallback /criar
+  const afterLoginCookie = cookieStore.get('sliqr_after_login')?.value
+  const next = afterLoginCookie ? decodeURIComponent(afterLoginCookie) : '/criar'
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -49,7 +53,10 @@ export async function GET(request: NextRequest) {
   if (code) {
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
     if (!exchangeError) {
-      return NextResponse.redirect(`${origin}${next}`)
+      // Limpar o cookie de destino
+      const response = NextResponse.redirect(`${origin}${next}`)
+      response.cookies.delete('sliqr_after_login')
+      return response
     }
     console.error('[auth/callback] exchangeCodeForSession error:', exchangeError)
   }

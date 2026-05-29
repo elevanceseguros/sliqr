@@ -24,9 +24,13 @@ function CadastroForm() {
   }
 
   async function loginGoogle() {
+    // Salva destino em cookie para o callback usar
+    if (planoParam) {
+      document.cookie = `sliqr_after_login=${encodeURIComponent(destino())};path=/;max-age=300;samesite=lax`
+    }
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + '/auth/callback?next=' + encodeURIComponent(destino()) },
+      options: { redirectTo: window.location.origin + '/auth/callback' },
     })
   }
 
