@@ -53,7 +53,7 @@ JSON puro sem markdown:
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 4000,
+    max_tokens: 6000,
     messages: [{ role: 'user', content: instrucao }],
   })
 
@@ -63,8 +63,22 @@ JSON puro sem markdown:
   let dados: any[]
   try { dados = JSON.parse(jsonStr) }
   catch {
-    console.error('[gerar-slides] parse error:', texto.slice(0,300))
-    throw new Error('Erro ao processar resposta da IA. Tente novamente.')
+    // Tentar recuperar JSON parcial fechando arrays/objetos abertos
+    console.error('[gerar-slides] parse error, tentando recuperar:', jsonStr.slice(0,200))
+    try {
+      // Encontrar o último objeto completo e fechar o array
+      const lastComplete = jsonStr.lastIndexOf('},')
+      if (lastComplete > 0) {
+        const truncado = jsonStr.slice(0, lastComplete + 1) + ']'
+        dados = JSON.parse(truncado)
+        console.log('[gerar-slides] JSON recuperado com', dados.length, 'slides')
+      } else {
+        throw new Error('não recuperável')
+      }
+    } catch {
+      console.error('[gerar-slides] parse error irrecuperável:', texto.slice(0,300))
+      throw new Error('Erro ao processar resposta da IA. Tente novamente.')
+    }
   }
 
   // Limpa "..." gerados pelo modelo em qualquer campo de texto
