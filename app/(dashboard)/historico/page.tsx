@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Clock, Zap, FileText, X, Copy, Check } from 'lucide-react'
+import { Clock, Zap, FileText, X, Copy, Check, Lock } from 'lucide-react'
+import { usePlano } from '@/lib/plano-context'
 
 const TOM_LABELS: Record<string, string> = {
   vender:'Quero vender', ensinar:'Quero ensinar',
@@ -124,6 +125,7 @@ function ModalDetalhes({ item, onClose }: ModalProps) {
 }
 
 export default function HistoricoPage() {
+  const { temHistorico, plano } = usePlano()
   const supabase = createClient()
   const [carrosseis, setCarrosseis] = useState<Carrossel[]>([])
   const [pronto, setPronto] = useState(false)
@@ -147,6 +149,23 @@ export default function HistoricoPage() {
 
   if (!pronto) return (
     <div style={{ padding:'clamp(1rem,4vw,2.5rem)', color:'#4A5568', fontFamily:'JetBrains Mono, monospace', fontSize:'0.8rem' }}>carregando...</div>
+  )
+
+  if (!temHistorico) return (
+    <div style={{ padding:'clamp(1rem,4vw,2.5rem)', maxWidth:'500px' }}>
+      <div style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'20px', padding:'3rem 2rem', textAlign:'center' as const }}>
+        <div style={{ width:'48px', height:'48px', background:'rgba(45,111,255,0.1)', border:'1px solid rgba(45,111,255,0.2)', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 1.25rem' }}>
+          <Lock size={20} color="#2D6FFF" />
+        </div>
+        <h2 style={{ fontSize:'1.1rem', fontWeight:700, marginBottom:'0.5rem', letterSpacing:'-0.02em' }}>Histórico disponível no Starter</h2>
+        <p style={{ color:'#8B95A8', fontSize:'0.875rem', lineHeight:1.65, marginBottom:'1.5rem', fontWeight:300 }}>
+          Acesse todos os posts que você já criou, releia as legendas e recrie com um clique.
+        </p>
+        <a href="/planos" style={{ display:'inline-flex', alignItems:'center', gap:'8px', background:'#2D6FFF', color:'#fff', textDecoration:'none', borderRadius:'10px', padding:'0.75rem 1.5rem', fontWeight:600, fontSize:'0.875rem', boxShadow:'0 6px 20px rgba(45,111,255,0.3)' }}>
+          Ver planos
+        </a>
+      </div>
+    </div>
   )
 
   return (

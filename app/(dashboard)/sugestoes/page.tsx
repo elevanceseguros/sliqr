@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Lightbulb, Loader2, RefreshCw, Zap, Building2, ChevronRight } from 'lucide-react'
+import { Lightbulb, Loader2, RefreshCw, Zap, Building2, ChevronRight, Lock } from 'lucide-react'
+import { usePlano } from '@/lib/plano-context'
 import Link from 'next/link'
 
 const TOM_LABELS: Record<string, string> = {
@@ -14,6 +15,7 @@ const TOM_CORES: Record<string, string> = {
 }
 
 export default function SugestoesPage() {
+  const { temSugestoes } = usePlano()
   const supabase = createClient()
   const router   = useRouter()
   const [session, setSession]       = useState<any>(null)
@@ -60,6 +62,23 @@ export default function SugestoesPage() {
     // Passa tema e tom para a página criar via query params
     router.push(`/criar?tema=${encodeURIComponent(s.tema)}&tom=${s.tom}`)
   }
+
+  if (!temSugestoes) return (
+    <div style={{ padding:'clamp(1rem,4vw,2.5rem)', maxWidth:'500px' }}>
+      <div style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'20px', padding:'3rem 2rem', textAlign:'center' as const }}>
+        <div style={{ width:'48px', height:'48px', background:'rgba(45,111,255,0.1)', border:'1px solid rgba(45,111,255,0.2)', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 1.25rem' }}>
+          <Lock size={20} color="#2D6FFF" />
+        </div>
+        <h2 style={{ fontSize:'1.1rem', fontWeight:700, marginBottom:'0.5rem', letterSpacing:'-0.02em' }}>Sugestões disponíveis no Pro</h2>
+        <p style={{ color:'#8B95A8', fontSize:'0.875rem', lineHeight:1.65, marginBottom:'1.5rem', fontWeight:300 }}>
+          Receba ideias de conteúdo personalizadas para o seu negócio geradas por IA toda vez que precisar.
+        </p>
+        <a href="/planos" style={{ display:'inline-flex', alignItems:'center', gap:'8px', background:'#2D6FFF', color:'#fff', textDecoration:'none', borderRadius:'10px', padding:'0.75rem 1.5rem', fontWeight:600, fontSize:'0.875rem', boxShadow:'0 6px 20px rgba(45,111,255,0.3)' }}>
+          Ver planos
+        </a>
+      </div>
+    </div>
+  )
 
   if (carregando) return (
     <div style={{ padding:'2.5rem', display:'flex', alignItems:'center', gap:'8px', color:'#4A5568' }}>

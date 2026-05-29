@@ -47,15 +47,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const links = [
-    { href:'/criar',      icon:<Zap size={15}/>,        label:'Criar post' },
-    { href:'/sugestoes',  icon:<Lightbulb size={15}/>,  label:'Sugestões' },
-    { href:'/historico',  icon:<Clock size={15}/>,      label:'Histórico' },
-    { href:'/empresa',    icon:<Building2 size={15}/>,  label:'Minha empresa' },
-    { href:'/planos',     icon:<CreditCard size={15}/>, label:'Planos' },
+    { href:'/criar',      icon:<Zap size={15}/>,        label:'Criar post',    recurso: null },
+    { href:'/sugestoes',  icon:<Lightbulb size={15}/>,  label:'Sugestões',     recurso: 'sugestoes' },
+    { href:'/historico',  icon:<Clock size={15}/>,      label:'Histórico',     recurso: 'historico' },
+    { href:'/empresa',    icon:<Building2 size={15}/>,  label:'Minha empresa', recurso: null },
+    { href:'/planos',     icon:<CreditCard size={15}/>, label:'Planos',        recurso: null },
   ]
+  const podeHistorico = limites.temHistorico
+  const podeSugestoes = limites.temSugestoes
 
-  function NavLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+  function NavLink({ href, icon, label, bloqueado }: { href: string; icon: React.ReactNode; label: string; bloqueado?: boolean }) {
     const ativo = pathname === href
+    if (bloqueado) return (
+      <Link href="/planos"
+        style={{ display:'flex', alignItems:'center', gap:'10px', padding:'0.65rem 0.85rem', borderRadius:'8px', color:'#2D3748', textDecoration:'none', fontSize:'0.875rem', fontWeight:500, background:'transparent', transition:'all 0.15s', cursor:'pointer' }}>
+        <span style={{ opacity:0.3 }}>{icon}</span>
+        <span style={{ opacity:0.3 }}>{label}</span>
+        <span style={{ marginLeft:'auto', background:'rgba(45,111,255,0.1)', border:'1px solid rgba(45,111,255,0.2)', borderRadius:'4px', padding:'1px 6px', fontSize:'0.6rem', color:'#2D6FFF', fontWeight:700, letterSpacing:'0.04em', flexShrink:0 }}>PRO</span>
+      </Link>
+    )
     return (
       <Link href={href}
         style={{ display:'flex', alignItems:'center', gap:'10px', padding:'0.65rem 0.85rem', borderRadius:'8px', color: ativo ? '#F0F4FF' : '#8B95A8', textDecoration:'none', fontSize:'0.875rem', fontWeight: ativo ? 600 : 500, background: ativo ? 'rgba(45,111,255,0.12)' : 'transparent', transition:'all 0.15s' }}>
@@ -81,7 +91,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       <nav style={{ display:'flex', flexDirection:'column', gap:'3px', flex:1 }}>
-        {links.map(l => <NavLink key={l.href} {...l} />)}
+        {links.map(l => (
+          <NavLink
+            key={l.href}
+            href={l.href}
+            icon={l.icon}
+            label={l.label}
+            bloqueado={
+              (l.recurso === 'historico'  && !podeHistorico)  ||
+              (l.recurso === 'sugestoes'  && !podeSugestoes)
+            }
+          />
+        ))}
       </nav>
 
       <div>
@@ -120,7 +141,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   )
 
   const limites = LIMITES[plano] ?? LIMITES.free
-  const ctxValue = { plano, postsHoje, maxPosts: limites.maxPosts, maxSlides: limites.maxSlides, temLogo: limites.temLogo }
+  const ctxValue = { plano, postsHoje, maxPosts: limites.maxPosts, maxSlides: limites.maxSlides, temLogo: limites.temLogo, temHistorico: limites.temHistorico, temSugestoes: limites.temSugestoes }
 
   return (
     <PlanoContext.Provider value={ctxValue}>
