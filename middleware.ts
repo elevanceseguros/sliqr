@@ -12,18 +12,17 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(toSet) {
+        setAll(toSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           toSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
           toSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options as Parameters<typeof supabaseResponse.cookies.set>[2])
           )
         },
       },
     }
   )
 
-  // Atualiza a sessão — essencial para o PKCE funcionar
   await supabase.auth.getUser()
 
   return supabaseResponse
