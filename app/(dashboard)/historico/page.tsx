@@ -56,15 +56,20 @@ export default function HistoricoPage() {
             const qtd  = Array.isArray(c.slides) ? c.slides.length : 0
             const data = new Date(c.criado_em).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })
             return (
-              <div key={c.id} style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'12px', padding:'1.25rem 1.5rem', display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:'1rem', flexWrap:'wrap' as const }}>
-                <div>
-                  <p style={{ fontWeight:600, fontSize:'0.95rem', marginBottom:'4px' }}>{c.tema}</p>
-                  <div style={{ display:'flex', gap:'12px' }}>
-                    <span style={{ fontSize:'0.75rem', color:'#4A5568' }}>{TOM_LABELS[c.tom] ?? c.tom}</span>
-                    <span style={{ fontSize:'0.75rem', color:'#4A5568' }}>{qtd} slide{qtd !== 1 ? 's' : ''}</span>
-                    <span style={{ fontSize:'0.75rem', color:'#4A5568' }}>{data}</span>
+              <div key={c.id} style={{ background:'#0D1117', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'12px', padding:'1rem', display:'flex', justifyContent:'space-between', alignItems:'center', gap:'1rem', flexWrap:'wrap' as const }}>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <p style={{ fontWeight:600, fontSize:'0.9rem', marginBottom:'4px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.tema}</p>
+                  <div style={{ display:'flex', gap:'10px', flexWrap:'wrap' as const }}>
+                    <span style={{ fontSize:'0.72rem', color:'#4A5568' }}>{qtd} slide{qtd !== 1 ? 's' : ''}</span>
+                    <span style={{ fontSize:'0.72rem', color:'#4A5568' }}>{data}</span>
                   </div>
                 </div>
+                <Link
+                  href={`/criar?tema=${encodeURIComponent(c.tema)}`}
+                  style={{ display:'inline-flex', alignItems:'center', gap:'6px', background:'#2D6FFF', color:'#fff', padding:'8px 14px', borderRadius:'8px', textDecoration:'none', fontWeight:600, fontSize:'0.8rem', flexShrink:0, whiteSpace:'nowrap' as const }}
+                >
+                  <Zap size={12}/> Recriar
+                </Link>
               </div>
             )
           })}

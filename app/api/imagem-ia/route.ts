@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
-export const maxDuration = 45
+export const maxDuration = 60
 
 const claudeClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
