@@ -69,17 +69,25 @@ function CadastroForm() {
             <span style={{ fontWeight:800, fontSize:'1.4rem', letterSpacing:'-0.04em' }}>Sliqr</span>
           </div>
           <h1 style={{ fontSize:'1.5rem', fontWeight:700, letterSpacing:'-0.03em', marginBottom:'0.3rem' }}>
-            {planoParam ? `Criar conta e assinar ${planoParam}` : 'Criar sua conta'}
+            Criar sua conta
           </h1>
           <p style={{ color:'#8B95A8', fontSize:'0.875rem' }}>
-            {planoParam ? 'Você será redirecionado para o pagamento após o cadastro.' : 'Comece grátis, sem cartão de crédito.'}
+            {planoParam ? 'Após o cadastro você será redirecionado para o pagamento.' : 'Comece grátis, sem cartão de crédito.'}
           </p>
         </div>
 
         {planoParam && (
-          <div style={{ background:'rgba(45,111,255,0.08)', border:'1px solid rgba(45,111,255,0.25)', borderRadius:'10px', padding:'0.75rem 1rem', marginBottom:'1.5rem', fontSize:'0.82rem', color:'#6B9FFF', display:'flex', gap:'8px', alignItems:'center' }}>
-            <span>✦</span>
-            <span>Plano <strong>{planoParam.charAt(0).toUpperCase() + planoParam.slice(1)}</strong> {periodoParam === 'anual' ? '· Anual (25% OFF)' : '· Mensal'} selecionado</span>
+          <div style={{ background:'#0D1117', border:'1px solid rgba(45,111,255,0.2)', borderRadius:'12px', padding:'0.75rem 1rem', marginBottom:'1.5rem', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div>
+              <div style={{ fontSize:'0.68rem', color:'#4A5568', fontFamily:'JetBrains Mono,monospace', letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:'2px' }}>Plano selecionado</div>
+              <div style={{ fontSize:'0.88rem', fontWeight:700, color:'#F0F4FF' }}>
+                {planoParam.charAt(0).toUpperCase() + planoParam.slice(1)}
+                <span style={{ fontWeight:400, color:'#4A5568', marginLeft:'6px', fontSize:'0.78rem' }}>{periodoParam === 'anual' ? '· anual' : '· mensal'}</span>
+              </div>
+            </div>
+            {periodoParam === 'anual' && (
+              <span style={{ background:'rgba(52,211,153,0.1)', border:'1px solid rgba(52,211,153,0.3)', color:'#34D399', fontSize:'0.65rem', fontWeight:700, padding:'2px 8px', borderRadius:'100px' }}>−25%</span>
+            )}
           </div>
         )}
 
@@ -107,7 +115,7 @@ function CadastroForm() {
           {erro && <p style={{ color:'#FC8181', fontSize:'0.8rem' }}>{erro}</p>}
           <button type="submit" disabled={loading}
             style={{ background:'#2D6FFF', color:'#fff', border:'none', borderRadius:'10px', padding:'0.85rem', fontWeight:600, fontSize:'0.9rem', cursor:'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Criando conta...' : planoParam ? 'Criar conta e ir para pagamento' : 'Criar conta grátis'}
+            {loading ? 'Criando conta...' : planoParam ? 'Criar conta →' : 'Criar conta grátis'}
           </button>
         </form>
 

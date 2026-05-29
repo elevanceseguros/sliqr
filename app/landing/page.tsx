@@ -10,25 +10,25 @@ export default function LandingPage() {
   const planos = [
     {
       nome:'Free', preco:0, features:[
-        '1 post por dia','Até 4 slides','Download ZIP','Legenda com hashtags'
-      ], off:['Sem edição de texto','Com marca d\'água','Sem logo própria'], featured:false
+        '1 post por dia','Até 4 slides','Download ZIP','Legenda com hashtags',
+      ], off:['Sem logo própria','Histórico de posts'], featured:false
     },
     {
       nome:'Starter', preco:37, features:[
         '1 post por dia','Até 5 slides','Download ZIP','Legenda com hashtags',
-        'Edite antes de baixar','Sem marca d\'água'
+        'Histórico de posts',
       ], off:['Sem logo própria'], featured:false
     },
     {
       nome:'Pro', preco:77, features:[
         '2 posts por dia','Até 10 slides','Download ZIP','Legenda com hashtags',
-        'Edite antes de baixar','Sem marca d\'água','Logo da sua empresa'
+        'Histórico de posts','Logo da sua empresa','Sugestões de conteúdo',
       ], off:[], featured:true
     },
     {
       nome:'Ilimitado', preco:147, features:[
         'Posts sem limite','Até 10 slides','Download ZIP','Legenda com hashtags',
-        'Edite antes de baixar','Sem marca d\'água','Logo da sua empresa'
+        'Histórico de posts','Logo da sua empresa','Sugestões de conteúdo',
       ], off:[], featured:false
     },
   ]
@@ -159,15 +159,17 @@ export default function LandingPage() {
         </h2>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px'}}>
           {[
-            {icone:'🛡️',titulo:'Corretores de seguros',desc:'Eduque clientes sobre coberturas, prevenção e benefícios sem depender de agência.'},
-            {icone:'🥗',titulo:'Nutricionistas',desc:'Compartilhe dicas, cardápios e transformações que atraem novos pacientes.'},
-            {icone:'💊',titulo:'Farmácias de manipulação',desc:'Explique fórmulas, ingredientes e diferenciais que constroem confiança.'},
-            {icone:'🏠',titulo:'Corretores de imóveis',desc:'Mostre lançamentos, tendências e dicas para quem quer comprar ou investir.'},
-            {icone:'✂️',titulo:'Estúdios e ateliês',desc:'Apresente portfólio, processos e resultados que vendem sem precisar explicar.'},
-            {icone:'📦',titulo:'Qualquer pequeno negócio',desc:'Se você tem algo pra contar, a Sliqr transforma em post profissional.'},
+            {titulo:'Corretores de seguros',desc:'Eduque clientes sobre coberturas, prevenção e benefícios sem depender de agência.'},
+            {titulo:'Nutricionistas',desc:'Compartilhe dicas, cardápios e transformações que atraem novos pacientes.'},
+            {titulo:'Farmácias de manipulação',desc:'Explique fórmulas, ingredientes e diferenciais que constroem confiança.'},
+            {titulo:'Corretores de imóveis',desc:'Mostre lançamentos, tendências e dicas para quem quer comprar ou investir.'},
+            {titulo:'Estúdios e ateliês',desc:'Apresente portfólio, processos e resultados que vendem sem precisar explicar.'},
+            {titulo:'Qualquer pequeno negócio',desc:'Se você tem algo pra contar, a Sliqr transforma em post profissional.'},
           ].map(c => (
             <div key={c.titulo} style={{background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'16px',padding:'1.5rem'}}>
-              <div style={{fontSize:'1.5rem',marginBottom:'0.75rem'}}>{c.icone}</div>
+              <div style={{width:'32px',height:'32px',background:'rgba(45,111,255,0.1)',border:'1px solid rgba(45,111,255,0.2)',borderRadius:'8px',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'0.75rem'}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2D6FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
               <h3 style={{fontSize:'0.9rem',fontWeight:600,marginBottom:'0.4rem',letterSpacing:'-0.01em'}}>{c.titulo}</h3>
               <p style={{fontSize:'0.8rem',color:'#8B95A8',lineHeight:1.6,fontWeight:300}}>{c.desc}</p>
             </div>

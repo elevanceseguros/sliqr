@@ -9,24 +9,24 @@ const PLANOS_DEF = [
   {
     id: 'free', nome:'Free', preco:0, features:[
       '1 post por dia','Até 4 slides','Download ZIP','Legenda com hashtags',
-    ], off:['Sem logo própria','Com marca d\'água'], featured:false
+    ], off:['Sem logo própria','Histórico de posts'], featured:false
   },
   {
     id: 'starter', nome:'Starter', preco:37, features:[
       '1 post por dia','Até 5 slides','Download ZIP','Legenda com hashtags',
-      'Edite antes de baixar','Sem marca d\'água',
+      'Histórico de posts',
     ], off:['Sem logo própria'], featured:false
   },
   {
     id: 'pro', nome:'Pro', preco:77, features:[
       '2 posts por dia','Até 10 slides','Download ZIP','Legenda com hashtags',
-      'Edite antes de baixar','Sem marca d\'água','Logo da sua empresa',
+      'Histórico de posts','Logo da sua empresa','Sugestões de conteúdo',
     ], off:[], featured:true
   },
   {
     id: 'ilimitado', nome:'Ilimitado', preco:147, features:[
       'Posts sem limite','Até 10 slides','Download ZIP','Legenda com hashtags',
-      'Edite antes de baixar','Sem marca d\'água','Logo da sua empresa',
+      'Histórico de posts','Logo da sua empresa','Sugestões de conteúdo',
     ], off:[], featured:false
   },
 ]
