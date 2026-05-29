@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 export default function LandingPage() {
-  const [anual, setAnual] = useState(false)
+  const [anual, setAnual] = useState(true)
 
   const desc = 0.25 // 25% de desconto no anual
 
