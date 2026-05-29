@@ -26,7 +26,7 @@ TIPOS DE SLIDE:
 - "icones": Título + 3 itens com ícone. Cada item deve ter sentido REAL no contexto do pedido. Ícones DIFERENTES entre si.
 - "topico": Título impactante + corpo explicativo com dado concreto (número, comparação, fato).
 - "lista": Título + 3 a 5 itens numerados. Cada item direto e útil.
-- "cta": OBRIGATÓRIO como último slide. Chamada para ação clara com o nome da empresa se fornecido.
+- "cta": OBRIGATÓRIO como último slide. Chamada para ação clara com o nome da empresa se fornecido. Inclua campo "cta_botao" com texto curto para o botão (máx 4 palavras, ex: "Peça agora", "Fale comigo", "Quero saber mais", "Entre em contato").
 
 REGRAS DE CONTEÚDO:
 - Cada slide deve ter conteúdo ESPECÍFICO ao pedido — não genérico
@@ -48,7 +48,7 @@ JSON puro sem markdown:
   {"tipo":"icones","titulo":"COMPARATIVO REAL","itens":[{"icone":"dollar-sign","label":"Restaurante R$60"},{"icone":"trending-up","label":"Delivery R$45"},{"icone":"leaf","label":"Marmita R$25"}]},
   {"tipo":"topico","titulo":"O CUSTO REAL","corpo":"Comer fora 20 dias por mês: R$ 1.200. Marmita Hortelã: R$ 500. Economia de R$ 700.","icon_nome":"bar-chart"},
   {"tipo":"lista","titulo":"VANTAGENS DA MARMITA","itens":["Sem fila nem espera","Você escolhe os ingredientes","Entrega no trabalho"],"icon_nome":"check-circle"},
-  {"tipo":"cta","titulo":"EXPERIMENTE HOJE","subtitulo":"Peça sua marmita Hortelã e economize desde amanhã"}
+  {"tipo":"cta","titulo":"EXPERIMENTE HOJE","subtitulo":"Peça sua marmita Hortelã e economize desde amanhã","cta_botao":"Peça agora"}
 ]`
 
   const response = await client.messages.create({

@@ -107,7 +107,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
   const dark  = lum(cor) < 0.55
   const txt   = '#FFFFFF'
   const sub   = 'rgba(255,255,255,0.80)'
-  const icCor = dark ? 'rgba(255,255,255,0.90)' : drk(cor, 0.25)
+  const icCor = dark ? 'rgba(255,255,255,0.92)' : '#FFFFFF'
   const isMin = cfg.estilo === 'minimal'
 
   const FF: Record<string,string> = { inter:'Inter', montserrat:'Montserrat', playfair:'Playfair Display' }
@@ -219,8 +219,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
         <div style="width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           ${ico(item.icone ?? 'star', 36, icCor, 1.6)}
         </div>
-        <span style="font-family:'${fn}',sans-serif;font-size:${fsL}px;font-weight:700;color:${txt};line-height:1.3;width:${txtW - 160}px;overflow:visible;white-space:normal;word-break:break-word;">${item.label ?? ''}</span>
-        <span style="font-family:'${fn}',sans-serif;font-size:18px;font-weight:600;color:rgba(255,255,255,0.22);width:28px;text-align:right;">${String(i+1).padStart(2,'0')}</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:${fsL}px;font-weight:700;color:${txt};line-height:1.3;width:${txtW - 120}px;overflow:visible;white-space:normal;word-break:break-word;">${item.label ?? ''}</span>
       </div>`
     }).join('')
 
@@ -278,10 +277,11 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
 
   // ── CTA ───────────────────────────────────────────────────────────────────
   else {
-    const titulo = slide.titulo ?? ''
-    const subtit = slide.subtitulo ?? ''
-    const fsT    = fsTitulo(titulo, W, 108, 3)
-    const fsS    = fsTitulo(subtit, W, 38, 2, false)
+    const titulo  = slide.titulo ?? ''
+    const subtit  = slide.subtitulo ?? ''
+    const ctaBtn  = slide.cta_botao ?? 'Me chame no direct'
+    const fsT     = fsTitulo(titulo, W, 108, 3)
+    const fsS     = fsTitulo(subtit, W, 38, 2, false)
     const CONTENT_TOP    = HEADER
     const CONTENT_BOTTOM = FOOTER
 
@@ -291,7 +291,7 @@ export function gerarHTML(slide: any, total: number, idx: number, cfg: SlideCfg,
       ${subtit ? `<div style="font-family:'${fn}',sans-serif;font-size:${fsS}px;font-weight:400;color:${sub};line-height:1.55;">${subtit}</div>` : ''}
       <div style="display:inline-flex;align-items:center;gap:14px;background:rgba(255,255,255,0.14);border:2px solid rgba(255,255,255,0.32);border-radius:999px;padding:22px 60px;margin-top:8px;">
         ${ico('phone', 28, '#FFFFFF', 2)}
-        <span style="font-family:'${fn}',sans-serif;font-size:32px;font-weight:700;color:#FFFFFF;letter-spacing:0.5px;">Me chame no direct</span>
+        <span style="font-family:'${fn}',sans-serif;font-size:32px;font-weight:700;color:#FFFFFF;letter-spacing:0.5px;">${ctaBtn}</span>
       </div>
     </div>`
   }
