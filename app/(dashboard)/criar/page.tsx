@@ -258,10 +258,7 @@ function CriarInner() {
             estilo: cfg.estilo,
           },
           fotoUrl: imagensIAtemp[i] ?? null,
-          logoUrl: cfg.logoUrl ?? null,
-          logoX: cfg.logoX,
-          logoY: cfg.logoY,
-          logoW: cfg.logoW,
+          // Logo injetada apenas no download, não no preview (evita payload 413)
         }
 
         // Delay mínimo entre slides
