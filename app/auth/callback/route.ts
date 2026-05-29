@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
   const cookieStore = cookies()
 
-  // Destino após login: cookie tem precedência, fallback /criar
+  // Destino após login
   const afterLoginCookie = cookieStore.get('sliqr_after_login')?.value
   const next = afterLoginCookie ? decodeURIComponent(afterLoginCookie) : '/criar'
 
@@ -49,11 +49,10 @@ export async function GET(request: NextRequest) {
     console.error('[auth/callback] verifyOtp error:', verifyError)
   }
 
-  // OAuth code exchange
+  // OAuth PKCE code exchange (email login)
   if (code) {
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
     if (!exchangeError) {
-      // Limpar o cookie de destino
       const response = NextResponse.redirect(`${origin}${next}`)
       response.cookies.delete('sliqr_after_login')
       return response
@@ -61,5 +60,9 @@ export async function GET(request: NextRequest) {
     console.error('[auth/callback] exchangeCodeForSession error:', exchangeError)
   }
 
-  return NextResponse.redirect(`${origin}/login?erro=auth`)
+  // Implicit flow: token vem no hash — redireciona para página que processa no client
+  // O Supabase detecta automaticamente o hash e seta a sessão
+  const response = NextResponse.redirect(`${origin}${next}`)
+  response.cookies.delete('sliqr_after_login')
+  return response
 }
