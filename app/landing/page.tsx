@@ -185,27 +185,35 @@ export default function LandingPage() {
         </h2>
 
         {/* Toggle mensal/anual */}
-        <div style={{display:'flex',alignItems:'center',gap:'12px',marginBottom:'3rem'}}>
-          <span style={{fontSize:'0.85rem',color: !anual ? '#F0F4FF' : '#4A5568',fontWeight: !anual ? 600 : 400}}>Mensal</span>
-          <button
-            onClick={() => setAnual(a => !a)}
-            style={{width:'44px',height:'24px',borderRadius:'100px',background: anual ? '#2D6FFF' : '#1A2235',border:'none',cursor:'pointer',position:'relative',transition:'background 0.2s',flexShrink:0}}
-          >
-            <span style={{position:'absolute',top:'3px',left: anual ? '22px' : '3px',width:'18px',height:'18px',background:'#fff',borderRadius:'50%',transition:'left 0.2s',display:'block'}}/>
-          </button>
-          <span style={{fontSize:'0.85rem',color: anual ? '#F0F4FF' : '#4A5568',fontWeight: anual ? 600 : 400}}>Anual</span>
-          {anual && (
-            <span style={{background:'rgba(5,150,105,0.15)',border:'1px solid rgba(5,150,105,0.4)',color:'#34D399',fontSize:'0.7rem',fontWeight:700,padding:'2px 10px',borderRadius:'100px',letterSpacing:'0.04em'}}>
-              25% OFF · cobrança anual
-            </span>
-          )}
+        <div style={{display:'flex',justifyContent:'center',marginBottom:'3.5rem'}}>
+          <div style={{display:'inline-flex',alignItems:'center',gap:'0',background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'100px',padding:'4px',position:'relative'}}>
+            <button
+              onClick={() => setAnual(false)}
+              style={{padding:'0.45rem 1.4rem',borderRadius:'100px',border:'none',cursor:'pointer',fontSize:'0.82rem',fontWeight:600,transition:'all 0.2s',background: !anual ? '#1A2845' : 'transparent',color: !anual ? '#F0F4FF' : '#4A5568',boxShadow: !anual ? '0 0 0 1px rgba(45,111,255,0.3)' : 'none'}}
+            >
+              Mensal
+            </button>
+            <button
+              onClick={() => setAnual(true)}
+              style={{padding:'0.45rem 1.4rem',borderRadius:'100px',border:'none',cursor:'pointer',fontSize:'0.82rem',fontWeight:600,transition:'all 0.2s',background: anual ? '#1A2845' : 'transparent',color: anual ? '#F0F4FF' : '#4A5568',boxShadow: anual ? '0 0 0 1px rgba(45,111,255,0.3)' : 'none',display:'flex',alignItems:'center',gap:'8px'}}
+            >
+              Anual
+              <span style={{background: anual ? 'rgba(52,211,153,0.15)' : 'rgba(255,255,255,0.05)',border:`1px solid ${anual ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.08)'}`,color: anual ? '#34D399' : '#4A5568',fontSize:'0.65rem',fontWeight:700,padding:'1px 7px',borderRadius:'100px',letterSpacing:'0.04em',transition:'all 0.2s'}}>
+                −25%
+              </span>
+            </button>
+          </div>
         </div>
 
         <div className="planos-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'16px',alignItems:'start'}}>
           {planos.map(p => (
             <div key={p.nome} style={{background: p.featured ? 'linear-gradient(145deg,#0D1829,#0A1422)' : '#0D1117',border: p.featured ? '1px solid rgba(45,111,255,0.4)' : '1px solid rgba(255,255,255,0.07)',borderRadius:'24px',padding:'2rem',boxShadow: p.featured ? '0 0 0 1px rgba(45,111,255,0.1),0 20px 50px rgba(45,111,255,0.12)' : 'none',position:'relative'}}>
-              {p.featured && <div style={{position:'absolute',top:'-12px',left:'50%',transform:'translateX(-50%)',background:'#2D6FFF',color:'#fff',fontSize:'0.65rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',padding:'3px 12px',borderRadius:'100px',whiteSpace:'nowrap'}}>Mais popular</div>}
-              <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.75rem',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',color:'#8B95A8',marginBottom:'1.5rem'}}>{p.nome}</div>
+
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'1.5rem'}}>
+                <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.75rem',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',color:'#8B95A8'}}>{p.nome}</div>
+                {p.featured && <div style={{background:'linear-gradient(90deg,rgba(45,111,255,0.25),rgba(0,212,255,0.15))',border:'1px solid rgba(45,111,255,0.4)',color:'#6B9FFF',fontSize:'0.6rem',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',padding:'3px 10px',borderRadius:'100px',whiteSpace:'nowrap'}}>Mais popular</div>}
+                {anual && p.preco > 0 && !p.featured && <div style={{background:'rgba(52,211,153,0.08)',border:'1px solid rgba(52,211,153,0.25)',color:'#34D399',fontSize:'0.6rem',fontWeight:700,padding:'2px 8px',borderRadius:'100px'}}>−25%</div>}
+              </div>
 
               {p.preco === 0 ? (
                 <>
@@ -214,11 +222,13 @@ export default function LandingPage() {
                 </>
               ) : anual ? (
                 <>
-                  <div style={{display:'flex',alignItems:'baseline',gap:'8px'}}>
-                    <div style={{fontSize:'2.75rem',fontWeight:700,letterSpacing:'-0.04em',lineHeight:1}}>{precoMes(p.preco)}</div>
+                  <div style={{display:'flex',alignItems:'baseline',gap:'6px',marginBottom:'4px'}}>
+                    <div style={{fontSize:'2.6rem',fontWeight:700,letterSpacing:'-0.04em',lineHeight:1}}>{precoMes(p.preco)}</div>
                     <div style={{fontSize:'0.78rem',color:'#4A5568'}}>/mês</div>
+                    <div style={{fontSize:'0.75rem',color:'#4A5568',textDecoration:'line-through',marginLeft:'2px'}}>R${p.preco}</div>
                   </div>
-                  <div style={{fontSize:'0.75rem',color:'#34D399',marginBottom:'1.5rem',marginTop:'4px'}}>
+                  <div style={{fontSize:'0.73rem',color:'#34D399',marginBottom:'1.5rem',display:'flex',alignItems:'center',gap:'5px'}}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     R${precoAnual(p.preco)}/ano · cobrado anualmente
                   </div>
                 </>
