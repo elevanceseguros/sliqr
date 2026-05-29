@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Zap, Download, Loader2, Upload, Image as ImageIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { usePlano } from '@/lib/plano-context'
 import JSZip from 'jszip'
 
 const CORES = ['#2D6FFF','#7C3AED','#059669','#DC2626','#D97706','#DB2777','#0891B2','#111827','#1E4D1E','#7DC242']
@@ -37,6 +38,7 @@ function CriarInner() {
   const [slides, setSlides] = useState<any[]>([])
   const [imgs, setImgs] = useState<string[]>([])
   const [imagensIA, setImagensIA] = useState<Record<number, string>>({})
+  const { plano, postsHoje, maxPosts, maxSlides, temLogo } = usePlano()
   const [slideAtivo, setSlideAtivo] = useState(0)
   const [baixando, setBaixando] = useState(false)
   const [baixandoPct, setBaixandoPct] = useState(0)
@@ -475,15 +477,21 @@ function CriarInner() {
           </label>
 
           <div style={{ display:'flex', gap:'8px', flexWrap:'wrap' }}>
-            {QTD_OPTS.map(n => (
+            {QTD_OPTS.filter(n => n <= maxSlides).map(n => (
               <button
                 key={n}
-                onClick={() => setQtd(n)}
+                onClick={() => setQtd(Math.min(n, maxSlides))}
                 style={{ width:'52px', height:'52px', borderRadius:'12px', border:qtd===n ? `2px solid ${cor}` : '1px solid rgba(255,255,255,0.1)', background:qtd===n ? `${cor}20` : 'transparent', color:qtd===n ? cor : '#8B95A8', fontSize:'1.1rem', fontWeight:700, cursor:'pointer' }}
               >
                 {n}
               </button>
             ))}
+            {maxSlides < 10 && (
+              <div style={{ display:'flex', alignItems:'center', gap:'6px', padding:'0 12px', borderRadius:'12px', border:'1px solid rgba(255,255,255,0.05)', background:'#0D1117', height:'52px' }}>
+                <span style={{ fontSize:'0.72rem', color:'#4A5568' }}>até 10 no</span>
+                <a href="/planos" style={{ fontSize:'0.72rem', color:'#2D6FFF', textDecoration:'none', fontWeight:600 }}>Pro ↗</a>
+              </div>
+            )}
           </div>
         </div>
 
@@ -559,7 +567,7 @@ function CriarInner() {
           </p>
         </div>
 
-        <div style={{ marginBottom:'1.5rem' }}>
+        {temLogo && <div style={{ marginBottom:'1.5rem' }}>
           <label style={{ display:'block', fontSize:'0.75rem', color:'#8B95A8', fontWeight:600, marginBottom:'10px', letterSpacing:'0.05em', textTransform:'uppercase' }}>
             Logo opcional
           </label>

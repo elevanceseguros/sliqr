@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Zap, Clock, LogOut, Building2, Lightbulb, Menu, X } from 'lucide-react'
+import { Zap, Clock, LogOut, Building2, Lightbulb, Menu, X, CreditCard } from 'lucide-react'
 import { usePathname } from 'next/navigation'
+import { PlanoContext, LIMITES } from '@/lib/plano-context'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -50,6 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href:'/sugestoes',  icon:<Lightbulb size={15}/>,  label:'Sugestões' },
     { href:'/historico',  icon:<Clock size={15}/>,      label:'Histórico' },
     { href:'/empresa',    icon:<Building2 size={15}/>,  label:'Minha empresa' },
+    { href:'/planos',     icon:<CreditCard size={15}/>, label:'Planos' },
   ]
 
   function NavLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
@@ -84,14 +86,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <div>
         <div style={{ background:'#111827', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'10px', padding:'0.75rem', marginBottom:'0.75rem' }}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'4px' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'8px' }}>
             <span style={{ fontSize:'0.68rem', fontFamily:'JetBrains Mono, monospace', letterSpacing:'0.08em', textTransform:'uppercase', color:'#4A5568' }}>Plano</span>
             <span style={{ fontSize:'0.72rem', fontWeight:700, color: planoCores[plano] ?? '#4A5568', textTransform:'uppercase', letterSpacing:'0.06em' }}>{plano}</span>
           </div>
-          {plano !== 'ilimitado' && <div style={{ fontSize:'0.75rem', color:'#8B95A8' }}>{postsHoje} post(s) hoje</div>}
-          {plano === 'free' && (
-            <Link href="/criar?upgrade=true" style={{ display:'block', marginTop:'8px', background:'#2D6FFF', color:'#fff', textAlign:'center', borderRadius:'6px', padding:'5px', fontSize:'0.75rem', fontWeight:600, textDecoration:'none' }}>
-              Fazer upgrade
+          {limites.maxPosts < 999 && (
+            <div style={{ marginBottom:'8px' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'4px' }}>
+                <span style={{ fontSize:'0.72rem', color:'#8B95A8' }}>Posts hoje</span>
+                <span style={{ fontSize:'0.72rem', fontWeight:700, color: postsHoje >= limites.maxPosts ? '#FC8181' : '#8B95A8' }}>
+                  {postsHoje}/{limites.maxPosts}
+                </span>
+              </div>
+              <div style={{ height:'4px', background:'rgba(255,255,255,0.06)', borderRadius:'2px', overflow:'hidden' }}>
+                <div style={{ height:'100%', width:`${Math.min(100, (postsHoje/limites.maxPosts)*100)}%`, background: postsHoje >= limites.maxPosts ? '#FC8181' : planoCores[plano] ?? '#2D6FFF', borderRadius:'2px', transition:'width 0.3s' }} />
+              </div>
+            </div>
+          )}
+          {plano !== 'ilimitado' && (
+            <Link href="/planos" style={{ display:'block', marginTop:'4px', background: plano === 'free' ? '#2D6FFF' : 'transparent', color: plano === 'free' ? '#fff' : '#4A5568', textAlign:'center', borderRadius:'6px', padding:'5px', fontSize:'0.75rem', fontWeight:600, textDecoration:'none', border: plano !== 'free' ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
+              {plano === 'free' ? 'Fazer upgrade ↗' : 'Ver planos ↗'}
             </Link>
           )}
         </div>
@@ -102,7 +116,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   )
 
+  const limites = LIMITES[plano] ?? LIMITES.free
+  const ctxValue = { plano, postsHoje, maxPosts: limites.maxPosts, maxSlides: limites.maxSlides, temLogo: limites.temLogo }
+
   return (
+    <PlanoContext.Provider value={ctxValue}>
     <>
       <style>{`
         @media (max-width: 768px) {
@@ -156,5 +174,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
     </>
+  )
+  </PlanoContext.Provider>
   )
 }
