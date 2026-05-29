@@ -1,11 +1,12 @@
 'use client'
+import { Suspense } from 'react'
 
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
-export default function CadastroPage() {
+function CadastroForm() {
   const supabase      = createClient()
   const searchParams  = useSearchParams()
   const planoParam    = searchParams.get('plano')    // ex: "pro"
@@ -158,4 +159,8 @@ export default function CadastroPage() {
       </div>
     </div>
   )
+}
+
+export default function CadastroPage() {
+  return <Suspense><CadastroForm /></Suspense>
 }
