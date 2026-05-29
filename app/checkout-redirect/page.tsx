@@ -1,5 +1,5 @@
 'use client'
-import { Suspense, useEffect, useState, useRef } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -8,55 +8,46 @@ function CheckoutRedirect() {
   const searchParams = useSearchParams()
   const plano        = searchParams.get('plano')
   const periodo      = searchParams.get('periodo') ?? 'mensal'
-  const [erro, setErro]     = useState('')
-  const tentativas          = useRef(0)
-  const chamado             = useRef(false)
-
-  async function tentarCheckout() {
-    if (chamado.current) return
-    tentativas.current += 1
-
-    try {
-      const res  = await fetch('/api/stripe/checkout', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ plano, periodo }),
-      })
-      const data = await res.json()
-
-      if (data.url) {
-        chamado.current = true
-        window.location.href = data.url
-        return
-      }
-
-      // 401 = sessão ainda não disponível, tenta de novo até 8x com backoff
-      if (res.status === 401 && tentativas.current < 8) {
-        setTimeout(tentarCheckout, tentativas.current * 400)
-        return
-      }
-
-      setErro(data.erro ?? 'Erro ao iniciar pagamento.')
-    } catch {
-      setErro('Erro de conexão. Tente novamente.')
-    }
-  }
+  const [erro, setErro] = useState('')
 
   useEffect(() => {
     if (!plano) { window.location.href = '/criar'; return }
 
-    // Tenta imediatamente
-    tentarCheckout()
-
-    // E também quando a sessão confirmar via evento
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && !chamado.current) {
-        tentativas.current = 0 // reset para dar prioridade ao evento
-        tentarCheckout()
+    async function iniciar() {
+      // Pega a sessão — com retry caso ainda não esteja disponível
+      let session = null
+      for (let i = 0; i < 10; i++) {
+        const { data } = await supabase.auth.getSession()
+        if (data.session) { session = data.session; break }
+        await new Promise(r => setTimeout(r, 300))
       }
-    })
 
-    return () => subscription.unsubscribe()
+      if (!session) {
+        setErro('Sessão não encontrada. Faça login novamente.')
+        return
+      }
+
+      try {
+        const res = await fetch('/api/stripe/checkout', {
+          method:  'POST',
+          headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ plano, periodo }),
+        })
+        const data = await res.json()
+        if (data.url) {
+          window.location.href = data.url
+        } else {
+          setErro(data.erro ?? 'Erro ao iniciar pagamento.')
+        }
+      } catch {
+        setErro('Erro de conexão. Tente novamente.')
+      }
+    }
+
+    iniciar()
   }, [])
 
   if (erro) return (
@@ -65,7 +56,7 @@ function CheckoutRedirect() {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FC8181" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </div>
       <p style={{ color:'#FC8181', fontSize:'0.9rem', textAlign:'center', maxWidth:'320px' }}>{erro}</p>
-      <a href="/criar" style={{ color:'#2D6FFF', fontSize:'0.85rem', textDecoration:'none' }}>Voltar para o início</a>
+      <a href="/login" style={{ color:'#2D6FFF', fontSize:'0.85rem', textDecoration:'none' }}>Fazer login</a>
     </div>
   )
 

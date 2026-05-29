@@ -1,11 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createServerClient } from '@/lib/supabase/server'
+import { createClient as createAnonClient } from '@supabase/supabase-js'
 import { stripe, PLANOS } from '@/lib/stripe/config'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    let user = null
+
+    // 1. Tenta autenticar via Bearer token (vindo do checkout-redirect)
+    const authHeader = request.headers.get('Authorization')
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7)
+      const supabaseAnon = createAnonClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data } = await supabaseAnon.auth.getUser(token)
+      user = data.user
+    }
+
+    // 2. Fallback: tenta via cookie de sessão
+    if (!user) {
+      const supabase = createServerClient()
+      const { data } = await supabase.auth.getUser()
+      user = data.user
+    }
 
     if (!user) {
       return NextResponse.json({ erro: 'Não autorizado' }, { status: 401 })
@@ -23,9 +42,14 @@ export async function POST(request: NextRequest) {
 
     const priceId = periodo === 'anual' ? config.priceIdAnual : config.priceId
 
-    const { data: perfil } = await supabase
+    // Buscar stripe_id do perfil
+    const supabaseAdmin = createAnonClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const { data: perfil } = await supabaseAdmin
       .from('perfis')
-      .select('stripe_id, email')
+      .select('stripe_id')
       .eq('id', user.id)
       .single()
 
@@ -33,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     const session = await stripe.checkout.sessions.create({
       customer:             perfil?.stripe_id ?? undefined,
-      customer_email:       perfil?.stripe_id ? undefined : user.email,
+      customer_email:       perfil?.stripe_id ? undefined : user.email!,
       mode:                 'subscription',
       payment_method_types: ['card'],
       line_items:           [{ price: priceId, quantity: 1 }],
