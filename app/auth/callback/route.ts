@@ -44,6 +44,10 @@ export async function GET(request: NextRequest) {
       type: type as 'email' | 'recovery' | 'invite' | 'email_change',
     })
     if (!verifyError) {
+      // Recovery: redireciona para página de nova senha
+      if (type === 'recovery') {
+        return NextResponse.redirect(`${origin}/nova-senha`)
+      }
       return NextResponse.redirect(`${origin}/criar`)
     }
     console.error('[auth/callback] verifyOtp error:', verifyError)
