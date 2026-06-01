@@ -37,6 +37,12 @@ export async function GET(request: NextRequest) {
     }
   )
 
+  // Recovery: redireciona direto para /nova-senha passando token na URL
+  // A página client-side processa o token sem depender de cookies
+  if (type === 'recovery' && token_hash) {
+    return NextResponse.redirect(`${origin}/nova-senha?token_hash=${token_hash}&type=recovery`)
+  }
+
   // Email confirmation via token_hash
   if (token_hash && type) {
     const { error: verifyError } = await supabase.auth.verifyOtp({
@@ -44,10 +50,6 @@ export async function GET(request: NextRequest) {
       type: type as 'email' | 'recovery' | 'invite' | 'email_change',
     })
     if (!verifyError) {
-      // Recovery: redireciona para página de nova senha
-      if (type === 'recovery') {
-        return NextResponse.redirect(`${origin}/nova-senha`)
-      }
       return NextResponse.redirect(`${origin}/criar`)
     }
     console.error('[auth/callback] verifyOtp error:', verifyError)

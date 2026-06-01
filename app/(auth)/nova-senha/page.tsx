@@ -1,16 +1,39 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-export default function NovaSenhaPage() {
-  const supabase = createClient()
-  const router   = useRouter()
-  const [senha, setSenha]           = useState('')
-  const [confirma, setConfirma]     = useState('')
-  const [erro, setErro]             = useState('')
-  const [loading, setLoading]       = useState(false)
-  const [sucesso, setSucesso]       = useState(false)
+function NovaSenhaForm() {
+  const supabase     = createClient()
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const token_hash   = searchParams.get('token_hash')
+  const type         = searchParams.get('type')
+
+  const [senha, setSenha]       = useState('')
+  const [confirma, setConfirma] = useState('')
+  const [erro, setErro]         = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [pronto, setPronto]     = useState(false)
+  const [sucesso, setSucesso]   = useState(false)
+
+  useEffect(() => {
+    async function verificar() {
+      if (token_hash && type === 'recovery') {
+        // Verifica o token no cliente — funciona mesmo sem cookies
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash,
+          type: 'recovery',
+        })
+        if (error) {
+          setErro('Link inválido ou expirado. Solicite um novo.')
+        }
+      }
+      setPronto(true)
+    }
+    verificar()
+  }, [token_hash])
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault()
@@ -29,7 +52,7 @@ export default function NovaSenhaPage() {
     const { error } = await supabase.auth.updateUser({ password: senha })
 
     if (error) {
-      setErro('Erro ao atualizar senha. O link pode ter expirado.')
+      setErro('Erro ao atualizar senha. Solicite um novo link.')
       setLoading(false)
       return
     }
@@ -37,6 +60,13 @@ export default function NovaSenhaPage() {
     setSucesso(true)
     setTimeout(() => router.push('/criar'), 2000)
   }
+
+  if (!pronto) return (
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#080B12' }}>
+      <div style={{ width:'32px', height:'32px', border:'3px solid rgba(45,111,255,0.15)', borderTopColor:'#2D6FFF', borderRadius:'50%', animation:'spin 0.8s linear infinite' }}/>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  )
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#080B12', padding:'1rem' }}>
@@ -64,6 +94,13 @@ export default function NovaSenhaPage() {
               </div>
               <p style={{ color:'#8B95A8', fontSize:'0.875rem' }}>Sua senha foi atualizada com sucesso.</p>
             </div>
+          ) : erro && !senha ? (
+            <div style={{ textAlign:'center' }}>
+              <p style={{ color:'#FC8181', fontSize:'0.875rem', marginBottom:'1.5rem' }}>{erro}</p>
+              <a href="/recuperar-senha" style={{ display:'block', background:'#2D6FFF', color:'#fff', textDecoration:'none', borderRadius:'8px', padding:'0.8rem', textAlign:'center', fontWeight:600, fontSize:'0.875rem' }}>
+                Solicitar novo link
+              </a>
+            </div>
           ) : (
             <form onSubmit={salvar} style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
               <div>
@@ -89,4 +126,8 @@ export default function NovaSenhaPage() {
       </div>
     </div>
   )
+}
+
+export default function NovaSenhaPage() {
+  return <Suspense><NovaSenhaForm /></Suspense>
 }
