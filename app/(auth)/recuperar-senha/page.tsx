@@ -15,10 +15,8 @@ export default function RecuperarSenhaPage() {
     setErro('')
     setLoading(true)
 
-    // URL deve estar na whitelist do Supabase (Authentication > URL Configuration > Redirect URLs)
-    const redirectTo = `${window.location.origin}/auth/callback`
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo,
+      redirectTo: 'https://sliqr.vercel.app/auth/callback',
     })
 
     if (error) {
