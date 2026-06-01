@@ -58,6 +58,9 @@ export default function GerenciarPage() {
   return (
     <div style={{ padding:'clamp(1rem,4vw,2.5rem)', maxWidth:'600px', width:'100%', boxSizing:'border-box' as const }}>
       <div style={{ marginBottom:'2rem' }}>
+        <button onClick={() => router.back()} style={{ background:'transparent', border:'none', color:'#4A5568', fontSize:'0.82rem', cursor:'pointer', display:'flex', alignItems:'center', gap:'5px', marginBottom:'1rem', padding:0, fontFamily:'inherit' }}>
+          ← Voltar
+        </button>
         <h1 style={{ fontSize:'1.75rem', fontWeight:700, letterSpacing:'-0.03em', marginBottom:'0.4rem' }}>Minha assinatura</h1>
         <p style={{ color:'#8B95A8', fontSize:'0.9rem' }}>Detalhes e gerenciamento do seu plano.</p>
       </div>

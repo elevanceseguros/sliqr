@@ -55,6 +55,8 @@ export async function GET(request: NextRequest) {
     if (!exchangeError) {
       const response = NextResponse.redirect(`${origin}${next}`)
       response.cookies.delete('sliqr_after_login')
+      // Evita que o callback fique no histórico do browser
+      response.headers.set('Cache-Control', 'no-store')
       return response
     }
     console.error('[auth/callback] exchangeCodeForSession error:', exchangeError)
@@ -64,5 +66,6 @@ export async function GET(request: NextRequest) {
   // O Supabase detecta automaticamente o hash e seta a sessão
   const response = NextResponse.redirect(`${origin}${next}`)
   response.cookies.delete('sliqr_after_login')
+  response.headers.set('Cache-Control', 'no-store')
   return response
 }
