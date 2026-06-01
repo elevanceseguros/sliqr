@@ -99,6 +99,11 @@ function LoginForm() {
                 style={{ width:'100%', background:'#080B12', border:'1px solid rgba(255,255,255,0.1)', borderRadius:'8px', padding:'0.7rem 1rem', color:'#F0F4FF', fontSize:'0.9rem', fontFamily:'Sora, sans-serif', outline:'none' }}
                 placeholder="••••••••" />
             </div>
+            <div style={{ textAlign:'right', marginTop:'-0.5rem' }}>
+              <Link href="/recuperar-senha" style={{ color:'#4A5568', fontSize:'0.78rem', textDecoration:'none' }}>
+                Esqueci minha senha
+              </Link>
+            </div>
             {erro && <p style={{ color:'#FC8181', fontSize:'0.82rem', margin:0 }}>{erro}</p>}
             <button type="submit" disabled={carregando}
               style={{ background:'#2D6FFF', color:'#fff', border:'none', borderRadius:'8px', padding:'0.8rem', fontFamily:'Sora, sans-serif', fontWeight:600, fontSize:'0.9rem', cursor: carregando ? 'not-allowed' : 'pointer', opacity: carregando ? 0.7 : 1 }}>
