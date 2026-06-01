@@ -8,7 +8,7 @@ import { CreditCard, ArrowUpRight, Calendar, Zap, Image, Clock, Lightbulb } from
 import Link from 'next/link'
 
 export default function GerenciarPage() {
-  const { plano, postsHoje, maxPosts } = usePlano()
+  const { plano, postsHoje, maxPosts, pronto } = usePlano()
   const [assinatura, setAssinatura]    = useState<any>(null)
   const [portalLoading, setPortalLoading] = useState(false)
   const supabase = createClient()
@@ -16,6 +16,7 @@ export default function GerenciarPage() {
   const limites  = LIMITES[plano] ?? LIMITES.free
 
   useEffect(() => {
+    if (!pronto) return  // aguarda plano real antes de redirecionar
     if (plano === 'free') { router.replace('/planos'); return }
     async function buscar() {
       const { data: { session } } = await supabase.auth.getSession()

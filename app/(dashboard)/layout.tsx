@@ -154,7 +154,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   )
 
-  const ctxValue = { plano, postsHoje, maxPosts: limites.maxPosts, maxSlides: limites.maxSlides, temLogo: limites.temLogo, temHistorico: limites.temHistorico, temSugestoes: limites.temSugestoes }
+  const ctxValue = { plano, postsHoje, maxPosts: limites.maxPosts, maxSlides: limites.maxSlides, temLogo: limites.temLogo, temHistorico: limites.temHistorico, temSugestoes: limites.temSugestoes, pronto }
 
   return (
     <PlanoContext.Provider value={ctxValue}>

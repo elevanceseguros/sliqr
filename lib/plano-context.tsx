@@ -9,6 +9,7 @@ export interface PlanoCtx {
   temLogo:       boolean
   temHistorico:  boolean
   temSugestoes:  boolean
+  pronto:        boolean
 }
 
 export { LIMITES } from '@/lib/plano-limites'
@@ -16,6 +17,7 @@ export { LIMITES } from '@/lib/plano-limites'
 export const PlanoContext = createContext<PlanoCtx>({
   plano: 'free', postsHoje: 0, maxPosts: 1, maxSlides: 1,
   temLogo: false, temHistorico: false, temSugestoes: false,
+  pronto: false,
 })
 
 export function usePlano() { return useContext(PlanoContext) }
