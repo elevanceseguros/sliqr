@@ -7,30 +7,18 @@ export default function LandingPage() {
 
   const desc = 0.25 // 25% de desconto no anual
 
+  // Todas as features para renderização uniforme
+  const TODAS = ['posts','slides','zip','legenda','historico','logo','sugestoes']
+  const LABELS: Record<string,string> = {
+    posts:'posts/dia', slides:'slides', zip:'Download ZIP',
+    legenda:'Legenda com hashtags', historico:'Histórico de posts',
+    logo:'Logo da empresa', sugestoes:'Sugestões de conteúdo',
+  }
   const planos = [
-    {
-      nome:'Free', preco:0, features:[
-        '1 post por dia','1 slide por post','Download ZIP','Legenda com hashtags',
-      ], off:['Sem logo própria','Histórico de posts'], featured:false
-    },
-    {
-      nome:'Starter', preco:37, features:[
-        '1 post por dia','Até 5 slides','Download ZIP','Legenda com hashtags',
-        'Histórico de posts',
-      ], off:['Sem logo própria'], featured:false
-    },
-    {
-      nome:'Pro', preco:77, features:[
-        '2 posts por dia','Até 10 slides','Download ZIP','Legenda com hashtags',
-        'Histórico de posts','Logo da sua empresa','Sugestões de conteúdo',
-      ], off:[], featured:true
-    },
-    {
-      nome:'Ilimitado', preco:147, features:[
-        'Posts sem limite','Até 10 slides','Download ZIP','Legenda com hashtags',
-        'Histórico de posts','Logo da sua empresa','Sugestões de conteúdo',
-      ], off:[], featured:false
-    },
+    { nome:'Free',      preco:0,   feat:{ posts:'1 post/dia',    slides:'1 slide',       zip:true, legenda:true, historico:false, logo:false, sugestoes:false }, featured:false },
+    { nome:'Starter',   preco:37,  feat:{ posts:'1 post/dia',    slides:'Até 5 slides',  zip:true, legenda:true, historico:true,  logo:false, sugestoes:false }, featured:false },
+    { nome:'Pro',       preco:77,  feat:{ posts:'2 posts/dia',   slides:'Até 10 slides', zip:true, legenda:true, historico:true,  logo:true,  sugestoes:true  }, featured:true  },
+    { nome:'Ilimitado', preco:147, feat:{ posts:'Ilimitado',     slides:'Até 10 slides', zip:true, legenda:true, historico:true,  logo:true,  sugestoes:true  }, featured:false },
   ]
 
   function precoMes(base: number) {
@@ -207,9 +195,9 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="planos-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'16px',alignItems:'start'}}>
+        <div className="planos-grid" style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'16px',alignItems:'stretch'}}>
           {planos.map(p => (
-            <div key={p.nome} style={{background: p.featured ? 'linear-gradient(145deg,#0D1829,#0A1422)' : '#0D1117',border: p.featured ? '1px solid rgba(45,111,255,0.4)' : '1px solid rgba(255,255,255,0.07)',borderRadius:'24px',padding:'2rem',boxShadow: p.featured ? '0 0 0 1px rgba(45,111,255,0.1),0 20px 50px rgba(45,111,255,0.12)' : 'none',position:'relative'}}>
+            <div key={p.nome} style={{background: p.featured ? 'linear-gradient(145deg,#0D1829,#0A1422)' : '#0D1117',border: p.featured ? '1px solid rgba(45,111,255,0.4)' : '1px solid rgba(255,255,255,0.07)',borderRadius:'24px',padding:'2rem',boxShadow: p.featured ? '0 0 0 1px rgba(45,111,255,0.1),0 20px 50px rgba(45,111,255,0.12)' : 'none',position:'relative',display:'flex',flexDirection:'column'}}>
 
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'1.5rem'}}>
                 <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.75rem',fontWeight:600,letterSpacing:'0.08em',textTransform:'uppercase',color:'#8B95A8'}}>{p.nome}</div>
@@ -243,22 +231,22 @@ export default function LandingPage() {
 
               <div style={{height:'1px',background:'rgba(255,255,255,0.07)',marginBottom:'1.5rem'}}/>
               <ul style={{listStyle:'none',display:'flex',flexDirection:'column',gap:'10px',marginBottom:'2rem'}}>
-                {p.features.map(f => (
-                  <li key={f} style={{display:'flex',alignItems:'center',gap:'10px',fontSize:'0.85rem',color:'#8B95A8',fontWeight:300}}>
-                    <span style={{width:'16px',height:'16px',borderRadius:'4px',background:'rgba(45,111,255,0.12)',border:'1px solid rgba(45,111,255,0.35)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#2D6FFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    </span>
-                    {f}
-                  </li>
-                ))}
-                {p.off.map(f => (
-                  <li key={f} style={{display:'flex',alignItems:'center',gap:'10px',fontSize:'0.85rem',color:'#4A5568',fontWeight:300,opacity:0.5}}>
-                    <span style={{width:'16px',height:'16px',borderRadius:'4px',background:'#1A2235',border:'1px solid rgba(255,255,255,0.07)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#4A5568" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </span>
-                    {f}
-                  </li>
-                ))}
+                {TODAS.map(k => {
+                  const val   = (p as any).feat[k]
+                  const ativo = val !== false
+                  const label = typeof val === 'string' ? val : LABELS[k]
+                  return (
+                    <li key={k} style={{display:'flex',alignItems:'center',gap:'10px',fontSize:'0.82rem',color:ativo ? '#8B95A8' : '#2D3748',fontWeight:300,textDecoration:ativo ? 'none' : 'line-through'}}>
+                      <span style={{width:'14px',height:'14px',borderRadius:'3px',background:ativo ? 'rgba(45,111,255,0.12)' : '#111827',border:`1px solid ${ativo ? 'rgba(45,111,255,0.35)' : 'rgba(255,255,255,0.05)'}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                        {ativo
+                          ? <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#2D6FFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          : <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#FC4444" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        }
+                      </span>
+                      {label}
+                    </li>
+                  )
+                })}
               </ul>
               <Link
                 href={p.preco === 0 ? '/cadastro' : `/cadastro?plano=${p.nome.toLowerCase()}&periodo=${anual ? 'anual' : 'mensal'}`}
