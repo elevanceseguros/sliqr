@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
+  // Log para diagnóstico
+  console.log('[callback] URL:', request.url)
+  console.log('[callback] params:', Object.fromEntries(searchParams.entries()))
   const code       = searchParams.get('code')
   const token_hash = searchParams.get('token_hash')
   const type       = searchParams.get('type')
