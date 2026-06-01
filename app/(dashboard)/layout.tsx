@@ -60,6 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     free:'#4A5568', starter:'#2D6FFF', pro:'#00D4FF', ilimitado:'#6BCB77',
   }
 
+  const limites = LIMITES[plano] ?? LIMITES.free
   const links = [
     { href:'/criar',      icon:<Zap size={15}/>,        label:'Criar post',    recurso: null },
     { href:'/sugestoes',  icon:<Lightbulb size={15}/>,  label:'Sugestões',     recurso: 'sugestoes' },
@@ -154,7 +155,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   )
 
-  const limites = LIMITES[plano] ?? LIMITES.free
   const ctxValue = { plano, postsHoje, maxPosts: limites.maxPosts, maxSlides: limites.maxSlides, temLogo: limites.temLogo, temHistorico: limites.temHistorico, temSugestoes: limites.temSugestoes }
 
   return (
