@@ -18,26 +18,26 @@ export default function GerenciarPage() {
 
   useEffect(() => {
     if (!pronto) return
+    // Se o context já confirma que tem plano pago, usa ele
+    if (plano === 'free') { router.replace('/planos'); return }
+    // Plano real vem do context (fonte de verdade é o Supabase)
+    setPlanoReal(plano)
+    // Busca dados da assinatura no Stripe para mostrar data/tipo
     async function buscar() {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) { router.replace('/planos'); return }
-      // Busca assinatura direto no Stripe — fonte de verdade
-      const res  = await fetch('/api/stripe/assinatura', {
+      if (!session) return
+      const res = await fetch('/api/stripe/assinatura', {
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
-      if (!res.ok) { router.replace('/planos'); return }
-      const data = await res.json()
-      if (!data?.status) {
-        // Sem assinatura ativa no Stripe — só vai para /planos se o contexto também diz free
-        if (plano === 'free') { router.replace('/planos'); return }
+      if (res.ok) {
+        const data = await res.json()
+        if (data?.status) setAssinatura(data)
+        // Se API retornou plano_meta diferente, atualiza
+        if (data?.plano_meta && data.plano_meta !== plano) setPlanoReal(data.plano_meta)
       }
-      setAssinatura(data)
-      // Extrai plano real dos metadados da assinatura
-      if (data?.plano_meta) setPlanoReal(data.plano_meta)
-      else if (plano !== 'free') setPlanoReal(plano)
     }
     buscar()
-  }, [pronto])
+  }, [pronto, plano])
 
   async function abrirPortal() {
     setPortalLoading(true)
