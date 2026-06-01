@@ -115,20 +115,47 @@ export default function LandingPage() {
 
         {/* Mockup de slides */}
         <style>{`
+          .hero-mockup-desktop { display: flex; }
+          .hero-mockup-mobile  { display: none; }
           @media (max-width: 600px) {
-            .hero-mockup-side { display: none !important; }
-            .hero-mockup-center { width: 75vw !important; transform: none !important; }
+            .hero-mockup-desktop { display: none; }
+            .hero-mockup-mobile  { display: flex; }
           }
+          .hero-scroll::-webkit-scrollbar { display: none; }
+          .hero-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         `}</style>
-        <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:'900px',margin:'3rem auto 0',display:'flex',gap:'12px',justifyContent:'center',alignItems:'flex-end',padding:'0 5%',overflow:'hidden'}}>
-          <div className="hero-mockup-side" style={{flex:'0 0 auto',width:'clamp(120px,20vw,240px)',borderRadius:'14px',overflow:'hidden',boxShadow:'0 20px 50px rgba(0,0,0,0.5)',transform:'rotate(-3deg) translateY(20px)',opacity:0.65}}>
+
+        {/* Desktop: 3 slides com rotação */}
+        <div className="hero-mockup-desktop" style={{position:'relative',zIndex:1,width:'100%',maxWidth:'900px',margin:'3rem auto 0',gap:'12px',justifyContent:'center',alignItems:'flex-end',padding:'0 5%',overflow:'hidden'}}>
+          <div style={{flex:'0 0 auto',width:'clamp(120px,20vw,240px)',borderRadius:'14px',overflow:'hidden',boxShadow:'0 20px 50px rgba(0,0,0,0.5)',transform:'rotate(-3deg) translateY(20px)',opacity:0.65}}>
             <img src="/slides/demo5.png" alt="exemplo de carrossel" style={{width:'100%',display:'block'}}/>
           </div>
-          <div className="hero-mockup-center" style={{flex:'0 0 auto',width:'clamp(160px,24vw,280px)',borderRadius:'16px',overflow:'hidden',boxShadow:'0 28px 70px rgba(0,0,0,0.6)',transform:'rotate(-1deg)',zIndex:2,border:'1px solid rgba(255,255,255,0.08)'}}>
+          <div style={{flex:'0 0 auto',width:'clamp(160px,24vw,280px)',borderRadius:'16px',overflow:'hidden',boxShadow:'0 28px 70px rgba(0,0,0,0.6)',transform:'rotate(-1deg)',zIndex:2,border:'1px solid rgba(255,255,255,0.08)'}}>
             <img src="/slides/demo1.png" alt="exemplo de carrossel" style={{width:'100%',display:'block'}}/>
           </div>
-          <div className="hero-mockup-side" style={{flex:'0 0 auto',width:'clamp(120px,20vw,240px)',borderRadius:'14px',overflow:'hidden',boxShadow:'0 20px 50px rgba(0,0,0,0.5)',transform:'rotate(2deg) translateY(15px)',opacity:0.7}}>
+          <div style={{flex:'0 0 auto',width:'clamp(120px,20vw,240px)',borderRadius:'14px',overflow:'hidden',boxShadow:'0 20px 50px rgba(0,0,0,0.5)',transform:'rotate(2deg) translateY(15px)',opacity:0.7}}>
             <img src="/slides/demo2.png" alt="exemplo de carrossel" style={{width:'100%',display:'block'}}/>
+          </div>
+        </div>
+
+        {/* Mobile: carrossel deslizável com peek dos laterais */}
+        <div className="hero-mockup-mobile" style={{position:'relative',zIndex:1,width:'100%',margin:'2.5rem auto 0',justifyContent:'center'}}>
+          <div className="hero-scroll" style={{display:'flex',gap:'12px',overflowX:'auto',scrollSnapType:'x mandatory',WebkitOverflowScrolling:'touch',padding:'0 12% 1rem',width:'100%',boxSizing:'border-box'}}>
+            {[
+              {src:'/slides/demo5.png', rot:'-2deg', op:'0.75'},
+              {src:'/slides/demo1.png', rot:'0deg',  op:'1'},
+              {src:'/slides/demo2.png', rot:'2deg',  op:'0.75'},
+            ].map((s,i) => (
+              <div key={i} style={{flex:'0 0 72vw',scrollSnapAlign:'center',borderRadius:'16px',overflow:'hidden',boxShadow:'0 20px 50px rgba(0,0,0,0.5)',transform:`rotate(${s.rot})`,opacity:Number(s.op),border: i===1 ? '1px solid rgba(255,255,255,0.1)' : 'none'}}>
+                <img src={s.src} alt="exemplo de carrossel" style={{width:'100%',display:'block'}}/>
+              </div>
+            ))}
+          </div>
+          {/* Indicadores */}
+          <div style={{display:'flex',justifyContent:'center',gap:'6px',marginTop:'0.5rem'}}>
+            {[0,1,2].map(i => (
+              <div key={i} style={{width: i===1 ? '20px' : '6px',height:'6px',borderRadius:'3px',background: i===1 ? '#2D6FFF' : 'rgba(255,255,255,0.2)',transition:'width 0.3s'}}/>
+            ))}
           </div>
         </div>
       </section>
