@@ -140,7 +140,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
           )}
-          <Link href="/planos" style={{ display:'block', marginTop:'4px', background: plano === 'free' ? '#2D6FFF' : 'transparent', color: plano === 'free' ? '#fff' : '#8B95A8', textAlign:'center', borderRadius:'6px', padding:'5px', fontSize:'0.75rem', fontWeight:600, textDecoration:'none', border: plano !== 'free' ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
+          <Link href={plano === 'free' ? '/planos' : '/gerenciar'} style={{ display:'block', marginTop:'4px', background: plano === 'free' ? '#2D6FFF' : 'transparent', color: plano === 'free' ? '#fff' : '#8B95A8', textAlign:'center', borderRadius:'6px', padding:'5px', fontSize:'0.75rem', fontWeight:600, textDecoration:'none', border: plano !== 'free' ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
             <span style={{ display:'flex', alignItems:'center', gap:'5px', justifyContent:'center' }}>
               {plano === 'free' ? 'Fazer upgrade' : 'Gerenciar plano'}
               <ArrowUpRight size={12}/>
