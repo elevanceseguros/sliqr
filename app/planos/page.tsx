@@ -36,7 +36,21 @@ const DESC = 0.25
 export default function PlanosPage() {
   const { plano: planoAtual } = usePlano()
   const [anual, setAnual]     = useState(true)
-  const [loading, setLoading] = useState('')
+  const [loading, setLoading]   = useState('')
+  const [portalLoading, setPortalLoading] = useState(false)
+
+  async function abrirPortal() {
+    setPortalLoading(true)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    const res  = await fetch('/api/stripe/portal', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
+    })
+    const data = await res.json()
+    if (data.url) window.location.href = data.url
+    setPortalLoading(false)
+  }
   const supabase              = createClient()
   const router                = useRouter()
 
@@ -169,7 +183,17 @@ export default function PlanosPage() {
         })}
       </div>
 
-      <p style={{ textAlign:'center', marginTop:'2rem', fontSize:'0.78rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace' }}>
+      {planoAtual !== 'free' && (
+        <div style={{ textAlign:'center', marginTop:'1.5rem' }}>
+          <button
+            onClick={abrirPortal}
+            disabled={portalLoading}
+            style={{ background:'transparent', border:'none', color:'#4A5568', fontSize:'0.8rem', cursor:'pointer', textDecoration:'underline' }}>
+            {portalLoading ? 'Aguarde...' : 'Gerenciar ou cancelar assinatura'}
+          </button>
+        </div>
+      )}
+      <p style={{ textAlign:'center', marginTop:'1rem', fontSize:'0.78rem', color:'#4A5568', fontFamily:'JetBrains Mono, monospace' }}>
         // Pagamento seguro via Stripe · Cancele quando quiser
       </p>
     </div>

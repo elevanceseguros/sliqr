@@ -27,6 +27,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const data = await res.json()
       if (data.empresa?.nome) setEmpresa(data.empresa.nome)
       setPronto(true)
+
+      // Pós-pagamento: aguarda webhook e recarrega plano
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('upgrade') === 'sucesso') {
+        setTimeout(async () => {
+          const { data: perfilAtual } = await supabase
+            .from('perfis').select('plano, posts_hoje').eq('id', session.user.id).single()
+          if (perfilAtual) {
+            setPlano(perfilAtual.plano ?? 'free')
+            setPostsHoje(perfilAtual.posts_hoje ?? 0)
+          }
+          window.history.replaceState({}, '', '/criar')
+        }, 3000)
+      }
     }
     verificar()
   }, [])
