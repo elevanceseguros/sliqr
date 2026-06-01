@@ -75,7 +75,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   function NavLink({ href, icon, label, bloqueado }: { href: string; icon: React.ReactNode; label: string; bloqueado?: boolean }) {
     const ativo = pathname === href
     if (bloqueado) return (
-      <Link href="/planos"
+      <Link href={plano === 'free' ? '/planos' : '/gerenciar'}
         style={{ display:'flex', alignItems:'center', gap:'10px', padding:'0.65rem 0.85rem', borderRadius:'8px', color:'#4A5568', textDecoration:'none', fontSize:'0.875rem', fontWeight:500, background:'transparent', transition:'all 0.15s', cursor:'pointer' }}>
         {icon}
         <span>{label}</span>
@@ -140,12 +140,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
           )}
-          <Link href={plano === 'free' ? '/planos' : '/gerenciar'} style={{ display:'block', marginTop:'4px', background: plano === 'free' ? '#2D6FFF' : 'transparent', color: plano === 'free' ? '#fff' : '#8B95A8', textAlign:'center', borderRadius:'6px', padding:'5px', fontSize:'0.75rem', fontWeight:600, textDecoration:'none', border: plano !== 'free' ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
+          {pronto && <Link href={plano === 'free' ? '/planos' : '/gerenciar'} style={{ display:'block', marginTop:'4px', background: plano === 'free' ? '#2D6FFF' : 'transparent', color: plano === 'free' ? '#fff' : '#8B95A8', textAlign:'center', borderRadius:'6px', padding:'5px', fontSize:'0.75rem', fontWeight:600, textDecoration:'none', border: plano !== 'free' ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
             <span style={{ display:'flex', alignItems:'center', gap:'5px', justifyContent:'center' }}>
               {plano === 'free' ? 'Fazer upgrade' : 'Gerenciar plano'}
               <ArrowUpRight size={12}/>
             </span>
-          </Link>
+          </Link>}
         </div>
         <button onClick={sair} style={{ width:'100%', display:'flex', alignItems:'center', gap:'8px', background:'transparent', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'8px', padding:'0.6rem 0.75rem', color:'#4A5568', fontSize:'0.82rem', cursor:'pointer', fontFamily:'Sora, sans-serif' }}>
           <LogOut size={14}/> Sair
@@ -182,7 +182,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
           {/* Pill de plano visível no mobile */}
-          <Link href="/planos" style={{ display:'flex', alignItems:'center', gap:'6px', background:'#111827', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'100px', padding:'4px 10px', textDecoration:'none' }}>
+          <Link href={plano === 'free' ? '/planos' : '/gerenciar'} style={{ display:'flex', alignItems:'center', gap:'6px', background:'#111827', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'100px', padding:'4px 10px', textDecoration:'none' }}>
             <span style={{ fontSize:'0.65rem', fontWeight:700, color: planoCores[plano] ?? '#4A5568', textTransform:'uppercase', letterSpacing:'0.06em' }}>{plano}</span>
             {limites.maxPosts < 999 && (
               <span style={{ fontSize:'0.65rem', color: postsHoje >= limites.maxPosts ? '#FC8181' : '#4A5568', fontFamily:'JetBrains Mono,monospace' }}>
