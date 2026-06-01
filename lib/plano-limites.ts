@@ -6,7 +6,7 @@ export const LIMITES: Record<string, {
   temHistorico: boolean
   temSugestoes: boolean
 }> = {
-  free:      { maxPosts: 1,   maxSlides: 1,  temLogo: false, temHistorico: false, temSugestoes: false },
+  free:      { maxPosts: 1,   maxSlides: 2,  temLogo: false, temHistorico: false, temSugestoes: false },
   starter:   { maxPosts: 1,   maxSlides: 5,  temLogo: false, temHistorico: true,  temSugestoes: false },
   pro:       { maxPosts: 2,   maxSlides: 10, temLogo: true,  temHistorico: true,  temSugestoes: true  },
   ilimitado: { maxPosts: 999, maxSlides: 10, temLogo: true,  temHistorico: true,  temSugestoes: true  },

@@ -15,7 +15,7 @@ export default function LandingPage() {
     logo:'Logo da empresa', sugestoes:'Sugestões de conteúdo',
   }
   const planos = [
-    { nome:'Free',      preco:0,   feat:{ posts:'1 post/dia',    slides:'1 slide',       zip:true, legenda:true, historico:false, logo:false, sugestoes:false }, featured:false },
+    { nome:'Free',      preco:0,   feat:{ posts:'1 post/dia',    slides:'Até 2 slides',       zip:true, legenda:true, historico:false, logo:false, sugestoes:false }, featured:false },
     { nome:'Starter',   preco:37,  feat:{ posts:'1 post/dia',    slides:'Até 5 slides',  zip:true, legenda:true, historico:true,  logo:false, sugestoes:false }, featured:false },
     { nome:'Pro',       preco:77,  feat:{ posts:'2 posts/dia',   slides:'Até 10 slides', zip:true, legenda:true, historico:true,  logo:true,  sugestoes:true  }, featured:true  },
     { nome:'Ilimitado', preco:147, feat:{ posts:'Ilimitado',     slides:'Até 10 slides', zip:true, legenda:true, historico:true,  logo:true,  sugestoes:true  }, featured:false },
@@ -112,6 +112,19 @@ export default function LandingPage() {
             // GRÁTIS PARA COMEÇAR · SEM CARTÃO · SEM CONFIGURAÇÃO
           </p>
         </div>
+
+        {/* Mockup de slides */}
+        <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:'900px',margin:'4rem auto 0',display:'flex',gap:'16px',justifyContent:'center',alignItems:'flex-end',padding:'0 5%'}}>
+          <div style={{flex:'0 0 auto',width:'clamp(160px,22vw,260px)',borderRadius:'16px',overflow:'hidden',boxShadow:'0 24px 60px rgba(0,0,0,0.5)',transform:'rotate(-3deg) translateY(20px)',opacity:0.7}}>
+            <img src="/slides/demo5.png" alt="exemplo de carrossel" style={{width:'100%',display:'block'}}/>
+          </div>
+          <div style={{flex:'0 0 auto',width:'clamp(180px,26vw,300px)',borderRadius:'16px',overflow:'hidden',boxShadow:'0 32px 80px rgba(0,0,0,0.6)',transform:'rotate(-1deg)',zIndex:2,border:'1px solid rgba(255,255,255,0.08)'}}>
+            <img src="/slides/demo1.png" alt="exemplo de carrossel" style={{width:'100%',display:'block'}}/>
+          </div>
+          <div style={{flex:'0 0 auto',width:'clamp(160px,22vw,260px)',borderRadius:'16px',overflow:'hidden',boxShadow:'0 24px 60px rgba(0,0,0,0.5)',transform:'rotate(2deg) translateY(15px)',opacity:0.75}}>
+            <img src="/slides/demo2.png" alt="exemplo de carrossel" style={{width:'100%',display:'block'}}/>
+          </div>
+        </div>
       </section>
 
       {/* COMO FUNCIONA */}
@@ -122,16 +135,22 @@ export default function LandingPage() {
         <h2 style={{fontSize:'clamp(2rem,3.5vw,2.8rem)',fontWeight:700,letterSpacing:'-0.03em',lineHeight:1.1,marginBottom:'4rem'}}>
           Três passos e o post<br/><span style={{background:'linear-gradient(90deg,#2D6FFF,#00D4FF)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>está pronto.</span>
         </h2>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:'1px',background:'rgba(255,255,255,0.07)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'24px',overflow:'hidden'}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:'16px'}}>
           {[
-            {n:'01',t:'Digite o tema do seu negócio',p:'Qualquer assunto, qualquer área. Seguro, saúde, beleza, alimentação — a Sliqr entende o contexto e cria o conteúdo certo para o seu público.'},
-            {n:'02',t:'Escolha a cor, a fonte e o estilo',p:'Personalize em segundos com a paleta de cores da sua marca. O carrossel já sai com imagens geradas por IA e legenda com hashtags incluída.'},
-            {n:'03',t:'Baixe e publique no Instagram',p:'Download do ZIP com todos os slides prontos e o arquivo de legenda. Só copiar, colar e postar. Sem etapas extras.'},
+            {n:'01',emoji:'✍️',t:'Digite o tema',p:'Qualquer assunto do seu negócio. A Sliqr entende o contexto e gera conteúdo específico e relevante para o seu público.',img:'/slides/demo4.png'},
+            {n:'02',emoji:'🎨',t:'Personalize as cores e fonte',p:'Escolha a paleta da sua marca em segundos. Imagens geradas por IA e legenda com hashtags já incluídas automaticamente.',img:'/slides/demo1.png'},
+            {n:'03',emoji:'📲',t:'Baixe e publique',p:'ZIP com todos os slides + legenda pronta para copiar. Do prompt ao post em menos de 1 minuto.',img:'/slides/demo2.png'},
           ].map(s => (
-            <div key={s.n} style={{background:'#0D1117',padding:'2.5rem 2rem'}}>
-              <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.65rem',letterSpacing:'0.1em',color:'#4A5568',marginBottom:'1.25rem'}}>PASSO {s.n}</div>
-              <h3 style={{fontSize:'1rem',fontWeight:600,marginBottom:'0.5rem',letterSpacing:'-0.02em'}}>{s.t}</h3>
-              <p style={{fontSize:'0.875rem',color:'#8B95A8',lineHeight:1.65,fontWeight:300}}>{s.p}</p>
+            <div key={s.n} style={{background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'20px',overflow:'hidden'}}>
+              <div style={{padding:'1.75rem 1.75rem 0'}}>
+                <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'0.75rem'}}>
+                  <div style={{width:'32px',height:'32px',background:'rgba(45,111,255,0.1)',border:'1px solid rgba(45,111,255,0.2)',borderRadius:'8px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1rem'}}>{s.emoji}</div>
+                  <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.65rem',letterSpacing:'0.1em',color:'#2D6FFF'}}>PASSO {s.n}</div>
+                </div>
+                <h3 style={{fontSize:'1.1rem',fontWeight:600,marginBottom:'0.5rem',letterSpacing:'-0.02em'}}>{s.t}</h3>
+                <p style={{fontSize:'0.875rem',color:'#8B95A8',lineHeight:1.65,fontWeight:300,marginBottom:'1.25rem'}}>{s.p}</p>
+              </div>
+              <img src={s.img} alt={s.t} style={{width:'100%',display:'block',borderTop:'1px solid rgba(255,255,255,0.05)'}}/>
             </div>
           ))}
         </div>

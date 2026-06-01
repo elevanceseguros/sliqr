@@ -29,7 +29,7 @@ const FEATURE_LABEL: Record<string, string> = {
 const PLANOS_DEF = [
   {
     id:'free', nome:'Free', preco:0, precoAnual:0,
-    features:{ posts_dia:'1 post/dia', slides:'1 slide', download_zip:true, legenda:true, historico:false, logo:false, sugestoes:false },
+    features:{ posts_dia:'1 post/dia', slides:'Até 2 slides', download_zip:true, legenda:true, historico:false, logo:false, sugestoes:false },
     featured:false,
   },
   {
