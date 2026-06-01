@@ -9,27 +9,18 @@ export default function ProcessarAuth() {
 
   useEffect(() => {
     async function processar() {
-      // Lê o hash da URL — ex: #access_token=...&type=recovery
-      const hash   = window.location.hash.substring(1)
-      const params = new URLSearchParams(hash)
-      const type   = params.get('type')
+      // Aguarda um tick para garantir que o Supabase processou o hash
+      await new Promise(r => setTimeout(r, 500))
 
-      // Aguarda o Supabase processar a sessão do hash automaticamente
+      // Tenta pegar sessão — o Supabase client processa o hash automaticamente
       const { data: { session } } = await supabase.auth.getSession()
 
-      if (type === 'recovery' || params.get('access_token')) {
-        // É um recovery — vai para nova senha
-        router.replace('/nova-senha')
-        return
-      }
-
       if (session) {
-        // Sessão ativa — vai para o app
         router.replace('/criar')
         return
       }
 
-      // Fallback
+      // Sem sessão — fallback
       router.replace('/login')
     }
 
