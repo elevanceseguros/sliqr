@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { gerarSlides } from '@/lib/claude/gerar-slides'
-import { LIMITES } from '@/lib/plano-context'
+import { LIMITES } from '@/lib/plano-limites'
 
 const MAX_POSTS_FREE = 1
 

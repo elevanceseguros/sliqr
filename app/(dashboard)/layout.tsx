@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Zap, Clock, LogOut, Building2, Lightbulb, Menu, X, CreditCard, ArrowUpRight } from 'lucide-react'
 import { usePathname } from 'next/navigation'
-import { PlanoContext, LIMITES } from '@/lib/plano-context'
+import { PlanoContext } from '@/lib/plano-context'
+import { LIMITES } from '@/lib/plano-limites'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
