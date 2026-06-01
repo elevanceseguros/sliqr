@@ -1,8 +1,7 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
 
 function CallbackProcessor() {
   const supabase     = createClient()
@@ -10,55 +9,54 @@ function CallbackProcessor() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    async function processar() {
-      // Parâmetros que podem vir como query params
-      const code       = searchParams.get('code')
-      const token_hash = searchParams.get('token_hash')
-      const type       = searchParams.get('type')
-      const next       = searchParams.get('next') ?? '/criar'
-      const error      = searchParams.get('error')
+    const code       = searchParams.get('code')
+    const token_hash = searchParams.get('token_hash')
+    const type       = searchParams.get('type')
+    const next       = searchParams.get('next') ?? '/criar'
 
-      if (error) {
-        router.replace('/login?erro=auth')
+    // Recovery com token_hash nos query params
+    if (type === 'recovery' && token_hash) {
+      router.replace(`/nova-senha?token_hash=${token_hash}&type=recovery`)
+      return
+    }
+
+    // OAuth code exchange
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (!error) router.replace(next)
+        else router.replace('/login')
+      })
+      return
+    }
+
+    // Implicit flow: aguarda onAuthStateChange que dispara quando
+    // o Supabase processa o hash #access_token automaticamente
+    const timeout = setTimeout(() => {
+      // Timeout de segurança — se não processou em 3s, vai para login
+      router.replace('/login')
+    }, 3000)
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+
+      if (event === 'PASSWORD_RECOVERY') {
+        router.replace('/nova-senha')
         return
       }
-
-      // Recovery com token_hash
-      if (type === 'recovery' && token_hash) {
-        router.replace(`/nova-senha?token_hash=${token_hash}&type=recovery`)
-        return
-      }
-
-      // OAuth code exchange
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (!error) {
-          router.replace(next)
-          return
-        }
-      }
-
-      // Implicit flow: token pode estar no hash da URL
-      // Aguarda o Supabase processar automaticamente
-      await new Promise(r => setTimeout(r, 800))
-      const { data: { session } } = await supabase.auth.getSession()
 
       if (session) {
-        // Verifica se é recovery pelo hash
-        const hash   = window.location.hash.substring(1)
-        const hParams = new URLSearchParams(hash)
-        if (hParams.get('type') === 'recovery') {
-          router.replace('/nova-senha')
-          return
-        }
         router.replace(next)
         return
       }
 
       router.replace('/login')
-    }
+    })
 
-    processar()
+    return () => {
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
   }, [])
 
   return (
