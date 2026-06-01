@@ -21,12 +21,17 @@ function NovaSenhaForm() {
   useEffect(() => {
     async function verificar() {
       if (token_hash && type === 'recovery') {
-        // Verifica o token no cliente — funciona mesmo sem cookies
         const { error } = await supabase.auth.verifyOtp({
           token_hash,
           type: 'recovery',
         })
         if (error) {
+          setErro('Link inválido ou expirado. Solicite um novo.')
+        }
+      } else {
+        // Sem token_hash — verifica se já tem sessão ativa (implicit flow)
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
           setErro('Link inválido ou expirado. Solicite um novo.')
         }
       }

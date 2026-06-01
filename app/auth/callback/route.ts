@@ -41,9 +41,14 @@ export async function GET(request: NextRequest) {
   )
 
   // Recovery: redireciona direto para /nova-senha passando token na URL
-  // A página client-side processa o token sem depender de cookies
   if (type === 'recovery' && token_hash) {
     return NextResponse.redirect(`${origin}/nova-senha?token_hash=${token_hash}&type=recovery`)
+  }
+
+  // Se não tem params, o token pode estar no hash da URL (implicit flow)
+  // Redireciona para página client-side que lê o hash
+  if (!code && !token_hash && !error) {
+    return NextResponse.redirect(`${origin}/auth/processar`)
   }
 
   // Email confirmation via token_hash
