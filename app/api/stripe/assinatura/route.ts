@@ -38,10 +38,19 @@ export async function GET(request: NextRequest) {
     if (!subs.data.length) return NextResponse.json({})
 
     const sub = subs.data[0]
+    // Busca metadados do checkout para pegar o plano
+    const sessions = await stripe.checkout.sessions.list({
+      customer:      perfil.stripe_id,
+      limit:         5,
+    })
+    const plano_meta = sessions.data
+      .find(s => s.metadata?.plano)?.metadata?.plano ?? ''
+
     return NextResponse.json({
       periodo_fim: sub.current_period_end,
       tipo:        sub.items.data[0]?.plan?.interval ?? 'month',
       status:      sub.status,
+      plano_meta,
     })
   } catch (err: any) {
     return NextResponse.json({ erro: err.message }, { status: 500 })

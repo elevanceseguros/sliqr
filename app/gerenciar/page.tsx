@@ -10,24 +10,34 @@ import Link from 'next/link'
 export default function GerenciarPage() {
   const { plano, postsHoje, maxPosts, pronto } = usePlano()
   const [assinatura, setAssinatura]    = useState<any>(null)
+  const [planoReal, setPlanoReal]      = useState<string>('')
   const [portalLoading, setPortalLoading] = useState(false)
   const supabase = createClient()
   const router   = useRouter()
-  const limites  = LIMITES[plano] ?? LIMITES.free
+  const limites  = LIMITES[planoReal || plano] ?? LIMITES.free
 
   useEffect(() => {
-    if (!pronto) return  // aguarda plano real antes de redirecionar
-    if (plano === 'free') { router.replace('/planos'); return }
+    if (!pronto) return
     async function buscar() {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-      const res = await fetch('/api/stripe/assinatura', {
+      if (!session) { router.replace('/planos'); return }
+      // Busca assinatura direto no Stripe — fonte de verdade
+      const res  = await fetch('/api/stripe/assinatura', {
         headers: { 'Authorization': `Bearer ${session.access_token}` }
       })
-      if (res.ok) setAssinatura(await res.json())
+      if (!res.ok) { router.replace('/planos'); return }
+      const data = await res.json()
+      if (!data?.status) {
+        // Sem assinatura ativa no Stripe — só vai para /planos se o contexto também diz free
+        if (plano === 'free') { router.replace('/planos'); return }
+      }
+      setAssinatura(data)
+      // Extrai plano real dos metadados da assinatura
+      if (data?.plano_meta) setPlanoReal(data.plano_meta)
+      else if (plano !== 'free') setPlanoReal(plano)
     }
     buscar()
-  }, [plano])
+  }, [pronto])
 
   async function abrirPortal() {
     setPortalLoading(true)
@@ -42,7 +52,8 @@ export default function GerenciarPage() {
     setPortalLoading(false)
   }
 
-  const nomeFormatado = plano.charAt(0).toUpperCase() + plano.slice(1)
+  const planoExibido  = planoReal || plano
+  const nomeFormatado = planoExibido.charAt(0).toUpperCase() + planoExibido.slice(1)
   const proximaCobranca = assinatura?.periodo_fim
     ? new Date(assinatura.periodo_fim * 1000).toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' })
     : null
