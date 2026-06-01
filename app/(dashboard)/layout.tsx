@@ -67,7 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href:'/sugestoes',  icon:<Lightbulb size={15}/>,  label:'Sugestões',     recurso: 'sugestoes' },
     { href:'/historico',  icon:<Clock size={15}/>,      label:'Histórico',     recurso: 'historico' },
     { href:'/empresa',    icon:<Building2 size={15}/>,  label:'Minha empresa', recurso: null },
-    { href:'/planos',     icon:<CreditCard size={15}/>, label:'Planos',        recurso: null },
+    { href: plano === 'free' ? '/planos' : '/gerenciar', icon:<CreditCard size={15}/>, label: plano === 'free' ? 'Planos' : 'Minha assinatura', recurso: null },
   ]
   const podeHistorico = limites.temHistorico
   const podeSugestoes = limites.temSugestoes
