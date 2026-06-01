@@ -16,7 +16,7 @@ export default function RecuperarSenhaPage() {
     setLoading(true)
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://sliqr.vercel.app/auth/callback',
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://sliqr.vercel.app'}/auth/callback`,
     })
 
     if (error) {
