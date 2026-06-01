@@ -114,14 +114,20 @@ export default function LandingPage() {
         </div>
 
         {/* Mockup de slides */}
-        <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:'900px',margin:'4rem auto 0',display:'flex',gap:'16px',justifyContent:'center',alignItems:'flex-end',padding:'0 5%'}}>
-          <div style={{flex:'0 0 auto',width:'clamp(160px,22vw,260px)',borderRadius:'16px',overflow:'hidden',boxShadow:'0 24px 60px rgba(0,0,0,0.5)',transform:'rotate(-3deg) translateY(20px)',opacity:0.7}}>
+        <style>{`
+          @media (max-width: 600px) {
+            .hero-mockup-side { display: none !important; }
+            .hero-mockup-center { width: 75vw !important; transform: none !important; }
+          }
+        `}</style>
+        <div style={{position:'relative',zIndex:1,width:'100%',maxWidth:'900px',margin:'3rem auto 0',display:'flex',gap:'12px',justifyContent:'center',alignItems:'flex-end',padding:'0 5%',overflow:'hidden'}}>
+          <div className="hero-mockup-side" style={{flex:'0 0 auto',width:'clamp(120px,20vw,240px)',borderRadius:'14px',overflow:'hidden',boxShadow:'0 20px 50px rgba(0,0,0,0.5)',transform:'rotate(-3deg) translateY(20px)',opacity:0.65}}>
             <img src="/slides/demo5.png" alt="exemplo de carrossel" style={{width:'100%',display:'block'}}/>
           </div>
-          <div style={{flex:'0 0 auto',width:'clamp(180px,26vw,300px)',borderRadius:'16px',overflow:'hidden',boxShadow:'0 32px 80px rgba(0,0,0,0.6)',transform:'rotate(-1deg)',zIndex:2,border:'1px solid rgba(255,255,255,0.08)'}}>
+          <div className="hero-mockup-center" style={{flex:'0 0 auto',width:'clamp(160px,24vw,280px)',borderRadius:'16px',overflow:'hidden',boxShadow:'0 28px 70px rgba(0,0,0,0.6)',transform:'rotate(-1deg)',zIndex:2,border:'1px solid rgba(255,255,255,0.08)'}}>
             <img src="/slides/demo1.png" alt="exemplo de carrossel" style={{width:'100%',display:'block'}}/>
           </div>
-          <div style={{flex:'0 0 auto',width:'clamp(160px,22vw,260px)',borderRadius:'16px',overflow:'hidden',boxShadow:'0 24px 60px rgba(0,0,0,0.5)',transform:'rotate(2deg) translateY(15px)',opacity:0.75}}>
+          <div className="hero-mockup-side" style={{flex:'0 0 auto',width:'clamp(120px,20vw,240px)',borderRadius:'14px',overflow:'hidden',boxShadow:'0 20px 50px rgba(0,0,0,0.5)',transform:'rotate(2deg) translateY(15px)',opacity:0.7}}>
             <img src="/slides/demo2.png" alt="exemplo de carrossel" style={{width:'100%',display:'block'}}/>
           </div>
         </div>
