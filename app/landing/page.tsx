@@ -327,7 +327,35 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* BLOG */}
+      <section style={{padding:'5rem 5%',borderTop:'1px solid rgba(255,255,255,0.07)'}}>
+        <div style={{maxWidth:'1100px',margin:'0 auto'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'2rem',flexWrap:'wrap' as const,gap:'1rem'}}>
+            <div>
+              <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.68rem',color:'#2D6FFF',letterSpacing:'0.1em',marginBottom:'0.5rem'}}>// BLOG</div>
+              <h2 style={{fontSize:'clamp(1.5rem,3vw,2rem)',fontWeight:800,letterSpacing:'-0.04em'}}>Dicas para vender mais no Instagram</h2>
+            </div>
+            <Link href="/blog" style={{color:'#2D6FFF',fontSize:'0.85rem',fontWeight:600,textDecoration:'none',whiteSpace:'nowrap' as const}}>Ver todos os posts →</Link>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:'16px'}}>
+            {[
+              {slug:'como-criar-carrossel-instagram-que-vende',tag:'Carrossel',titulo:'Como Criar Carrosseis para Instagram que Realmente Vendem',data:'08 Jun'},
+              {slug:'erros-carrossel-instagram-que-afastam-seguidores',tag:'Erros',titulo:'7 Erros no Carrossel que Estao Afastando Seus Seguidores',data:'03 Jun'},
+              {slug:'como-usar-ia-para-criar-conteudo-instagram',tag:'IA',titulo:'Como Usar IA para Criar Conteudo para o Instagram',data:'02 Jun'},
+            ].map(post => (
+              <Link key={post.slug} href={`/blog/${post.slug}`} style={{display:'block',background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'1.25rem',textDecoration:'none',transition:'border-color 0.2s'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.75rem'}}>
+                  <span style={{background:'rgba(45,111,255,0.1)',border:'1px solid rgba(45,111,255,0.2)',color:'#6B9FFF',fontSize:'0.62rem',fontWeight:700,padding:'2px 8px',borderRadius:'100px',fontFamily:'JetBrains Mono,monospace',letterSpacing:'0.06em'}}>{post.tag.toUpperCase()}</span>
+                  <span style={{color:'#4A5568',fontSize:'0.72rem',fontFamily:'JetBrains Mono,monospace'}}>{post.data}</span>
+                </div>
+                <h3 style={{fontSize:'0.95rem',fontWeight:700,lineHeight:1.4,color:'#F0F4FF',marginBottom:'0.75rem'}}>{post.titulo}</h3>
+                <span style={{color:'#2D6FFF',fontSize:'0.78rem',fontWeight:600}}>Ler artigo →</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <footer style={{borderTop:'1px solid rgba(255,255,255,0.07)',padding:'2rem 5%',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'1rem'}}>
         <div style={{display:'flex',alignItems:'center',gap:'7px',fontWeight:700,letterSpacing:'-0.03em'}}>
           <div style={{width:'22px',height:'22px',background:'#2D6FFF',borderRadius:'5px',display:'flex',alignItems:'center',justifyContent:'center'}}>
