@@ -70,6 +70,7 @@ export default function LandingPage() {
           {['Como funciona','O que faz','Planos'].map(l => (
             <a key={l} href={`#${l.toLowerCase().replace(/ /g,'-')}`} style={{color:'#8B95A8',textDecoration:'none',fontSize:'0.8rem',fontWeight:500,padding:'0.4rem 1.1rem',borderRadius:'100px'}}>{l}</a>
           ))}
+          <Link href="/blog" style={{color:'#8B95A8',textDecoration:'none',fontSize:'0.8rem',fontWeight:500,padding:'0.4rem 1.1rem',borderRadius:'100px'}}>Blog</Link>
         </div>
         <div style={{display:'flex',gap:'10px',alignItems:'center'}}>
           <Link href="/login" style={{color:'#8B95A8',textDecoration:'none',fontSize:'0.85rem',fontWeight:500,padding:'0.5rem 1rem'}}>Entrar</Link>
@@ -335,6 +336,7 @@ export default function LandingPage() {
           Sliqr
         </div>
         <div style={{display:'flex',gap:'1.5rem',flexWrap:'wrap'}}>
+          <a href="/blog" style={{color:'#4A5568',textDecoration:'none',fontSize:'0.8rem'}}>Blog</a>
           <a href="/privacidade" style={{color:'#4A5568',textDecoration:'none',fontSize:'0.8rem'}}>Privacidade</a>
           <a href="/termos" style={{color:'#4A5568',textDecoration:'none',fontSize:'0.8rem'}}>Termos de uso</a>
           <a href="mailto:contato@sliqr.com.br" style={{color:'#4A5568',textDecoration:'none',fontSize:'0.8rem'}}>Contato</a>
