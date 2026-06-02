@@ -171,14 +171,13 @@ export default function LandingPage() {
         </h2>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:'16px'}}>
           {[
-            {n:'01',emoji:'✍️',t:'Digite o tema',p:'Qualquer assunto do seu negócio. A Sliqr entende o contexto e gera conteúdo específico e relevante para o seu público.',img:'/slides/demo4.png'},
-            {n:'02',emoji:'🎨',t:'Personalize as cores e fonte',p:'Escolha a paleta da sua marca em segundos. Imagens geradas por IA e legenda com hashtags já incluídas automaticamente.',img:'/slides/demo1.png'},
-            {n:'03',emoji:'📲',t:'Baixe e publique',p:'ZIP com todos os slides + legenda pronta para copiar. Do prompt ao post em menos de 1 minuto.',img:'/slides/demo2.png'},
+            {n:'01',t:'Digite o tema',p:'Qualquer assunto do seu negócio. A Sliqr entende o contexto e gera conteúdo específico e relevante para o seu público.',img:'/slides/demo4.png'},
+            {n:'02',t:'Personalize as cores e fonte',p:'Escolha a paleta da sua marca em segundos. Imagens geradas por IA e legenda com hashtags já incluídas automaticamente.',img:'/slides/demo1.png'},
+            {n:'03',t:'Baixe e publique',p:'ZIP com todos os slides + legenda pronta para copiar. Do prompt ao post em menos de 1 minuto.',img:'/slides/demo2.png'},
           ].map(s => (
             <div key={s.n} style={{background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'20px',overflow:'hidden'}}>
               <div style={{padding:'1.75rem 1.75rem 0'}}>
                 <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'0.75rem'}}>
-                  <div style={{width:'32px',height:'32px',background:'rgba(45,111,255,0.1)',border:'1px solid rgba(45,111,255,0.2)',borderRadius:'8px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1rem'}}>{s.emoji}</div>
                   <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:'0.65rem',letterSpacing:'0.1em',color:'#2D6FFF'}}>PASSO {s.n}</div>
                 </div>
                 <h3 style={{fontSize:'1.1rem',fontWeight:600,marginBottom:'0.5rem',letterSpacing:'-0.02em'}}>{s.t}</h3>
