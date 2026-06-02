@@ -38,6 +38,9 @@ function CheckoutRedirect() {
         })
         const data = await res.json()
         if (data.url) {
+          if (typeof window !== 'undefined' && (window as any).fbq) {
+            (window as any).fbq('track', 'InitiateCheckout')
+          }
           window.location.href = data.url
         } else {
           setErro(data.erro ?? 'Erro ao iniciar pagamento.')

@@ -59,6 +59,10 @@ function CadastroForm() {
       return
     }
 
+    // Meta Pixel — evento de cadastro
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'CompleteRegistration')
+    }
     window.location.href = destino()
   }
 
