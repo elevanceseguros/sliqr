@@ -16,6 +16,49 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: 'carrossel-vs-reels-qual-usar',
+    titulo: 'Carrossel ou Reels: Qual Usar para Vender Mais no Instagram?',
+    descricao: 'Comparacao direta entre carrossel e Reels -- quando usar cada formato e como combinar os dois para crescer e vender.',
+    tag: 'Formatos', data: '15 Jun 2025', leitura: '6 min',
+  },
+  {
+    slug: 'como-escrever-bio-instagram-profissional',
+    titulo: 'Como Escrever uma Bio do Instagram que Converte Visitantes em Seguidores',
+    descricao: 'A bio e a primeira impressao. Aprenda a escrever uma bio profissional que converte visitantes em clientes.',
+    tag: 'Perfil', data: '14 Jun 2025', leitura: '5 min',
+  },
+  {
+    slug: 'instagram-para-prestadores-de-servico',
+    titulo: 'Instagram para Prestadores de Servico: Como Atrair Clientes',
+    descricao: 'Guia completo para advogados, medicos, nutricionistas e outros profissionais liberais usarem o Instagram.',
+    tag: 'Servicos', data: '13 Jun 2025', leitura: '7 min',
+  },
+  {
+    slug: 'primeiro-slide-carrossel-instagram-gancho',
+    titulo: 'Como Criar o Primeiro Slide do Carrossel que Para o Dedo',
+    descricao: '5 formulas de gancho com exemplos prontos para qualquer nicho -- para o seguidor parar de rolar o feed.',
+    tag: 'Carrossel', data: '12 Jun 2025', leitura: '6 min',
+  },
+  {
+    slug: 'como-crescer-instagram-organicamente-2025',
+    titulo: 'Como Crescer no Instagram Organicamente em 2025',
+    descricao: 'Estrategias reais para crescer no Instagram sem pagar por anuncios -- para pequenos empreendedores brasileiros.',
+    tag: 'Crescimento', data: '11 Jun 2025', leitura: '7 min',
+  },
+  {
+    slug: 'planejamento-conteudo-instagram-pequenos-negocios',
+    titulo: 'Planejamento de Conteudo para Instagram: Guia para Pequenos Negocios',
+    descricao: 'Como criar um planejamento de conteudo para Instagram que voce realmente consegue manter.',
+    tag: 'Planejamento', data: '10 Jun 2025', leitura: '7 min',
+  },
+  {
+    slug: 'como-usar-carrossel-para-gerar-leads-instagram',
+    titulo: 'Como Usar Carrossel para Gerar Leads no Instagram',
+    descricao: '5 estrategias para transformar carrosseis em maquina de captacao de clientes qualificados.',
+    tag: 'Estrategia', data: '09 Jun 2025', leitura: '6 min',
+  },
+
+  {
     slug: 'como-criar-carrossel-instagram-que-vende',
     titulo: 'Como Criar Carrosséis para Instagram que Realmente Vendem',
     descricao: 'Descubra a estrutura exata de carrossel que transforma seguidores em clientes — com exemplos práticos para qualquer nicho.',

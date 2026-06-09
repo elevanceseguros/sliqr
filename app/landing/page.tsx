@@ -338,9 +338,9 @@ export default function LandingPage() {
           </div>
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(280px,1fr))',gap:'16px'}}>
             {[
-              {slug:'como-criar-carrossel-instagram-que-vende',tag:'Carrossel',titulo:'Como Criar Carrosseis para Instagram que Realmente Vendem',data:'08 Jun'},
-              {slug:'erros-carrossel-instagram-que-afastam-seguidores',tag:'Erros',titulo:'7 Erros no Carrossel que Estao Afastando Seus Seguidores',data:'03 Jun'},
-              {slug:'como-usar-ia-para-criar-conteudo-instagram',tag:'IA',titulo:'Como Usar IA para Criar Conteudo para o Instagram',data:'02 Jun'},
+              {slug:'carrossel-vs-reels-qual-usar',tag:'Formatos',titulo:'Carrossel ou Reels: Qual Usar para Vender Mais?',data:'15 Jun'},
+              {slug:'primeiro-slide-carrossel-instagram-gancho',tag:'Carrossel',titulo:'Como Criar o Primeiro Slide que Para o Dedo',data:'12 Jun'},
+              {slug:'como-usar-carrossel-para-gerar-leads-instagram',tag:'Estrategia',titulo:'Como Usar Carrossel para Gerar Leads no Instagram',data:'09 Jun'},
             ].map(post => (
               <Link key={post.slug} href={`/blog/${post.slug}`} style={{display:'block',background:'#0D1117',border:'1px solid rgba(255,255,255,0.07)',borderRadius:'14px',padding:'1.25rem',textDecoration:'none',transition:'border-color 0.2s'}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'0.75rem'}}>

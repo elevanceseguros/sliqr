@@ -10,7 +10,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { slug: 'ideias-carrossel-instagram-por-nicho',             date: '2025-06-05' },
     { slug: 'instagram-para-mei-guia-completo',                 date: '2025-06-04' },
     { slug: 'erros-carrossel-instagram-que-afastam-seguidores', date: '2025-06-03' },
-    { slug: 'como-usar-ia-para-criar-conteudo-instagram',       date: '2025-06-02' },
+    { slug: 'carrossel-vs-reels-qual-usar',                       date: '2025-06-15' },
+    { slug: 'como-escrever-bio-instagram-profissional',            date: '2025-06-14' },
+    { slug: 'instagram-para-prestadores-de-servico',               date: '2025-06-13' },
+    { slug: 'primeiro-slide-carrossel-instagram-gancho',           date: '2025-06-12' },
+    { slug: 'como-crescer-instagram-organicamente-2025',           date: '2025-06-11' },
+    { slug: 'planejamento-conteudo-instagram-pequenos-negocios',   date: '2025-06-10' },
+    { slug: 'como-usar-carrossel-para-gerar-leads-instagram',      date: '2025-06-09' },
+    { slug: 'como-usar-ia-para-criar-conteudo-instagram',          date: '2025-06-02' },
   ]
 
   return [
